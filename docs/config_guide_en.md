@@ -88,7 +88,7 @@ This setting is also available in webui.
 
 ## rag.index
 
-vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus]
+vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus, Tablestore]
 
 Currently, pai_rag provides a variety of approaches for creating & storing indices.
 
@@ -153,6 +153,19 @@ If vector_store.type = "Milvus", you need to provide the following information:
     password = ""
     database = "pairag"
     collection = "pairag_collection"
+
+If vector_store.type = "Tablestore", you need to provide the following information:
+
+    [rag.index]
+    persist_path = "localdata/storage"
+
+    [rag.index.vector_store]
+    type = "Tablestore"
+    endpoint = ""
+    instance_name = ""
+    access_key_id = ""
+    access_key_secret = ""
+    table_name = "pai_rag"
 
 This setting is also available in webui.
 
