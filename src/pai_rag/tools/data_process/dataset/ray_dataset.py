@@ -35,14 +35,17 @@ class RayDataset(ABC):
                 if batch:
                     yield batch
 
-    def process(self, operator, op_name):
-        self._run_single_op(operator, op_name)
+    def process(self, operators, op_name):
+        self._run_single_op(operators, op_name)
         self.write_json(status=op_name)
 
-    def _run_single_op(self, op, op_name):
+    def _run_single_op(self, ops, op_name):
         try:
-            logger.info(f"Running Op [{op_name}].")
-            run_tasks = [op.process.remote(batch_data) for batch_data in self.data]
+            logger.info(f"Running Op [{op_name}] with {len(ops)} actors.")
+            num_actors = len(ops)
+            run_tasks = []
+            for i, batch_data in enumerate(self.data):
+                run_tasks.append(ops[i % num_actors].process.remote(batch_data))
             self.data = ray.get(run_tasks)
         except:  # noqa: E722
             logger.error(f"An error occurred during Op [{op_name}].")

@@ -27,18 +27,25 @@ def load_op(op_name, process_list):
                 op_proc = calculate_np(op_name, mem_required, num_cpus, None, True)
                 num_gpus = get_num_gpus(True, op_proc)
                 logger.info(
-                    f"Op {op_name} will be executed on cuda env and use {num_cpus} cpus and {num_gpus} GPUs."
+                    f"Op {op_name} will be executed on cuda env with op_proc {op_proc} and use {num_cpus} cpus and {num_gpus} GPUs."
                 )
-                RemoteGpuOp = OPERATORS.modules[op_name].options(
-                    num_cpus=num_cpus, num_gpus=num_gpus
-                )
-                return RemoteGpuOp.remote(**op_args)
+                return [
+                    OPERATORS.modules[op_name]
+                    .options(num_cpus=num_cpus, num_gpus=num_gpus)
+                    .remote(**op_args)
+                    for _ in range(op_proc)
+                ]
             else:
+                op_proc = calculate_np(op_name, mem_required, num_cpus, None, False)
                 logger.info(
-                    f"Op {op_name} will be executed on cpu env and use {num_cpus} cpus."
+                    f"Op {op_name} will be executed on cpu env with op_proc {op_proc} and use {num_cpus} cpus."
                 )
-                # RemoteCpuOp = OPERATORS.modules[op_name].options(num_cpus=num_cpus)
-                return OPERATORS.modules[op_name].remote(**op_args)
+                return [
+                    OPERATORS.modules[op_name]
+                    .options(num_cpus=num_cpus)
+                    .remote(**op_args)
+                    for _ in range(op_proc)
+                ]
         else:
             continue
 
