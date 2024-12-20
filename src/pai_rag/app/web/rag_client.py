@@ -236,7 +236,6 @@ class RagWebClient:
             with_intent=with_intent,
             index_name=index_name,
         )
-        print(q)
         r = requests.post(self.query_url, json=q, stream=True)
         if r.status_code != HTTPStatus.OK:
             raise RagApiError(code=r.status_code, msg=r.text)
