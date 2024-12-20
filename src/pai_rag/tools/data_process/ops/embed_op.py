@@ -44,10 +44,10 @@ class Embedder(BaseOP):
                 {"source": kwargs.get("multimodal_source", None)}
             )
             self.download_model_list.append("chinese-clip-vit-large-patch14")
-        self.load_models(self.download_model_list, kwargs)
+        self.load_models(self.download_model_list)
         logger.info("Embedder init finished.")
 
-    def load_models(self, model_list, kwargs):
+    def load_models(self, model_list):
         logger.info(f"Downloading models {model_list}.")
         download_models = ModelScopeDownloader(
             fetch_config=True,
@@ -55,16 +55,6 @@ class Embedder(BaseOP):
         )
         for model_name in model_list:
             download_models.load_model(model=model_name)
-
-        logger.info("Loading models.")
-        self.embed_model = create_embedding(self.embedder_cfg)
-        logger.info(f"Dense embed model loaded {self.embedder_cfg}.")
-        self.sparse_embed_model = None
-        if self.embedder_cfg.enable_sparse:
-            self.sparse_embed_model = BGEM3SparseEmbeddingFunction(
-                model_name_or_path=self.model_dir
-            )
-            logger.info("Sparse embed model loaded.")
 
     def process_extra_metadata(self, nodes):
         excluded_embed_metadata_keys = nodes["excluded_embed_metadata_keys"]
@@ -87,9 +77,15 @@ class Embedder(BaseOP):
         text_nodes = [node for node in nodes if node["type"] == "text"]
         image_nodes = [node for node in nodes if node["type"] == "image"]
         if len(text_nodes) > 0:
+            self.embed_model = create_embedding(self.embedder_cfg)
+            logger.info("Dense embed model loaded.")
             text_contents = [node["text"] for node in text_nodes]
             embeddings = self.embed_model.get_text_embedding_batch(text_contents)
-            if self.sparse_embed_model:
+            if self.embedder_cfg.enable_sparse:
+                self.sparse_embed_model = BGEM3SparseEmbeddingFunction(
+                    model_name_or_path=self.model_dir
+                )
+                logger.info("Sparse embed model loaded.")
                 sparse_embeddings = self.sparse_embed_model.encode_documents(
                     text_contents
                 )
