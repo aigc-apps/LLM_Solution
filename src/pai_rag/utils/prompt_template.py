@@ -67,32 +67,51 @@ The response should be concise to keep json complete。
 
 CONDENSE_QUESTION_CHAT_ENGINE_PROMPT = PromptTemplate(
     """\
-Given a conversation (between Human and Assistant) and a follow up message from Human, \
-rewrite the message to be a standalone question that captures all relevant context \
-from the conversation.
+Please play the role of an intelligent search rewriting and completion robot. According to the user's chat history and the corresponding new question, please first rewrite the subject inheritance of the new question, and then complete the context information. Note: Do not change the meaning of the new question, the answer should be as concise as possible, do not directly answer the question, and do not output more content.
+Example:
+<Chat history>
+User: What did you do this morning?
+Assistant: Go play basketball
 
-<Chat History>
+<New question>
+User: Is it fun?
+
+Answer:
+Answer: Is playing basketball fun?
+
+Now it's your turn:
+<Chat history>
 {chat_history}
 
-<Follow Up Message>
+<New question>
 {question}
 
-<Standalone question>
+Please think carefully and give your answer using the same language as the <New question>:
 """
 )
 
 CONDENSE_QUESTION_CHAT_ENGINE_PROMPT_ZH = PromptTemplate(
     """\
-给定一次对话（人类和助理之间）以及来自人类的后续消息，\
-将消息重写为一个独立的问题，捕获对话中的所有相关上下文。
+请你扮演一个智能搜索改写补全机器人，请根据User的聊天历史以及对应的新问题，对新问题先进行主语继承改写，然后进行上下文信息补全，注意：不要改变新问题的意思，答案要尽可能简洁，不要直接回答该问题，不要输出多于的内容。
+例子：
+<聊天历史>
+User：今天上午你干嘛了
+Assistant：去打篮球啦
 
-<聊天记录>
+<新问题>
+User：好玩吗？
+
+答案：
+答案：打篮球好玩吗？
+
+现在轮到你了：
+<聊天历史>
 {chat_history}
 
-<后续消息>
+<新问题>
 {question}
 
-<独立问题>
+请仔细思考后，使用和<新问题>相同的语言，给出你的答案：
 """
 )
 

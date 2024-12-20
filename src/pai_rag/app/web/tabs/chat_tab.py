@@ -36,6 +36,8 @@ def respond(input_elements: List[Any]):
     index_name = update_dict["chat_index"]
     citation = update_dict["citation"]
 
+    if not update_dict["include_history"]:
+        chatbot, _ = clear_history(chatbot)
     if chatbot is not None:
         chatbot.append((msg, ""))
         yield chatbot
@@ -65,7 +67,6 @@ def respond(input_elements: List[Any]):
                 citation=citation,
                 index_name=index_name,
             )
-
         for resp in response_gen:
             chatbot[-1] = (msg, resp.result)
             yield chatbot
@@ -109,11 +110,6 @@ def create_chat_tab() -> Dict[str, Any]:
                 label="Display Image",
                 info="Inference with multi-modal LLM.",
                 elem_id="need_image",
-            )
-            include_history = gr.Checkbox(
-                label="Chat history",
-                info="Query with chat history.",
-                elem_id="include_history",
             )
 
             with gr.Column(visible=True) as vs_col:
@@ -385,7 +381,17 @@ def create_chat_tab() -> Dict[str, Any]:
 
         with gr.Column(scale=8):
             chatbot = gr.Chatbot(height=500, elem_id="chatbot")
-            question = gr.Textbox(label="Enter your question.", elem_id="question")
+            with gr.Row():
+                include_history = gr.Checkbox(
+                    label="Chat history",
+                    info="Query with chat history.",
+                    elem_id="include_history",
+                    value=True,
+                    scale=1,
+                )
+                question = gr.Textbox(
+                    label="Enter your question.", elem_id="question", scale=9
+                )
             with gr.Row():
                 submitBtn = gr.Button("Submit", variant="primary")
                 clearBtn = gr.Button("Clear History", variant="secondary")

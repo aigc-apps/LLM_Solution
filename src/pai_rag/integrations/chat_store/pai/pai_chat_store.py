@@ -8,6 +8,7 @@ from llama_index.core.storage.chat_store.base import BaseChatStore
 from pydantic import BaseModel
 from llama_index.core.bridge.pydantic import PrivateAttr
 from loguru import logger
+from collections import deque
 
 CHAT_STORE_FILE = "chat_store.json"
 DEFAULT_LOCAL_STORAGE_PATH = "./localdata/storage/"
@@ -74,7 +75,21 @@ class PaiChatStore(BaseChatStore):
 
     def get_messages(self, key: str) -> List[ChatMessage]:
         """Get messages for a key."""
-        return self._chat_store.get_messages(key)
+        default_messages = self._chat_store.get_messages(key)
+        recent_messages = deque(default_messages[-20:], maxlen=20)
+        assistant_count = 0
+        ret_messages = []
+        for msg in reversed(recent_messages):
+            if msg.role == "assistant":
+                if assistant_count < 2:
+                    msg.content = msg.content[:200]
+                    ret_messages.append(msg)
+                    assistant_count += 1
+            else:
+                ret_messages.append(msg)
+
+        ret_messages.reverse()
+        return ret_messages
 
     def add_message(self, key: str, message: ChatMessage) -> None:
         """Add a message for a key."""
