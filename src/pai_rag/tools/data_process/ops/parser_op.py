@@ -54,4 +54,7 @@ class Parser(BaseOP):
         )
 
         documents = data_reader.load_data(file_path_or_directory=input_file)
+        if len(documents) == 0:
+            logger.info(f"No data found in the input file: {input_file}")
+            return None
         return convert_document_to_dict(documents[0])
