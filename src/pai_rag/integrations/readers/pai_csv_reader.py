@@ -11,8 +11,14 @@ from fsspec import AbstractFileSystem
 import pandas as pd
 from llama_index.core.readers.base import BaseReader
 from llama_index.core.schema import Document
+
+from llama_index.core.node_parser import SentenceSplitter
+
 import chardet
+import os
 from loguru import logger
+
+from pai_rag.integrations.readers.utils.pai_parse_workbook import parse_workbook
 
 
 class PaiCSVReader(BaseReader):
@@ -192,3 +198,31 @@ class PaiPandasCSVReader(BaseReader):
                 extra_info["row_number"] = i + 1
                 docs.append(Document(text=text, metadata=extra_info))
             return docs
+
+
+class PaiExcelReader(BaseReader):
+    def __init__(
+        self,
+        oss_cache: Any = None,
+    ):
+        self.oss_cache = oss_cache
+
+    def load_data(
+        self,
+        file: Path,
+        chunk_size=800,
+        extra_info: Optional[Dict] = None,
+        fs: Optional[AbstractFileSystem] = None,
+    ) -> List[Document]:
+        splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=60)
+        logger.info(f"Start parsing {file}.")
+        docs = parse_workbook(file, oss_client=self.oss_cache, splitter=splitter)
+        for doc in docs:
+            doc.extra_info["file_path"] = str(file)
+            doc.extra_info["file_name"] = os.path.basename(file)
+
+            if extra_info is not None:
+                doc.extra_info.update(extra_info)
+        logger.info(f"Finish parsing {file}.")
+
+        return docs
