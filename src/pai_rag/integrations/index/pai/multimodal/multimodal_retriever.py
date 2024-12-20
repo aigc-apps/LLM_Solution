@@ -202,6 +202,8 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
                 if not image_url_infos:
                     continue
                 for image_url_info in image_url_infos:
+                    if len(integrated_image_nodes) >= self._image_similarity_top_k:
+                        break
                     image_url = image_url_info.get("image_url", None)
                     if image_url and image_url not in seen_image_urls:
                         integrated_image_nodes.append(
@@ -513,6 +515,8 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
                 if not image_url_infos:
                     continue
                 for image_url_info in image_url_infos:
+                    if len(integrated_image_nodes) >= self._image_similarity_top_k:
+                        break
                     image_url = image_url_info.get("image_url", None)
                     if image_url and image_url not in seen_image_urls:
                         integrated_image_nodes.append(
