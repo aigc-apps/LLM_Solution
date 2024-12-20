@@ -186,33 +186,39 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
         if self._enable_multimodal and self._image_vector_store is not None:
             image_nodes = self._text_to_image_retrieve(query_bundle)
 
-        seen_images = set([node.node.image_url for node in image_nodes])
-        # 从文本中召回图片
-        if self._search_image and len(image_nodes) < self._image_similarity_top_k:
-            for node in text_nodes:
-                image_url_infos = node.node.metadata.get("image_info_list")
-                if not image_url_infos:
-                    continue
-                for image_url_info in image_url_infos:
-                    if image_url_info.get("image_url", None) not in seen_images:
-                        image_nodes.extend(
-                            NodeWithScore(
-                                ImageNode(
-                                    image_url=image_url_info.get("image_url", None)
-                                ),
-                                score=node.score
-                                * 0.5,  # discount the score from text nodes
-                            )
-                        )
-                        seen_images.add(image_url_info.get("image_url", None))
-                if len(image_nodes) >= self._image_similarity_top_k:
-                    break
-
         if not text_nodes:
             text_nodes = []
         if not image_nodes:
             image_nodes = []
-        results = text_nodes + image_nodes
+
+        # 优先从文本中召回图片
+        integrated_image_nodes = []
+        seen_image_urls = []
+        if self._search_image:
+            for node in text_nodes:
+                if len(integrated_image_nodes) >= self._image_similarity_top_k:
+                    break
+                image_url_infos = node.node.metadata.get("image_info_list")
+                if not image_url_infos:
+                    continue
+                for image_url_info in image_url_infos:
+                    image_url = image_url_info.get("image_url", None)
+                    if image_url and image_url not in seen_image_urls:
+                        integrated_image_nodes.append(
+                            NodeWithScore(
+                                node=ImageNode(image_url=image_url),
+                                score=node.score,
+                            )
+                        )
+                        seen_image_urls.append(image_url)
+
+        for node in image_nodes:
+            if len(integrated_image_nodes) >= self._image_similarity_top_k:
+                break
+            if node.node.image_url not in seen_image_urls:
+                integrated_image_nodes.append(node)
+
+        results = text_nodes + integrated_image_nodes
         return results
 
     def retrieve(self, str_or_query_bundle: QueryType) -> List[NodeWithScore]:
@@ -491,33 +497,39 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
         logger.debug(f"Retrieved text nodes: {text_nodes}")
         logger.debug(f"Retrieved image nodes: {image_nodes}")
 
-        seen_images = set([node.node.image_url for node in image_nodes])
-        # 从文本中召回图片
-        if self._search_image and len(image_nodes) < self._image_similarity_top_k:
-            for node in text_nodes:
-                image_url_infos = node.node.metadata.get("image_info_list")
-                if not image_url_infos:
-                    continue
-                for image_url_info in image_url_infos:
-                    if image_url_info.get("image_url", None) not in seen_images:
-                        image_nodes.extend(
-                            NodeWithScore(
-                                ImageNode(
-                                    image_url=image_url_info.get("image_url", None)
-                                ),
-                                score=node.score
-                                * 0.5,  # discount the score from text nodes
-                            )
-                        )
-                        seen_images.add(image_url_info.get("image_url", None))
-                if len(image_nodes) >= self._image_similarity_top_k:
-                    break
-
         if not text_nodes:
             text_nodes = []
         if not image_nodes:
             image_nodes = []
-        results = text_nodes + image_nodes
+
+        # 优先从文本中召回图片
+        integrated_image_nodes = []
+        seen_image_urls = []
+        if self._search_image:
+            for node in text_nodes:
+                if len(integrated_image_nodes) >= self._image_similarity_top_k:
+                    break
+                image_url_infos = node.node.metadata.get("image_info_list")
+                if not image_url_infos:
+                    continue
+                for image_url_info in image_url_infos:
+                    image_url = image_url_info.get("image_url", None)
+                    if image_url and image_url not in seen_image_urls:
+                        integrated_image_nodes.append(
+                            NodeWithScore(
+                                node=ImageNode(image_url=image_url),
+                                score=node.score,
+                            )
+                        )
+                        seen_image_urls.append(image_url)
+
+        for node in image_nodes:
+            if len(integrated_image_nodes) >= self._image_similarity_top_k:
+                break
+            if node.node.image_url not in seen_image_urls:
+                integrated_image_nodes.append(node)
+
+        results = text_nodes + integrated_image_nodes
         return results
 
     async def aretrieve(self, str_or_query_bundle: QueryType) -> List[NodeWithScore]:
