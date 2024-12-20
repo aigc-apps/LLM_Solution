@@ -36,7 +36,6 @@ def respond(input_elements: List[Any]):
     index_name = update_dict["chat_index"]
     citation = update_dict["citation"]
 
-    print('update_dict["include_history"]', update_dict["include_history"])
     if not update_dict["include_history"]:
         chatbot, _ = clear_history(chatbot)
     if chatbot is not None:
@@ -111,12 +110,6 @@ def create_chat_tab() -> Dict[str, Any]:
                 label="Display Image",
                 info="Inference with multi-modal LLM.",
                 elem_id="need_image",
-            )
-            include_history = gr.Checkbox(
-                label="Chat history",
-                info="Query with chat history.",
-                elem_id="include_history",
-                value=True,
             )
 
             with gr.Column(visible=True) as vs_col:
