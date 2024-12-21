@@ -43,7 +43,7 @@ def load_op(op_name, process_list):
                 logger.info(
                     f"Op {op_name} will be executed on cpu env with op_proc {op_proc} and use {num_cpus} cpus."
                 )
-                return OPERATORS.modules[op_name].options(num_cpus=num_cpus*op_proc,max_concurrency=op_proc).remote(**op_args)
+                return OPERATORS.modules[op_name].options(num_cpus=num_cpus,max_concurrency=op_proc).remote(**op_args)
                 # return [
                 #     OPERATORS.modules[op_name]
                 #     .options(num_cpus=num_cpus)
