@@ -29,12 +29,15 @@ def load_op(op_name, process_list):
                 logger.info(
                     f"Op {op_name} will be executed on cuda env with op_proc {op_proc} and use {num_cpus} cpus and {num_gpus} GPUs."
                 )
-                return [
-                    OPERATORS.modules[op_name]
-                    .options(num_cpus=num_cpus, num_gpus=num_gpus)
-                    .remote(**op_args)
-                    for _ in range(op_proc)
-                ]
+                return OPERATORS.modules[op_name].options(num_cpus=num_cpus*op_proc, num_gpus=num_gpus*op_proc,max_concurrency=op_proc).remote(**op_args)
+                    
+                
+                # return [
+                #     OPERATORS.modules[op_name]
+                #     .options(num_cpus=num_cpus, num_gpus=num_gpus)
+                #     .remote(**op_args)
+                #     for _ in range(op_proc)
+                # ]
             else:
                 op_proc = calculate_np(op_name, mem_required, num_cpus, None, False)
                 logger.info(

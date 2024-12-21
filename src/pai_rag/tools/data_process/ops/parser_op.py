@@ -7,7 +7,7 @@ from pai_rag.integrations.readers.pai.pai_data_reader import BaseDataReaderConfi
 from pai_rag.core.rag_module import resolve
 from pai_rag.utils.oss_client import OssClient
 from pai_rag.integrations.readers.pai.pai_data_reader import PaiDataReader
-
+import threading
 OP_NAME = "pai_rag_parser"
 
 
@@ -37,6 +37,8 @@ class Parser(BaseOP):
         download_models.load_mineru_config(self.accelerator)
 
     def process(self, input_file):
+        current_thread = threading.current_thread()
+        logger.info(f"当前线程的 ID: {current_thread.ident}")
         self.data_reader_config = BaseDataReaderConfig()
         if self.kwargs.get("oss_store", None):
             self.oss_store = resolve(
