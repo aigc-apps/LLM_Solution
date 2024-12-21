@@ -20,7 +20,7 @@ class FileDataset(ABC):
 
     def _run_single_op(self, ops, op_name):
         try:
-            logger.info(f"Running Op [{op_name}] with {len(ops)} actors.")
+            logger.info(f"Running Op [{op_name}]")
             # num_actors = len(ops)
             # run_tasks = []
             # for i, batch_data in enumerate(self.data):
