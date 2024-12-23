@@ -149,7 +149,8 @@ def get_input_files(
         )
 
     file_metadata_map = {
-        file: default_file_metadata_func(file_path=file) for file in input_files
+        str(file): default_file_metadata_func(file_path=str(file))
+        for file in input_files
     }
     return input_files, file_metadata_map
 
