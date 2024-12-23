@@ -69,7 +69,6 @@ class OssClient:
         """
         列出存储桶中指定前缀的对象列表。
 
-        该方法通过调用oss bucket的list_objects函数，查询与给定前缀匹配的所有对象，并返回这些对象的列表。
 
         参数:
         - prefix (str): 对象名的前缀，用于筛选满足条件的对象。默认为空字符串，表示不指定前缀，即列出所有对象。
@@ -77,10 +76,11 @@ class OssClient:
         返回:
         - list: 包含满足前缀条件的所有对象的列表。
         """
-        # 调用bucket的list_objects方法，传入前缀参数
-        res = self.bucket.list_objects(prefix=prefix)
-        # 返回查询到的对象列表
-        return res.object_list
+        object_list = []
+        for obj in oss2.ObjectIterator(self.bucket, prefix):
+            logger.info("file: " + obj.key)
+            object_list.append(obj)
+        return object_list
 
     def put_object_acl(self, key, permission):
         if key.endswith(".txt"):
