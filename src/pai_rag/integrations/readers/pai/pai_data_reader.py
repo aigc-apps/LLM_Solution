@@ -13,7 +13,7 @@ from pai_rag.integrations.readers.pai_jsonl_reader import PaiJsonLReader
 from pai_rag.integrations.readers.pai_docx_reader import PaiDocxReader
 from pai_rag.integrations.readers.pai_pptx_reader import PaiPptxReader
 from pai_rag.integrations.readers.pai_markdown_reader import PaiMarkdownReader
-
+from llama_index.core.readers.file.base import default_file_metadata_func
 from llama_index.core.readers.base import BaseReader
 from llama_index.core.readers import SimpleDirectoryReader
 from llama_index.core.schema import Document
@@ -78,6 +78,7 @@ def get_file_readers(reader_config: BaseDataReaderConfig = None, oss_store: Any 
 
 def get_oss_files(oss_path: str, filter_pattern: str = None, oss_store: Any = None):
     files = []
+    file_metadata_map = {}
     if oss_store:
         prefix = oss_store.parse_oss_prefix(oss_path)
         object_list = oss_store.list_objects(prefix)
@@ -99,6 +100,12 @@ def get_oss_files(oss_path: str, filter_pattern: str = None, oss_store: Any = No
                         key=oss_obj.key, filename=save_filename
                     )
                     files.append(save_filename)
+                    file_metadata_map[save_filename] = default_file_metadata_func(
+                        file_path=save_filename
+                    )
+                    file_metadata_map[save_filename][
+                        "file_url"
+                    ] = oss_store.get_obj_key_url(oss_obj.key)
                     logger.info(f"Downloaded oss object: {oss_obj.key}")
                 else:
                     logger.error(f"Failed to load document {oss_obj.key}")
@@ -107,7 +114,7 @@ def get_oss_files(oss_path: str, filter_pattern: str = None, oss_store: Any = No
 
     if not files:
         raise ValueError(f"No file found at OSS path '{oss_path}'.")
-    return files
+    return files, file_metadata_map
 
 
 def get_input_files(
@@ -140,7 +147,12 @@ def get_input_files(
         raise ValueError(
             f"No file found at path '{file_path_or_directory}' with pattern '{filter_pattern}'."
         )
-    return input_files
+
+    file_metadata_map = {
+        str(file): default_file_metadata_func(file_path=str(file))
+        for file in input_files
+    }
+    return input_files, file_metadata_map
 
 
 class PaiDataReader(BaseReader):
@@ -160,7 +172,7 @@ class PaiDataReader(BaseReader):
         oss_path: str = None,
         show_progress: bool = False,
     ) -> List[Document]:
-        input_files = get_input_files(
+        input_files, file_metadata_map = get_input_files(
             file_path_or_directory=file_path_or_directory,
             from_oss=from_oss,
             oss_path=oss_path,
@@ -170,6 +182,7 @@ class PaiDataReader(BaseReader):
         directory_reader = SimpleDirectoryReader(
             input_files=input_files,
             file_extractor=self.file_readers,
+            file_metadata=lambda x: file_metadata_map.get(x, {}),
         )
 
         """Load data from the input directory."""
