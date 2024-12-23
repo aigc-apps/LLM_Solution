@@ -5,8 +5,10 @@ import pathlib
 from pai_rag.integrations.readers.pai_image_reader import PaiImageReader
 from pai_rag.integrations.readers.pai_pdf_reader import PaiPDFReader
 from pai_rag.integrations.readers.pai_html_reader import PaiHtmlReader
-from pai_rag.integrations.readers.pai_csv_reader import PaiPandasCSVReader
-from pai_rag.integrations.readers.pai_excel_reader import PaiPandasExcelReader
+from pai_rag.integrations.readers.pai_csv_reader import (
+    PaiExcelReader,
+    PaiPandasCSVReader,
+)
 from pai_rag.integrations.readers.pai_jsonl_reader import PaiJsonLReader
 from pai_rag.integrations.readers.pai_docx_reader import PaiDocxReader
 from pai_rag.integrations.readers.pai_pptx_reader import PaiPptxReader
@@ -63,16 +65,8 @@ def get_file_readers(reader_config: BaseDataReaderConfig = None, oss_store: Any 
             format_sheet_data_to_json=reader_config.format_sheet_data_to_json,
             sheet_column_filters=reader_config.sheet_column_filters,
         ),
-        ".xlsx": PaiPandasExcelReader(
-            concat_rows=reader_config.concat_csv_rows,
-            format_sheet_data_to_json=reader_config.format_sheet_data_to_json,
-            sheet_column_filters=reader_config.sheet_column_filters,
-        ),
-        ".xls": PaiPandasExcelReader(
-            concat_rows=reader_config.concat_csv_rows,
-            format_sheet_data_to_json=reader_config.format_sheet_data_to_json,
-            sheet_column_filters=reader_config.sheet_column_filters,
-        ),
+        ".xlsx": PaiExcelReader(oss_cache=oss_store),
+        ".xls": PaiExcelReader(oss_cache=oss_store),
         ".jsonl": PaiJsonLReader(),
         ".jpg": image_reader,
         ".jpeg": image_reader,
