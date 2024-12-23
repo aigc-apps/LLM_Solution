@@ -23,7 +23,7 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
     Split a row group into smaller pieces.
     """
     raw_text = ""
-    form_title = form_title + "\n"
+    form_title = form_title + "\n\n"
     title_text = ""
     if len(row_group) == 0:
         return []
@@ -46,12 +46,18 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
                 is_same_value = False
                 break
 
-        is_outline_column.append(is_same_value)
         if is_same_value:
             if len(headers) == 0:
-                title_text += f"{first_value}\n\n"
+                column_text = f"{first_value}\n\n\n"
             else:
-                title_text += f"{headers[j]}: {first_value}\n\n"
+                column_text = f"{headers[j]}: {first_value}\n\n\n"
+
+            if len(column_text) <= 30:
+                title_text += column_text
+            else:
+                is_same_value = False
+
+        is_outline_column.append(is_same_value)
 
     for i in range(len(row_group)):
         for j in range(len(row_group[0])):
@@ -66,7 +72,7 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
                 else:
                     raw_text += f"{headers[j]}: {row_group[i][j]}\n"
 
-        raw_text += "\n"
+        raw_text += "\n\n"
 
     image_url_list = re.findall(IMAGE_REGEX, raw_text) + re.findall(
         IMAGE_REGEX, title_text
@@ -79,19 +85,20 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
     raw_text = re.sub(IMAGE_REGEX, "", raw_text)
     title_text = re.sub(IMAGE_REGEX, "", title_text)
 
-    if len(raw_text) < 800 and len(title_text) < 800:
+    if len(raw_text) < 3000:
         return [
             Document(
-                text=form_title + raw_text + title_text,
+                text=form_title + title_text + raw_text,
                 extra_info={"image_info_list": image_info_list},
             )
         ]
     else:
         return [
             Document(
-                text=form_title + split, extra_info={"image_info_list": image_info_list}
+                text=form_title + title_text + split,
+                extra_info={"image_info_list": image_info_list},
             )
-            for split in splitter.split_text(title_text + raw_text)
+            for split in splitter.split_text(raw_text)
         ]
 
 
@@ -137,13 +144,17 @@ def chunk_form(form_title, form_data, header_row=-1, splitter=None):
         # 试探下一行是否可以合并
         while i + 1 < values.shape[0]:
             should_merge = False
-            if values.shape[1] <= 2:
+            if values.shape[1] <= 1:
                 should_merge = True
             else:
                 for j in range(values.shape[1]):
-                    if values[i + 1][j] is not None:
-                        if values[i + 1][j] == values[i][j]:
-                            should_merge = True
+                    if (
+                        values[i + 1][j] is not None
+                        and values[i + 1][j] != ""
+                        and values[i + 1][j] == values[i][j]
+                    ):
+                        should_merge = True
+                        break
 
             if should_merge:
                 row_group_values.append(values[i + 1])
@@ -360,15 +371,22 @@ def split_sheet_v2(sheet, oss_client, splitter):
             anchor = image.anchor
             i = anchor._from.row
             j = anchor._from.col
-            image_url = oss_client.put_object_if_not_exists(
-                data=image._data(),
-                file_ext=f".{image.format}",
-                headers={
-                    "x-oss-object-acl": "public-read"
-                },  # set public read to make image accessible
-                path_prefix="pairag/images/",
-            )
-            logger.info(f"Uploaded image to {image_url}.")
+
+            image_url = None
+            try:
+                image_url = oss_client.put_object_if_not_exists(
+                    data=image._data(),
+                    file_ext=f".{image.format}",
+                    headers={
+                        "x-oss-object-acl": "public-read"
+                    },  # set public read to make image accessible
+                    path_prefix="pairag/images/",
+                )
+                logger.info(f"Uploaded image to {image_url}.")
+            except Exception as ex:
+                logger.warning(f"Error occurred when upload image to OSS: {ex}")
+                continue
+
             if len(sheet_data) == 0:
                 sheet_data = [[]]
             if len(sheet_data[0]) == 0:
