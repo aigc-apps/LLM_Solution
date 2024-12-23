@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from llama_index.core import Settings
 
 from magic_pdf.pipe.UNIPipe import UNIPipe
+from magic_pdf.pipe.TXTPipe import TXTPipe
 from magic_pdf.pipe.OCRPipe import OCRPipe
 import magic_pdf.model as model_config
 from rapidocr_onnxruntime import RapidOCR
@@ -297,7 +298,9 @@ class PaiPDFReader(BaseReader):
                 # 选择解析方式
                 if parse_method == "auto":
                     jso_useful_key = {"_pdf_type": "", "model_list": model_json}
-                    pipe = UNIPipe(pdf_bytes, jso_useful_key, image_writer)
+                    # pipe = UNIPipe(pdf_bytes, jso_useful_key, image_writer)
+                    logger.info("Using TXTPipe")
+                    pipe = TXTPipe(pdf_bytes, jso_useful_key, image_writer)
                 elif parse_method == "ocr":
                     pipe = OCRPipe(pdf_bytes, model_json, image_writer)
                 else:
