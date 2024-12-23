@@ -4,7 +4,7 @@ from enum import Enum
 from llama_index.core.constants import DEFAULT_EMBED_BATCH_SIZE
 import os
 
-DEFAULT_HF_EMBED_MODEL = "bge-large-zh-v1.5"
+DEFAULT_HF_EMBED_MODEL = "bge-m3"
 
 
 class SupportedEmbedType(str, Enum):
