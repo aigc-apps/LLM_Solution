@@ -392,7 +392,7 @@ def jaccard_similarity(m1: MinHash, m2: MinHash) -> float:
 
 
 def get_vector_store(
-    embed_model_type: str = "bge-large-zh-v1.5", vector_store_type: str = "faiss"
+    embed_model_type: str = "bge-m3", vector_store_type: str = "faiss"
 ):
     if vector_store_type == "faiss":
         print("embed_model_dict:", EMBEDDING_DIM_DICT[embed_model_type])

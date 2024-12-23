@@ -210,7 +210,7 @@ class PaiExcelReader(BaseReader):
     def load_data(
         self,
         file: Path,
-        chunk_size=800,
+        chunk_size=3000,
         extra_info: Optional[Dict] = None,
         fs: Optional[AbstractFileSystem] = None,
     ) -> List[Document]:
