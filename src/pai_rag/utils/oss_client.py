@@ -77,7 +77,7 @@ class OssClient:
         - list: 包含满足前缀条件的所有对象的列表。
         """
         object_list = []
-        for obj in oss2.ObjectIterator(self.bucket, prefix):
+        for obj in oss2.ObjectIteratorV2(self.bucket, prefix):
             logger.info("file: " + obj.key)
             object_list.append(obj)
         return object_list
