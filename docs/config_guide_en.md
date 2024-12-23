@@ -37,10 +37,10 @@ source = [HuggingFace, OpenAI, DashScope]
 
 Currently, pai_rag supports three embedding sources.
 
-If source = "HuggingFace", you need to further specify model_modelname and embed_batch_size. The default model name and batch size are bge-large-zh-v1.5 and 10, respectively.
+If source = "HuggingFace", you need to further specify model_modelname and embed_batch_size. The default model name and batch size are bge-m3 and 10, respectively.
 
     source = "HuggingFace"
-    model = "bge-large-zh-v1.5"
+    model = "bge-m35"
     embed_batch_size = 10
 
 Alternatively, if you want to use other huggingface models, please specify parameters as below:

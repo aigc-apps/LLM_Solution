@@ -41,10 +41,8 @@ from pai_rag.integrations.index.pai.vector_store_config import FaissVectorStoreC
 dispatcher = instrument.get_dispatcher(__name__)
 
 
-if os.path.exists("./model_repository/bge-large-zh-v1.5"):
-    embed_model_bge_large = HuggingFaceEmbedding(
-        model_name="./model_repository/bge-large-zh-v1.5"
-    )
+if os.path.exists("./model_repository/bge-m3"):
+    embed_model_bge_large = HuggingFaceEmbedding(model_name="./model_repository/bge-m3")
 else:
     embed_model_bge_large = None
 
