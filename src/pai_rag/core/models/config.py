@@ -2,10 +2,10 @@ from typing import List
 from pydantic import BaseModel
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 from pai_rag.integrations.synthesizer.pai_synthesizer import (
-    DEFAULT_TEXT_QA_TMPL,
-    DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL,
-    CITATION_TEXT_QA_TMPL,
-    CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL,
+    DEFAULT_TEXT_QA_TMPL_EN,
+    DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN,
+    CITATION_TEXT_QA_TMPL_EN,
+    CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN,
 )
 
 
@@ -45,7 +45,7 @@ class SearchWebConfig(BaseModel):
 
 class SynthesizerConfig(BaseModel):
     use_multimodal_llm: bool = False
-    text_qa_template: str = DEFAULT_TEXT_QA_TMPL
-    citation_text_qa_template: str = CITATION_TEXT_QA_TMPL
-    multimodal_qa_template: str = DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL
-    citation_multimodal_qa_template: str = CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL
+    text_qa_template: str = DEFAULT_TEXT_QA_TMPL_EN
+    citation_text_qa_template: str = CITATION_TEXT_QA_TMPL_EN
+    multimodal_qa_template: str = DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN
+    citation_multimodal_qa_template: str = CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN

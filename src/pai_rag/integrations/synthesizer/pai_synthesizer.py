@@ -45,7 +45,17 @@ DEFAULT_TEXT_QA_TMPL = (
     "-------\n"
     "根据提供内容而非其他知识回答问题. "
     "问题: {query_str}\n"
-    "答案: \n"
+    "请仔细思考，必须使用和提问相同的语言，给出你的答案: \n"
+)
+
+DEFAULT_TEXT_QA_TMPL_EN = (
+    "Reference content information is as follows"
+    "-------\n"
+    "{context_str}\n"
+    "-------\n"
+    "Answer the question based on the provided content rather than other knowledge. "
+    "Question: {query_str}\n"
+    "Please think carefully and use the same language as the question to give your answer: \n"
 )
 
 CITATION_TEXT_QA_TMPL = (
@@ -55,7 +65,7 @@ CITATION_TEXT_QA_TMPL = (
     "比如[1]，这样可以让你的回复看起来更加可靠。"
     "你的答案需要包含至少一个相关的引用标记。"
     "只有在你真正引用了文本的时候才会插入引用标记，当你没找到任何值得引用的内容时，请直接回复你不知道。\n"
-    "注意仅在引用标记中插入数字。你可以用和提问相同的语言回答。\n\n"
+    "注意仅在引用标记中插入数字。你必须使用和提问相同的语言进行回答。\n\n"
     "例如:\n"
     "参考材料\n"
     "-------\n"
@@ -72,7 +82,34 @@ CITATION_TEXT_QA_TMPL = (
     "{context_str}\n"
     "-------\n"
     "问题: {query_str}\n"
-    "答案："
+    "请仔细思考，使用和提问相同的语言，给出你的答案："
+)
+
+CITATION_TEXT_QA_TMPL_EN = (
+    "Please answer the question based entirely on the references provided.\n"
+    "The references consist of several paragraphs of text,"
+    "When you generate content that references a text source, please quote the corresponding text number in the content to indicate the relevant information source,"
+    "For example, [1], this will make your answer look more reliable."
+    "Your answer must contain at least one relevant reference mark."
+    "Only insert reference marks when you actually quote the text. If you don't find anything worth citing, just reply that you don't know."
+    "Note that only numbers are inserted in reference marks. You must answer in the same language as the question.\n\n"
+    "For example:\n"
+    "References\n"
+    "-------\n"
+    "Source 1:\n"
+    "Model Y is an electric SUV launched by Tesla, with Pearl White (multi-coat) paint, 19-inch Gemini wheels and pure black premium interior (black seats).\n\n"
+    "Source 2:\n"
+    "Model 3 has starry grey paint, 19-inch nova wheels, dark premium interior (rear-wheel drive version), and basic assisted driving function. \n\n"
+    "------\n"
+    "Question: What are the wheels and interior of model3? \n"
+    "Answer: Model 3 is equipped with 19-inch nova wheels and dark premium interior [2]. \n\n"
+    "Now it's your turn: \n\n"
+    "Reference materials\n"
+    "-------\n"
+    "{context_str}\n"
+    "-------\n"
+    "Question: {query_str}\n"
+    "Please use the same language as the question to answer. Please think carefully and give your answer:"
 )
 
 
@@ -89,6 +126,7 @@ DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
     "参考材料中包含一组文字描述和一组图片链接，图片链接分别对应到前面给出的图片的地址。\n"
     "请根据给定的材料回答给出的问题，回答中需要有文字描述和图片链接。如果材料中没有答案相关的信息，就回复你不知道。\n"
     "如果上面有图片对你生成答案有帮助，请找到图片链接并用markdown格式给出，如![](image_url)。\n\n"
+    "你必须使用和提问相同的语言进行回答。"
     "例如：\n"
     "参考材料\n"
     "------\n"
@@ -108,7 +146,36 @@ DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
     "{context_str}\n"
     "------\n"
     "问题: {query_str}\n"
-    "答案："
+    "请使用和提问相同的语言，仔细思考，给出你的答案："
+)
+
+
+DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN = (
+    "Answer the user's question based on the pictures given above and the reference materials given below.\n"
+    "The reference materials contain a set of text descriptions and a set of image links, which correspond to the addresses of the pictures given above.\n"
+    "Please answer the given questions based on the given materials. The answers need to have text descriptions and image links. If there is no information related to the answer in the materials, reply that you don't know.\n"
+    "If there are pictures above that help you generate answers, please find the image link and give it in markdown format, such as ![](image_url).\n\n"
+    "You must answer in the same language as the question."
+    "For example:\n"
+    "Reference materials\n"
+    "------\n"
+    "Source 1:\n"
+    "Model Y is an electric SUV launched by Tesla, with pearl white (multi-coat) paint, 19-inch Gemini wheels and pure black premium interior (black seats).\n\n"
+    "Source 2:\n"
+    "Model 3 has starry gray paint, 19-inch new star wheels, dark premium interior (rear-wheel drive version), and basic version assisted driving function. \n\n"
+    "Image 1:\n"
+    "http://www.tesla.cn/model3.jpg\n\n"
+    "------\n"
+    "Question: What are the wheels and interior of model3?\n"
+    "Answer: Model 3 is equipped with 19-inch new star wheels and dark premium interior. "
+    "![](http://www.tesla.cn/model3.jpg)\n\n"
+    "Now it's your turn:\n\n"
+    "Reference materials\n"
+    "------\n"
+    "{context_str}\n"
+    "------\n"
+    "Question: {query_str}\n"
+    "Must use the same language as the question. Please think carefully and give your answer:"
 )
 
 
@@ -118,6 +185,7 @@ CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
     "请根据给定的材料回答给出的问题，如果你当前生成的内容引用到了某一段文字描述，请直接在内容里引用他的数字序号，如[1]。\n"
     "如果上面有图片对你生成答案有帮助，请找到图片链接并用markdown格式给出，如![](image_url)。"
     "请至少列出一个文本和图片引用。如果材料中没有答案相关的信息，就回复你不知道。\n"
+    "你必须使用和提问相同的语言进行回答。"
     "例如：\n"
     "参考材料\n"
     "------\n"
@@ -137,10 +205,37 @@ CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
     "{context_str}\n"
     "------\n"
     "问题: {query_str}\n"
-    "答案："
+    "请使用和提问相同的语言，仔细思考，给出你的答案："
 )
 
-
+CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN = (
+    "Answer the user's question based on the pictures given above and the reference materials given below.\n"
+    "The reference materials contain a set of text descriptions and a set of image links. The image links correspond to the addresses of the pictures given above.\n"
+    "Please answer the given questions based on the given materials. If the content you are currently generating refers to a certain text description, please directly quote its numerical serial number in the content, such as [1].\n"
+    "If there are pictures above that help you generate the answer, please find the image link and give it in markdown format, such as ![](image_url)."
+    "Please list at least one text and image reference. If there is no information related to the answer in the material, reply that you don't know.\n"
+    "You must answer in the same language as the question."
+    "For example:\n"
+    "Reference materials\n"
+    "------\n"
+    "Source 1:\n"
+    "Model Y is an electric SUV launched by Tesla, with pearl white (multi-coat) paint, 19-inch Gemini wheels and pure black premium interior (black seats).\n\n"
+    "Source 2:\n"
+    "Model 3 has starry gray paint, 19-inch new star wheels, dark premium interior (rear-wheel drive version), and basic assisted driving function. \n\n"
+    "Image 1:\n"
+    "http://www.tesla.cn/model3.jpg\n\n"
+    "------\n"
+    "Question: What are the wheels and interior of model3?\n"
+    "Answer: Model 3 is equipped with 19-inch new star wheels and dark premium interior [2]. "
+    "![](http://www.tesla.cn/model3.jpg)\n\n"
+    "Now it's your turn:\n\n"
+    "Reference materials\n"
+    "------\n"
+    "{context_str}\n"
+    "------\n"
+    "Question: {query_str}\n"
+    "Please use the same language as the question, think carefully, and give your answer:"
+)
 QueryTextType = QueryType
 
 
