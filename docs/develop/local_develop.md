@@ -87,7 +87,7 @@ For local development, please refer to the following steps:
    pai_rag ui [--host HOST] [--port PORT] [rag-url RAG_URL]
    ```
 
-   You can also open http://localhost:8002/ to configure the RAG service and upload local data.
+   You can also open http://localhost:8002/admin/ to configure the RAG service and upload local data.
 
 6. [Optional] Local load_data tool
 

@@ -54,7 +54,7 @@ def create_chat_ui():
                 label="Retrieve only",
                 info="Query knowledge base directly without LLM.",
                 elem_id="retrieve_only",
-                value=True,
+                value=False,
                 scale=1,
             )
             question = gr.Textbox(
