@@ -87,7 +87,7 @@
    pai_rag ui [--host HOST] [--port PORT] [rag-url RAG_URL]
    ```
 
-   你也可以打开http://localhost:8002/ 来配置RAG服务以及上传本地数据。
+   你也可以打开http://localhost:8002/admin/ 来配置RAG服务以及上传本地数据。
 
 6. 【可选】本地工具-上传数据
 
