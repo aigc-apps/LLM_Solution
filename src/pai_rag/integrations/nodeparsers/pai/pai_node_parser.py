@@ -61,6 +61,7 @@ DEFAULT_EXCLUDED_METADATA_KEYS = [
     "source",
     "row_number",
     "image_info_list",
+    "file_url",
 ]
 
 
