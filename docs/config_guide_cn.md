@@ -87,7 +87,7 @@ source = [PaiEas, OpenAI, DashScope]
 
 ## rag.index
 
-vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus]
+vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus, Tablestore]
 
 目前, pai_rag 支持多种方式创建和存储索引。
 
@@ -152,6 +152,19 @@ vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus]
     password = ""
     database = "pairag"
     collection = "pairag_collection"
+
+如果 vector_store.type = "Tablestore", 需要提供如下信息：
+
+    [rag.index]
+    persist_path = "localdata/storage"
+
+    [rag.index.vector_store]
+    type = "Tablestore"
+    endpoint = ""
+    instance_name = ""
+    access_key_id = ""
+    access_key_secret = ""
+    table_name = "pai_rag"
 
 该设置也可在网页中配置。
 
