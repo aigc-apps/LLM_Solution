@@ -65,8 +65,10 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
         ), f"Header and row data length mismatch! headers: {headers}, row: {row_group[0]}"
 
     is_outline_column = []
+
     for j in range(len(row_group[0])):
         first_value = row_group[0][j]
+
         if not first_value:
             is_outline_column.append(False)
             continue
@@ -83,7 +85,10 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
             else:
                 column_text = f"{headers[j]}: {format_text(first_value)}\n\n\n"
 
-            title_text += column_text
+            if len(column_text) < row_size_limit:
+                title_text += column_text
+            else:
+                is_same_value = False
 
         is_outline_column.append(is_same_value)
 
