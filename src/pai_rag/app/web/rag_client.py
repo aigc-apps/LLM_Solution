@@ -164,9 +164,9 @@ class RagWebClient:
                             f'<a href="{file_url}"> {formatted_file_name} </a>'
                         )
                     content = f"""
-<span class="text" title="{html_content}">
+<span class="text">
     [{i+1}]: {formatted_file_name} Score:{doc["score"]}
-    <span style='color: blue; font-size: 12px; background-color: #FFCCCB'> ( {html_content[:40]}... ) </span>
+    <span style='color: gray; font-size: 12px;'> ( {html_content} ) </span>
 </span>
 <br>
 """
