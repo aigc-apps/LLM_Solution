@@ -319,6 +319,10 @@ class ViewModel(BaseModel):
         config["retriever"]["search_image"] = self.need_image
         if self.retrieval_mode == "Hybrid":
             config["retriever"]["vector_store_query_mode"] = VectorStoreQueryMode.HYBRID
+            config["retriever"]["hybrid_fusion_weights"] = [
+                self.vector_weight,
+                self.keyword_weight,
+            ]
         elif self.retrieval_mode == "Embedding Only":
             config["retriever"][
                 "vector_store_query_mode"
