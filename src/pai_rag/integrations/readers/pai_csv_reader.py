@@ -13,6 +13,7 @@ from llama_index.core.readers.base import BaseReader
 from llama_index.core.schema import Document
 
 from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.node_parser.text.utils import split_by_sep
 
 import chardet
 import os
@@ -210,11 +211,18 @@ class PaiExcelReader(BaseReader):
     def load_data(
         self,
         file: Path,
-        chunk_size=3000,
+        chunk_size=800,
+        chunk_overlap=60,
         extra_info: Optional[Dict] = None,
         fs: Optional[AbstractFileSystem] = None,
     ) -> List[Document]:
-        splitter = SentenceSplitter(chunk_size=chunk_size, chunk_overlap=60)
+        splitter = SentenceSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            paragraph_separator="\n\n\n",
+            chunking_tokenizer_fn=split_by_sep("\n\n"),
+        )
+
         logger.info(f"Start parsing {file}.")
         docs = parse_workbook(file, oss_client=self.oss_cache, splitter=splitter)
         for doc in docs:

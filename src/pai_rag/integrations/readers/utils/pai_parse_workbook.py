@@ -18,10 +18,41 @@ class PaiFormData:
         self.header_row = header_row
 
 
+def format_text(text):
+    if not isinstance(text, str):
+        return str(text)
+
+    # Remove <p> tags
+    text = re.sub(r"<p[^>]*>", "", text)
+    text = re.sub(r"</p>", "", text)
+
+    # Remove <strong> tags
+    text = re.sub(r"<strong[^>]*>", "", text)
+    text = re.sub(r"</strong>", "", text)
+
+    # Remove <span> tags
+    text = re.sub(r"<span[^>]*>", "", text)
+    text = re.sub(r"</span>", "", text)
+
+    text = re.sub(r"<font[^>]*>", "", text)
+    text = re.sub(r"</font>", "", text)
+
+    text = text.replace("&nbsp;", " ")
+    text = text.replace("&quot;", '"')
+    text = re.sub("\s\s+", " ", text)
+
+    return text
+
+
 def split_row_group(row_group, headers=[], splitter=None, form_title=None):
     """
     Split a row group into smaller pieces.
     """
+    row_size_limit = 1200
+
+    if len(row_group) == 1:
+        row_size_limit = 3000
+
     raw_text = ""
     form_title = form_title + "\n\n"
     title_text = ""
@@ -34,8 +65,10 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
         ), f"Header and row data length mismatch! headers: {headers}, row: {row_group[0]}"
 
     is_outline_column = []
+
     for j in range(len(row_group[0])):
         first_value = row_group[0][j]
+
         if not first_value:
             is_outline_column.append(False)
             continue
@@ -48,11 +81,11 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
 
         if is_same_value:
             if len(headers) == 0:
-                column_text = f"{first_value}\n\n\n"
+                column_text = f"{format_text(first_value)}\n\n\n"
             else:
-                column_text = f"{headers[j]}: {first_value}\n\n\n"
+                column_text = f"{headers[j]}: {format_text(first_value)}\n\n\n"
 
-            if len(column_text) <= 30:
+            if len(column_text) < row_size_limit:
                 title_text += column_text
             else:
                 is_same_value = False
@@ -68,9 +101,9 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
                     if not row_group[i][j]:
                         continue
                     else:
-                        raw_text += f"{row_group[i][j]}\n"
+                        raw_text += f"{format_text(row_group[i][j])}\n"
                 else:
-                    raw_text += f"{headers[j]}: {row_group[i][j]}\n"
+                    raw_text += f"{headers[j]}: {format_text(row_group[i][j])}\n"
 
         raw_text += "\n\n"
 
@@ -85,7 +118,7 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
     raw_text = re.sub(IMAGE_REGEX, "", raw_text)
     title_text = re.sub(IMAGE_REGEX, "", title_text)
 
-    if len(raw_text) < 3000:
+    if len(raw_text) < row_size_limit:
         return [
             Document(
                 text=form_title + title_text + raw_text,
@@ -93,12 +126,16 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
             )
         ]
     else:
+        if len(row_group) == 1:
+            chunk_size = 3000
+        else:
+            chunk_size = 800
         return [
             Document(
                 text=form_title + title_text + split,
                 extra_info={"image_info_list": image_info_list},
             )
-            for split in splitter.split_text(raw_text)
+            for split in splitter._split_text(raw_text, chunk_size=chunk_size)
         ]
 
 
@@ -152,6 +189,7 @@ def chunk_form(form_title, form_data, header_row=-1, splitter=None):
                         values[i + 1][j] is not None
                         and values[i + 1][j] != ""
                         and values[i + 1][j] == values[i][j]
+                        and len(values[i + 1][j]) < 150
                     ):
                         should_merge = True
                         break
