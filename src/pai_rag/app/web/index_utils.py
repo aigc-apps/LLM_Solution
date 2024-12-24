@@ -19,6 +19,7 @@ from pai_rag.integrations.index.pai.vector_store_config import (
     MilvusVectorStoreConfig,
     OpenSearchVectorStoreConfig,
     PostgreSQLVectorStoreConfig,
+    TablestoreVectorStoreConfig,
 )
 
 
@@ -72,6 +73,11 @@ index_related_component_keys = [
     "postgresql_username",
     "postgresql_password",
     "postgresql_table_name",
+    "tablestore_endpoint",
+    "tablestore_instance_name",
+    "tablestore_access_key_id",
+    "tablestore_access_key_secret",
+    "tablestore_table_name",
 ]
 
 
@@ -292,6 +298,26 @@ def index_to_components_settings(
                 {"value": ""},
             ]
         )
+    if isinstance(vector_store_config, TablestoreVectorStoreConfig):
+        vector_component_settings.extend(
+            [
+                {"value": vector_store_config.endpoint},
+                {"value": vector_store_config.instance_name},
+                {"value": vector_store_config.access_key_id},
+                {"value": vector_store_config.access_key_secret},
+                {"value": vector_store_config.table_name},
+            ]
+        )
+    else:
+        vector_component_settings.extend(
+            [
+                {"value": ""},
+                {"value": ""},
+                {"value": ""},
+                {"value": ""},
+                {"value": ""},
+            ]
+        )
     component_settings = [
         *index_component_settings,
         *embed_component_settings,
@@ -359,6 +385,11 @@ def components_to_index(
     milvus_password,
     milvus_database,
     milvus_collection_name,
+    tablestore_endpoint,
+    tablestore_instance_name,
+    tablestore_access_key_id,
+    tablestore_access_key_secret,
+    tablestore_table_name,
     **kwargs,
 ) -> RagIndexEntry:
     if vector_index is None or vector_index.lower() == "new":
@@ -442,6 +473,15 @@ def components_to_index(
             "table_name": postgresql_table_name,
             "username": postgresql_username,
             "password": postgresql_password,
+        }
+    elif vectordb_type.lower() == "tablestore":
+        vector_store = {
+            "type": vectordb_type.lower(),
+            "endpoint": tablestore_endpoint,
+            "instance_name": tablestore_instance_name,
+            "access_key_id": tablestore_access_key_id,
+            "access_key_secret": tablestore_access_key_secret,
+            "table_name": tablestore_table_name,
         }
     else:
         raise ValueError(f"Unknown vector db type: {vectordb_type}")

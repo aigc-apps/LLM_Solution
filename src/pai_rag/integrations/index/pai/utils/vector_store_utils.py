@@ -2,11 +2,15 @@ import hashlib
 import faiss
 import os
 import json
+import tablestore
 from llama_index.core.vector_stores.simple import DEFAULT_VECTOR_STORE, NAMESPACE_SEP
 from llama_index.core.vector_stores.types import DEFAULT_PERSIST_FNAME
 from elasticsearch.helpers.vectorstore import AsyncDenseVectorStrategy
 from pai_rag.integrations.index.pai.utils.sparse_embed_function import (
     BGEM3SparseEmbeddingFunction,
+)
+from pai_rag.integrations.vector_stores.tablestore.tablestore import (
+    TablestoreVectorStore,
 )
 from pai_rag.integrations.vector_stores.hologres.hologres import HologresVectorStore
 from pai_rag.integrations.vector_stores.elasticsearch.my_elasticsearch import (
@@ -27,6 +31,7 @@ from pai_rag.integrations.index.pai.vector_store_config import (
     ElasticSearchVectorStoreConfig,
     OpenSearchVectorStoreConfig,
     HologresVectorStoreConfig,
+    TablestoreVectorStoreConfig,
 )
 
 
@@ -57,6 +62,8 @@ def create_vector_store(
         create_vector_store_func = create_postgresql
     elif isinstance(vectordb_config, OpenSearchVectorStoreConfig):
         create_vector_store_func = create_opensearch
+    elif isinstance(vectordb_config, TablestoreVectorStoreConfig):
+        create_vector_store_func = create_tablestore
     else:
         raise ValueError(f"Unknown vector store config {vectordb_config}.")
 
@@ -234,6 +241,86 @@ def create_opensearch(
 
     opensearch_store = AlibabaCloudOpenSearchStore(config=db_config)
     return opensearch_store
+
+
+def create_tablestore(
+    tablestore_config: TablestoreVectorStoreConfig,
+    embed_dims: int,
+    is_image_store: bool = False,
+):
+    table_name = tablestore_config.table_name
+    if is_image_store:
+        table_name = f"{table_name}__image"
+
+    tablestore_store = TablestoreVectorStore(
+        endpoint=tablestore_config.endpoint,
+        instance_name=tablestore_config.instance_name,
+        access_key_id=tablestore_config.access_key_id,
+        access_key_secret=tablestore_config.access_key_secret,
+        table_name=table_name,
+        index_name="pai_rag_vector_store_ots_index_v1",
+        vector_dimension=embed_dims,
+        # metadata mapping is used to filter non-vector fields.
+        metadata_mappings=[
+            tablestore.FieldSchema(
+                "file_name",
+                tablestore.FieldType.KEYWORD,
+                index=True,
+                enable_sort_and_agg=True,
+            ),
+            tablestore.FieldSchema(
+                "file_type",
+                tablestore.FieldType.KEYWORD,
+                index=True,
+                enable_sort_and_agg=True,
+            ),
+            tablestore.FieldSchema(
+                "file_size",
+                tablestore.FieldType.LONG,
+                index=True,
+                enable_sort_and_agg=True,
+            ),
+            tablestore.FieldSchema(
+                "file_path",
+                tablestore.FieldType.TEXT,
+                index=True,
+                enable_sort_and_agg=False,
+            ),
+            tablestore.FieldSchema(
+                "image_url",
+                tablestore.FieldType.TEXT,
+                index=True,
+                enable_sort_and_agg=False,
+            ),
+            tablestore.FieldSchema(
+                "creation_date",
+                tablestore.FieldType.DATE,
+                index=True,
+                enable_sort_and_agg=True,
+                date_formats=[
+                    "yyyy-MM-dd",
+                    "yyyy-MM-dd HH:mm",
+                    "yyyy-MM-dd HH:mm:ss",
+                    "yyyy-MM-dd HH:mm:ss.SSS",
+                ],
+            ),
+            tablestore.FieldSchema(
+                "last_modified_date",
+                tablestore.FieldType.DATE,
+                index=True,
+                enable_sort_and_agg=True,
+                date_formats=[
+                    "yyyy-MM-dd",
+                    "yyyy-MM-dd HH:mm",
+                    "yyyy-MM-dd HH:mm:ss",
+                    "yyyy-MM-dd HH:mm:ss.SSS",
+                ],
+            ),
+        ],
+    )
+    tablestore_store.create_table_if_not_exist()
+    tablestore_store.create_search_index_if_not_exist()
+    return tablestore_store
 
 
 def create_postgresql(
