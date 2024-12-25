@@ -117,6 +117,7 @@ class ViewModel(BaseModel):
     vector_weight: float = 0.7
     similarity_threshold: float = 0.5
     reranker_similarity_threshold: float = 0
+    reranker_similarity_top_k: int = 3
 
     query_engine_type: str = None
 
@@ -203,6 +204,7 @@ class ViewModel(BaseModel):
             view_model.similarity_threshold = config.postprocessor.similarity_threshold
         else:
             view_model.reranker_model = config.postprocessor.reranker_model
+            view_model.reranker_similarity_top_k = config.postprocessor.top_n
             view_model.reranker_similarity_threshold = (
                 config.postprocessor.similarity_threshold
             )
@@ -384,7 +386,7 @@ class ViewModel(BaseModel):
             config["postprocessor"][
                 "similarity_threshold"
             ] = self.reranker_similarity_threshold
-        config["postprocessor"]["top_n"] = self.similarity_top_k
+        config["postprocessor"]["top_n"] = 5
 
         config["synthesizer"]["use_multimodal_llm"] = self.use_mllm
         config["synthesizer"]["text_qa_template"] = self.text_qa_template
