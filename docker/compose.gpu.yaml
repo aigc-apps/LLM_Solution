@@ -12,7 +12,7 @@ services:
       PAIRAG_RAG__oss_store__endpoint: ${OSS_ENDPOINT:-oss-cn-hangzhou.aliyuncs.com}
       ARMS_APP_NAME: ${ARMS_APP_NAME}
       ARMS_REGION_ID: ${ARMS_REGION_ID}
-      ARMS_LICENSE_KEY: ${ARMS_LICENSE_KEY}  
+      ARMS_LICENSE_KEY: ${ARMS_LICENSE_KEY}
       ARMS_IS_PUBLIC: true
       ENABLE_FASTAPI: false
       ENABLE_REQUESTS: false
