@@ -1,6 +1,6 @@
 services:
   api:
-    image: mybigpai-public-registry.cn-beijing.cr.aliyuncs.com/mybigpai/pairag:1.0.0
+    image: mybigpai-public-registry.cn-beijing.cr.aliyuncs.com/mybigpai/pairag:1.0.0-gpu
     ports:
       - "8001:8001"
     restart: always
@@ -18,6 +18,13 @@ services:
       ENABLE_REQUESTS: false
       ENABLE_AIOHTTPCLIENT: false
       ENABLE_HTTPX: false
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
 
     volumes:
       - ../model_repository:/app/model_repository
