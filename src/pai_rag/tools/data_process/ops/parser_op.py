@@ -8,6 +8,7 @@ from pai_rag.core.rag_module import resolve
 from pai_rag.utils.oss_client import OssClient
 from pai_rag.integrations.readers.pai.pai_data_reader import PaiDataReader
 import threading
+
 OP_NAME = "pai_rag_parser"
 
 
