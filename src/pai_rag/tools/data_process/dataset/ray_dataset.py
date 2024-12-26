@@ -26,6 +26,8 @@ class RayDataset(ABC):
     def read_jsonl_in_batches(self, files):
         for file_path in files:
             logger.info(f"Start loading data from {file_path}")
+            first_line = open(file_path, "r").readline()
+            logger.info(f"First line: {first_line}")
             batch_count, line_count = 0, 0
             with open(file_path, "r") as file:
                 batch = []
