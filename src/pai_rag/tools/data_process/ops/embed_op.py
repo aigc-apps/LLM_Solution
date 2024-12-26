@@ -74,6 +74,7 @@ class Embedder(BaseOP):
         return results
 
     def process(self, nodes):
+        logger.info(f"[Embedder OP] Start embedding with {len(nodes)} nodes.")
         text_nodes = [node for node in nodes if node["type"] == "text"]
         image_nodes = [node for node in nodes if node["type"] == "image"]
         if len(text_nodes) > 0:
@@ -114,4 +115,5 @@ class Embedder(BaseOP):
         else:
             logger.info("No image nodes to process.")
 
+        logger.info(f"[Embedder OP] Finish embedding with {len(nodes)} nodes.")
         return text_nodes + image_nodes

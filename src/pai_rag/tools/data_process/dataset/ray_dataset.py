@@ -25,15 +25,23 @@ class RayDataset(ABC):
 
     def read_jsonl_in_batches(self, files):
         for file_path in files:
+            logger.info(f"Start loading data from {file_path}")
+            batch_count, line_count = 0, 0
             with open(file_path, "r") as file:
                 batch = []
                 for line in file:
+                    line_count += 1
                     batch.append(json.loads(line))
                     if len(batch) >= self.batch_size:
+                        batch_count += 1
                         yield batch
                         batch = []
                 if batch:
+                    batch_count += 1
                     yield batch
+            logger.info(
+                f"Finish loading data from {file_path}: batch count: {batch_count} line count: {line_count}"
+            )
 
     def process(self, operators, op_name):
         self._run_single_op(operators, op_name)
@@ -48,10 +56,11 @@ class RayDataset(ABC):
                 run_tasks.append(ops[i % num_actors].process.remote(batch_data))
             self.data = ray.get(run_tasks)
         except:  # noqa: E722
-            logger.error(f"An error occurred during Op [{op_name}].")
             import traceback
 
-            traceback.print_exc()
+            logger.error(
+                f"An error occurred during Op [{op_name} {traceback.print_exc()}]."
+            )
             exit(1)
 
     def write_json(self, status):
