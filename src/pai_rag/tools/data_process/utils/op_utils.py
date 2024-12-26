@@ -30,7 +30,9 @@ def load_op(op_name, process_list):
                     f"Op {op_name} will be executed on cuda env with op_proc {op_proc} and use {num_cpus} cpus and {num_gpus} GPUs."
                 )
                 # 一个actor，多个并发process task
-                return (
+
+                """
+                return [
                     OPERATORS.modules[op_name]
                     .options(
                         num_cpus=num_cpus * op_proc,
@@ -38,34 +40,37 @@ def load_op(op_name, process_list):
                         max_concurrency=op_proc,
                     )
                     .remote(**op_args)
-                )
+                ]
+                """
 
                 # 多个并发actor
-                # return [
-                #     OPERATORS.modules[op_name]
-                #     .options(num_cpus=num_cpus, num_gpus=num_gpus)
-                #     .remote(**op_args)
-                #     for _ in range(op_proc)
-                # ]
+                return [
+                    OPERATORS.modules[op_name]
+                    .options(num_cpus=num_cpus, num_gpus=num_gpus)
+                    .remote(**op_args)
+                    for _ in range(op_proc)
+                ]
             else:
                 op_proc = calculate_np(op_name, mem_required, num_cpus, None, False)
                 logger.info(
                     f"Op {op_name} will be executed on cpu env with op_proc {op_proc} and use {num_cpus} cpus."
                 )
                 # 一个actor，多个并发process task
+                """
                 return (
                     OPERATORS.modules[op_name]
                     .options(num_cpus=num_cpus, max_concurrency=op_proc)
                     .remote(**op_args)
                 )
+                """
 
                 # 多个并发actor
-                # return [
-                #     OPERATORS.modules[op_name]
-                #     .options(num_cpus=num_cpus)
-                #     .remote(**op_args)
-                #     for _ in range(op_proc)
-                # ]
+                return [
+                    OPERATORS.modules[op_name]
+                    .options(num_cpus=num_cpus)
+                    .remote(**op_args)
+                    for _ in range(op_proc)
+                ]
         else:
             continue
 

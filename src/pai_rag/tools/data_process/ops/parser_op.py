@@ -39,7 +39,10 @@ class Parser(BaseOP):
 
     def process(self, input_file):
         current_thread = threading.current_thread()
-        logger.info(f"当前线程的 ID: {current_thread.ident}")
+        import os
+
+        logger.info(f"当前线程的 ID: {current_thread.ident} 进程ID: {os.getpid()}")
+
         self.data_reader_config = BaseDataReaderConfig()
         if self.kwargs.get("oss_store", None):
             self.oss_store = resolve(
