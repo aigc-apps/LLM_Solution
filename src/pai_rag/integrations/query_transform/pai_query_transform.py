@@ -11,7 +11,7 @@ from llama_index.core.base.llms.generic_utils import messages_to_history_str
 from llama_index.core.storage.chat_store.base import BaseChatStore
 
 from pai_rag.utils.prompt_template import (
-    CONDENSE_QUESTION_CHAT_ENGINE_PROMPT_ZH,
+    CONDENSE_QUESTION_CHAT_ENGINE_PROMPT,
     DEFAULT_FUSION_TRANSFORM_PROMPT,
 )
 
@@ -157,7 +157,7 @@ class PaiCondenseQueryTransform(PaiBaseQueryTransform):
             resolve_llm(llm, callback_manager=callback_manager) if llm else Settings.llm
         )
         self._condense_question_prompt = (
-            condense_question_prompt or CONDENSE_QUESTION_CHAT_ENGINE_PROMPT_ZH
+            condense_question_prompt or CONDENSE_QUESTION_CHAT_ENGINE_PROMPT
         )
         self._chat_store = chat_store
 
@@ -176,7 +176,6 @@ class PaiCondenseQueryTransform(PaiBaseQueryTransform):
         """Run query transform.
         Generate standalone question from conversation context and last message."""
         query_str = query_bundle.query_str
-
         if chat_history is not None:
             history_messages = parse_chat_messages(chat_history)
             for hist_mes in history_messages:
@@ -223,7 +222,6 @@ class PaiCondenseQueryTransform(PaiBaseQueryTransform):
         """Run query transform.
         Generate standalone question from conversation context and last message."""
         query_str = query_bundle.query_str
-
         if chat_history is not None:
             history_messages = parse_chat_messages(chat_history)
             for hist_mes in history_messages:
@@ -235,6 +233,7 @@ class PaiCondenseQueryTransform(PaiBaseQueryTransform):
             return query_bundle
 
         chat_history_str = messages_to_history_str(chat_history)
+        logger.debug(f"Chat history: {chat_history_str}")
         query_bundle_str = await self._llm.apredict(
             self._condense_question_prompt,
             question=query_str,

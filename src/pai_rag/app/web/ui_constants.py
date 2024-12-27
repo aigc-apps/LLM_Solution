@@ -33,7 +33,7 @@ DEFAULT_CSS_STYPE = """
 
 DEFAULT_EMBED_SIZE = 1024
 
-DEFAULT_HF_EMBED_MODEL = "bge-large-zh-v1.5"
+DEFAULT_HF_EMBED_MODEL = "bge-m3"
 
 
 EMBEDDING_MODEL_DEPRECATED = [
@@ -44,11 +44,11 @@ EMBEDDING_MODEL_DEPRECATED = [
 ]
 
 EMBEDDING_MODEL_LIST = [
+    "bge-m3",
     "bge-large-zh-v1.5",
     "Chuxin-Embedding",
     "bge-large-en-v1.5",
     "gte-large-en-v1.5",
-    "bge-m3",
     "multilingual-e5-large-instruct",
 ]
 

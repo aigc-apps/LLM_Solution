@@ -137,6 +137,7 @@ class RagWebClient:
             self.session_id = session_id
             for i, doc in enumerate(docs):
                 filename = doc["metadata"].get("file_name", None)
+                sheet_name = doc["metadata"].get("sheet_name", None)
                 ref_table = doc["metadata"].get("query_tables", None)
                 invalid_flag = doc["metadata"].get("invalid_flag", 0)
                 file_url = doc["metadata"].get("file_url", None)
@@ -156,6 +157,8 @@ class RagWebClient:
 """
                 elif filename:
                     formatted_file_name = re.sub("^[0-9a-z]{32}_", "", filename)
+                    if sheet_name:
+                        formatted_file_name += f">>{sheet_name}"
                     html_content = html.escape(
                         re.sub(r"<.*?>", "", doc["text"])
                     ).replace("\n", " ")
@@ -164,9 +167,9 @@ class RagWebClient:
                             f'<a href="{file_url}"> {formatted_file_name} </a>'
                         )
                     content = f"""
-<span class="text" title="{html_content}">
+<span class="text">
     [{i+1}]: {formatted_file_name} Score:{doc["score"]}
-    <span style='color: blue; font-size: 12px; background-color: #FFCCCB'> ( {html_content[:40]}... ) </span>
+    <span style='color: gray; font-size: 12px;'> ( {html_content} ) </span>
 </span>
 <br>
 """
@@ -236,7 +239,6 @@ class RagWebClient:
             with_intent=with_intent,
             index_name=index_name,
         )
-        print(q)
         r = requests.post(self.query_url, json=q, stream=True)
         if r.status_code != HTTPStatus.OK:
             raise RagApiError(code=r.status_code, msg=r.text)

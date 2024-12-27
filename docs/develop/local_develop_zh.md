@@ -71,8 +71,8 @@
 
    ```bash
    # 启动，支持自定义host(默认0.0.0.0), port(默认8001), config(默认src/pai_rag/config/settings.yaml), skip-download-models(不加为False)
-   # 默认启动时下载模型 [bge-large-zh-v1.5, easyocr] , 可设置 skip-download-models 避免启动时下载模型.
-   # 可使用命令行 "load_model" 下载模型 including [bge-large-zh-v1.5, easyocr, SGPT-125M-weightedmean-nli-bitfit, bge-large-zh-v1.5, bge-m3, bge-reranker-base, bge-reranker-large, paraphrase-multilingual-MiniLM-L12-v2, qwen_1.8b, text2vec-large-chinese]
+   # 默认启动时下载模型 [bge-m3, easyocr] , 可设置 skip-download-models 避免启动时下载模型.
+   # 可使用命令行 "load_model" 下载模型 including [bge-m3, easyocr, SGPT-125M-weightedmean-nli-bitfit, bge-large-zh-v1.5, bge-reranker-base, bge-reranker-large, paraphrase-multilingual-MiniLM-L12-v2, qwen_1.8b, text2vec-large-chinese]
    pai_rag serve [--host HOST] [--port PORT] [--config CONFIG_FILE] [--skip-download-models]
    ```
 
@@ -87,7 +87,7 @@
    pai_rag ui [--host HOST] [--port PORT] [rag-url RAG_URL]
    ```
 
-   你也可以打开http://localhost:8002/ 来配置RAG服务以及上传本地数据。
+   你也可以打开http://localhost:8002/admin/ 来配置RAG服务以及上传本地数据。
 
 6. 【可选】本地工具-上传数据
 

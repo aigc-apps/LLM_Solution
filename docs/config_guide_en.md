@@ -37,10 +37,10 @@ source = [HuggingFace, OpenAI, DashScope]
 
 Currently, pai_rag supports three embedding sources.
 
-If source = "HuggingFace", you need to further specify model_modelname and embed_batch_size. The default model name and batch size are bge-large-zh-v1.5 and 10, respectively.
+If source = "HuggingFace", you need to further specify model_modelname and embed_batch_size. The default model name and batch size are bge-m3 and 10, respectively.
 
     source = "HuggingFace"
-    model = "bge-large-zh-v1.5"
+    model = "bge-m3"
     embed_batch_size = 10
 
 Alternatively, if you want to use other huggingface models, please specify parameters as below:
@@ -88,7 +88,7 @@ This setting is also available in webui.
 
 ## rag.index
 
-vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus]
+vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus, Tablestore]
 
 Currently, pai_rag provides a variety of approaches for creating & storing indices.
 
@@ -153,6 +153,19 @@ If vector_store.type = "Milvus", you need to provide the following information:
     password = ""
     database = "pairag"
     collection = "pairag_collection"
+
+If vector_store.type = "Tablestore", you need to provide the following information:
+
+    [rag.index]
+    persist_path = "localdata/storage"
+
+    [rag.index.vector_store]
+    type = "Tablestore"
+    endpoint = ""
+    instance_name = ""
+    access_key_id = ""
+    access_key_secret = ""
+    table_name = "pai_rag"
 
 This setting is also available in webui.
 

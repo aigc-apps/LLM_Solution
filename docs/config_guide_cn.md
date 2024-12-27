@@ -37,10 +37,10 @@ source = [HuggingFace, OpenAI, DashScope]
 
 目前, pai_rag 支持以上三种 embedding 源.
 
-如果 source = "HuggingFace", 您需要进一步指定 model 和 embed_batch_size。默认的模型名称和批处理大小分别为 bge-large-zh-v1.5 和 10。
+如果 source = "HuggingFace", 您需要进一步指定 model 和 embed_batch_size。默认的模型名称和批处理大小分别为 bge-m3 和 10。
 
     source = "HuggingFace"
-    model = "bge-large-zh-v1.5"
+    model = "bge-m3"
     embed_batch_size = 10
 
 或者, 如果你想使用其它 huggingface 模型, 请指定如下参数：
@@ -87,7 +87,7 @@ source = [PaiEas, OpenAI, DashScope]
 
 ## rag.index
 
-vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus]
+vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus, Tablestore]
 
 目前, pai_rag 支持多种方式创建和存储索引。
 
@@ -152,6 +152,19 @@ vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus]
     password = ""
     database = "pairag"
     collection = "pairag_collection"
+
+如果 vector_store.type = "Tablestore", 需要提供如下信息：
+
+    [rag.index]
+    persist_path = "localdata/storage"
+
+    [rag.index.vector_store]
+    type = "Tablestore"
+    endpoint = ""
+    instance_name = ""
+    access_key_id = ""
+    access_key_secret = ""
+    table_name = "pai_rag"
 
 该设置也可在网页中配置。
 

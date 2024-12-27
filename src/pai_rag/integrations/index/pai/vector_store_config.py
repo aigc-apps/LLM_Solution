@@ -13,6 +13,7 @@ class SupportedVectorStoreType(str, Enum):
     opensearch = "opensearch"
     milvus = "milvus"
     hologres = "hologres"
+    tablestore = "tablestore"
 
 
 class VectorIndexRetrievalType(str, Enum):
@@ -25,6 +26,7 @@ VECTOR_STORE_TYPES_WITH_HYBRID_SEARCH = [
     SupportedVectorStoreType.elasticsearch,
     SupportedVectorStoreType.postgresql,
     SupportedVectorStoreType.milvus,
+    SupportedVectorStoreType.tablestore,
 ]
 
 
@@ -96,6 +98,17 @@ class OpenSearchVectorStoreConfig(BaseVectorStoreConfig):
     instance_id: str
     username: str
     password: str
+    table_name: str
+
+
+class TablestoreVectorStoreConfig(BaseVectorStoreConfig):
+    type: Literal[
+        SupportedVectorStoreType.tablestore
+    ] = SupportedVectorStoreType.tablestore
+    endpoint: str
+    instance_name: str
+    access_key_id: str
+    access_key_secret: str
     table_name: str
 
 

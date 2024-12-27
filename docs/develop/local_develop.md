@@ -71,8 +71,8 @@ For local development, please refer to the following steps:
 
    ```bash
    # Support custom host (default 0.0.0.0), port (default 8001), config (default src/pai_rag/config/settings.yaml), skip-download-models (default False)
-   # Download [bge-large-zh-v1.5, easyocr] by default, you can skip it by setting --skip-download-models.
-   # you can use tool "load_model" to download other models including [bge-large-zh-v1.5, easyocr, SGPT-125M-weightedmean-nli-bitfit, bge-large-zh-v1.5, bge-m3, bge-reranker-base, bge-reranker-large, paraphrase-multilingual-MiniLM-L12-v2, qwen_1.8b, text2vec-large-chinese]
+   # Download [bge-m3, easyocr] by default, you can skip it by setting --skip-download-models.
+   # you can use tool "load_model" to download other models including [bge-m3, easyocr, SGPT-125M-weightedmean-nli-bitfit, bge-large-zh-v1.5, bge-reranker-base, bge-reranker-large, paraphrase-multilingual-MiniLM-L12-v2, qwen_1.8b, text2vec-large-chinese]
    pai_rag serve [--host HOST] [--port PORT] [--config CONFIG_FILE] [--skip-download-models]
    ```
 
@@ -87,7 +87,7 @@ For local development, please refer to the following steps:
    pai_rag ui [--host HOST] [--port PORT] [rag-url RAG_URL]
    ```
 
-   You can also open http://localhost:8002/ to configure the RAG service and upload local data.
+   You can also open http://localhost:8002/admin/ to configure the RAG service and upload local data.
 
 6. [Optional] Local load_data tool
 

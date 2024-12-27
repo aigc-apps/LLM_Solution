@@ -17,6 +17,7 @@ def create_vector_db_panel() -> Dict[str, Any]:
                     "faiss",
                     "opensearch",
                     "postgresql",
+                    "tablestore",
                 ],
                 label="Which VectorStore do you want to use?",
                 elem_id="vectordb_type",
@@ -232,6 +233,37 @@ def create_vector_db_panel() -> Dict[str, Any]:
                         interactive=True,
                     )
 
+            with gr.Column(visible=(vectordb_type == "tablestore")) as tablestore_col:
+                with gr.Row():
+                    tablestore_endpoint = gr.Textbox(
+                        label="tablestore_endpoint",
+                        elem_id="tablestore_endpoint",
+                        interactive=True,
+                    )
+                    tablestore_instance_name = gr.Textbox(
+                        label="tablestore_instance_name",
+                        elem_id="tablestore_instance_name",
+                        interactive=True,
+                    )
+                with gr.Row():
+                    tablestore_access_key_id = gr.Textbox(
+                        label="tablestore_access_key_id",
+                        elem_id="tablestore_access_key_id",
+                        interactive=True,
+                    )
+                    tablestore_access_key_secret = gr.Textbox(
+                        label="tablestore_access_key_secret",
+                        type="password",
+                        elem_id="tablestore_access_key_secret",
+                        interactive=True,
+                    )
+                with gr.Row():
+                    tablestore_table_name = gr.Textbox(
+                        label="tablestore_table_name",
+                        elem_id="tablestore_table_name",
+                        interactive=True,
+                    )
+
             vectordb_type.change(
                 fn=ev_listeners.change_vectordb_conn,
                 inputs=vectordb_type,
@@ -243,6 +275,7 @@ def create_vector_db_panel() -> Dict[str, Any]:
                     milvus_col,
                     opensearch_col,
                     postgresql_col,
+                    tablestore_col,
                 ],
             )
             db_related_elements = [
@@ -291,6 +324,12 @@ def create_vector_db_panel() -> Dict[str, Any]:
                 adb_account,
                 adb_account_password,
                 adb_namespace,
+                # tablestore
+                tablestore_endpoint,
+                tablestore_instance_name,
+                tablestore_access_key_id,
+                tablestore_access_key_secret,
+                tablestore_table_name,
             ]
             components.extend(db_related_elements)
     return db_related_elements, components_to_dict(components)
