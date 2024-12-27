@@ -71,7 +71,6 @@ def create_embedding(
         pai_model_path = os.path.join(
             pai_rag_model_dir, "chinese-clip-vit-large-patch14"
         )
-        print("create_embedding pai_model_path:", pai_model_path)
         if not os.path.exists(pai_model_path):
             logger.info(
                 f"Embedding model {embed_config.model} not found in {pai_rag_model_dir}, try download it."
