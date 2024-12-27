@@ -67,7 +67,7 @@ class RayExecutor:
             tstart = time.time()
             dataset.process(ops, op_name)
             tend = time.time()
-            ray.kill(ops)
+            [ray.kill(op) for op in ops]
             logger.info(f"Op {op_name} is done in {tend - tstart:.3f}s.")
 
         all_tend = time.time()

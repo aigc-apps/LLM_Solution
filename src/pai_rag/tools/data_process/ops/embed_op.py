@@ -2,13 +2,14 @@ import ray
 import numpy as np
 from loguru import logger
 from pai_rag.tools.data_process.ops.base_op import BaseOP, OPERATORS
-from pai_rag.utils.embed_utils import sync_download_url
-from pai_rag.utils.download_models import ModelScopeDownloader
-from pai_rag.integrations.embeddings.pai.pai_embedding_config import parse_embed_config
 from pai_rag.integrations.index.pai.utils.sparse_embed_function import (
     BGEM3SparseEmbeddingFunction,
 )
+from pai_rag.utils.embed_utils import sync_download_url
 from pai_rag.integrations.embeddings.pai.embedding_utils import create_embedding
+from pai_rag.integrations.embeddings.pai.pai_embedding_config import parse_embed_config
+from pai_rag.tools.data_process.utils.download_utils import download_models_via_lock
+
 
 OP_NAME = "pai_rag_embedder"
 
@@ -44,17 +45,9 @@ class Embedder(BaseOP):
                 {"source": kwargs.get("multimodal_source", None)}
             )
             self.download_model_list.append("chinese-clip-vit-large-patch14")
-        self.load_models(self.download_model_list)
+        for model_name in self.download_model_list:
+            download_models_via_lock(self.model_dir, model_name)
         logger.info("Embedder init finished.")
-
-    def load_models(self, model_list):
-        logger.info(f"Downloading models {model_list}.")
-        download_models = ModelScopeDownloader(
-            fetch_config=True,
-            download_directory_path=self.model_dir,
-        )
-        for model_name in model_list:
-            download_models.load_model(model=model_name)
 
     def process_extra_metadata(self, nodes):
         excluded_embed_metadata_keys = nodes["excluded_embed_metadata_keys"]

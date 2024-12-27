@@ -1,13 +1,13 @@
 import ray
+import threading
 from loguru import logger
-from pai_rag.tools.data_process.ops.base_op import BaseOP, OPERATORS
-from pai_rag.tools.data_process.utils.formatters import convert_document_to_dict
-from pai_rag.utils.download_models import ModelScopeDownloader
-from pai_rag.integrations.readers.pai.pai_data_reader import BaseDataReaderConfig
 from pai_rag.core.rag_module import resolve
 from pai_rag.utils.oss_client import OssClient
+from pai_rag.tools.data_process.ops.base_op import BaseOP, OPERATORS
 from pai_rag.integrations.readers.pai.pai_data_reader import PaiDataReader
-import threading
+from pai_rag.integrations.readers.pai.pai_data_reader import BaseDataReaderConfig
+from pai_rag.tools.data_process.utils.formatters import convert_document_to_dict
+from pai_rag.tools.data_process.utils.download_utils import download_models_via_lock
 
 OP_NAME = "pai_rag_parser"
 
@@ -24,18 +24,8 @@ class Parser(BaseOP):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.kwargs = kwargs
-        self.download_model_list = ["PDF-Extract-Kit"]
-        self.load_models(self.download_model_list)
+        download_models_via_lock(self.model_dir, "PDF-Extract-Kit", self.accelerator)
         logger.info("ParseActor init finished.")
-
-    def load_models(self, model_list):
-        download_models = ModelScopeDownloader(
-            fetch_config=True,
-            download_directory_path=self.model_dir,
-        )
-        for model_name in model_list:
-            download_models.load_model(model=model_name)
-        download_models.load_mineru_config(self.accelerator)
 
     def process(self, input_file):
         current_thread = threading.current_thread()
