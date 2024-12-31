@@ -316,8 +316,6 @@ class ViewModel(BaseModel):
         config["retriever"]["vector_weight"] = self.vector_weight
         config["retriever"]["keyword_weight"] = self.keyword_weight
 
-        config["retriever"]["image_similarity_top_k"] = self.image_similarity_top_k
-
         config["retriever"]["search_image"] = self.need_image
         if self.retrieval_mode == "Hybrid":
             config["retriever"]["vector_store_query_mode"] = VectorStoreQueryMode.HYBRID
@@ -386,7 +384,7 @@ class ViewModel(BaseModel):
             config["postprocessor"][
                 "similarity_threshold"
             ] = self.reranker_similarity_threshold
-        config["postprocessor"]["top_n"] = 5
+            config["postprocessor"]["top_n"] = self.reranker_similarity_top_k
 
         config["synthesizer"]["use_multimodal_llm"] = self.use_mllm
         config["synthesizer"]["text_qa_template"] = self.text_qa_template
@@ -572,6 +570,12 @@ class ViewModel(BaseModel):
         settings["similarity_threshold"] = {"value": self.similarity_threshold}
         settings["reranker_similarity_threshold"] = {
             "value": self.reranker_similarity_threshold
+        }
+        settings["reranker_similarity_top_k"] = {
+            "value": self.reranker_similarity_top_k
+        }
+        settings["model_reranker_col"] = {
+            "visible": self.reranker_type == "model-based-reranker"
         }
 
         settings["text_qa_template"] = {"value": self.text_qa_template}
