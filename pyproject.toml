@@ -107,6 +107,7 @@ ultralytics = "8.3.43"
 datasketch = "^1.6.5"
 primp = "0.9.1"
 tablestore = "^6.1.0"
+mistletoe = "^1.4.0"
 
 [tool.poetry.scripts]
 pai_rag = "pai_rag.main:run"
