@@ -57,7 +57,7 @@ DEFAULT_TEXT_QA_TMPL_EN = (
     "{context_str}\n"
     "-------\n"
     "Answer the question based on the provided content rather than other knowledge. "
-    'If the context is not relevant to the query, please reply with "Sorry, I don\'t know about that."'
+    'If the reference content is not relevant to the question, please reply with "Sorry, I don\'t know about that."'
     "Question: {query_str}\n"
     "Please think carefully and use the same language as the question to give your answer: \n"
 )
@@ -92,13 +92,9 @@ CITATION_TEXT_QA_TMPL = (
 )
 
 CITATION_TEXT_QA_TMPL_EN = (
-    "Please answer the question based entirely on the references provided.\n"
+    "Please answer the question based on the following reference materials rather than other knowledge.\n"
     "The references consist of several paragraphs of text,"
-    "When you generate content that references a text source, please quote the corresponding text number in the content to indicate the relevant information source,"
-    "For example, [1], this will make your answer look more reliable."
-    "Your answer must contain at least one relevant reference mark."
-    "Only insert reference marks when you actually quote the text. If you don't find anything worth citing, just reply with \"Sorry, I don't know about that.\"."
-    "Note that only numbers are inserted in reference marks. You must answer in the same language as the question.\n\n"
+    "When you generate content that references a text source, please quote the corresponding text number in the content to indicate the relevant information source, which will make your answer look more reliable."
     "For example:\n"
     "References\n"
     "-------\n"
@@ -116,6 +112,10 @@ CITATION_TEXT_QA_TMPL_EN = (
     "-------\n"
     "{context_str}\n"
     "-------\n"
+    "Your answer must contain at least one relevant reference mark. \n"
+    "Only insert reference marks when you actually quote the text. "
+    'If the reference materials is not relevant to the question, please reply with "Sorry, I don\'t know about that.".\n'
+    "Note that only numbers are inserted in reference marks. \n\n"
     "Question: {query_str}\n"
     "Please MUST use the same language as the question to answer. Please think carefully and give your answer:"
 )
@@ -161,7 +161,7 @@ DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
 DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN = (
     "Answer the user's question based on the pictures given above and the reference materials given below.\n"
     "The reference materials contain a set of text descriptions and a set of image links, which correspond to the addresses of the pictures given above.\n"
-    'Please answer the given questions based on the given materials. The answers need to have text descriptions and image links. If there is no information related to the answer in the materials, directly reply "Sorry, I don\'t know about that."\n'
+    'Please answer the given questions based on the given materials. The answers need to have text descriptions and image links. If there is no information related to the answer in the reference materials, please reply with "Sorry, I don\'t know about that."\n'
     "If there are pictures above that help you generate answers, please find the image link and give it in markdown format, such as ![](image_url).\n\n"
     "You must answer in the same language as the question."
     "For example:\n"
@@ -221,7 +221,7 @@ CITATION_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN = (
     "The reference materials contain a set of text descriptions and a set of image links. The image links correspond to the addresses of the pictures given above.\n"
     "Please answer the given questions based on the given materials. If the content you are currently generating refers to a certain text description, please directly quote its numerical serial number in the content, such as [1].\n"
     "If there are pictures above that help you generate the answer, please find the image link and give it in markdown format, such as ![](image_url)."
-    "Please list at least one text and image reference. If there is no information related to the answer in the material, reply that you don't know.\n"
+    'Please list at least one text and image reference. If there is no information related to the answer in the material, please reply with "Sorry, I don\'t know about that."\n'
     "You must answer in the same language as the question."
     "For example:\n"
     "Reference materials\n"
