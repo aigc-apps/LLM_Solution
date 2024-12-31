@@ -496,11 +496,6 @@ class MyElasticsearchStore(BasePydanticVectorStore):
             try:
                 node = metadata_dict_to_node(metadata)
                 node.text = text
-                node.metadata["retrieval_type"] = (
-                    "keyword"
-                    if isinstance(retrieval_strategy, AsyncBM25Strategy)
-                    else "vector"
-                )
             except Exception:
                 # Legacy support for old metadata format
                 logger.warning(
