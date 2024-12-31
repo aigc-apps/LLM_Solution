@@ -31,7 +31,6 @@ from loguru import logger
 from enum import Enum
 from uuid import uuid4
 
-DEFAULT_EMPTY_RESPONSE_GEN = "Empty Response"
 DEFAULT_RAG_INDEX_FILE = "localdata/default_rag_indexes.json"
 
 
@@ -66,7 +65,7 @@ async def event_generator_async(
 ):
     content = ""
     async for token in response.async_response_gen():
-        if token and token != DEFAULT_EMPTY_RESPONSE_GEN:
+        if token:
             chunk = {"delta": token, "is_finished": False}
             content += token
             yield _event_chunk_wrapper(

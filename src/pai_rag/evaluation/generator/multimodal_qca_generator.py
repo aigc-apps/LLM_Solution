@@ -1,5 +1,6 @@
 from typing import Optional, Any
 from llama_index.core.indices import VectorStoreIndex
+from pai_rag.integrations.synthesizer.pai_synthesizer import DEFAULT_EMPTY_RESPONSE_GEN
 from pai_rag.utils.prompt_template import (
     DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL,
 )
@@ -99,7 +100,7 @@ class MultimodalQcaGenerator(RagQcaGenerator):
             image_documents=image_documents,
             **response_kwargs,
         )
-        response = llm_response.text or "Empty Response"
+        response = llm_response.text or DEFAULT_EMPTY_RESPONSE_GEN
 
         await asyncio.sleep(3)
 

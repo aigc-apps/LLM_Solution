@@ -38,12 +38,15 @@ from loguru import logger
 
 dispatcher = instrument.get_dispatcher(__name__)
 
+DEFAULT_EMPTY_RESPONSE_GEN = "Sorry, I don't know about that."
+
 DEFAULT_TEXT_QA_TMPL = (
     "参考内容信息如下"
     "-------\n"
     "{context_str}\n"
     "-------\n"
     "根据提供内容而非其他知识回答问题. "
+    '如果参考内容与问题无关，请直接回复"Sorry, I don\'t know about that."'
     "问题: {query_str}\n"
     "请仔细思考，必须使用和提问相同的语言，给出你的答案: \n"
 )
@@ -54,6 +57,7 @@ DEFAULT_TEXT_QA_TMPL_EN = (
     "{context_str}\n"
     "-------\n"
     "Answer the question based on the provided content rather than other knowledge. "
+    'If the context is not relevant to the query, please reply with "Sorry, I don\'t know about that."'
     "Question: {query_str}\n"
     "Please think carefully and use the same language as the question to give your answer: \n"
 )
@@ -64,7 +68,7 @@ CITATION_TEXT_QA_TMPL = (
     "当你生成的内容引用到了某段文本来源，请在内容中引用对应文本的数字序号来显示相关的信息源，"
     "比如[1]，这样可以让你的回复看起来更加可靠。"
     "你的答案需要包含至少一个相关的引用标记。"
-    "只有在你真正引用了文本的时候才会插入引用标记，当你没找到任何值得引用的内容时，请直接回复你不知道。\n"
+    '只有在你真正引用了文本的时候才会插入引用标记，当你没找到任何值得引用的内容时，请直接回复"Sorry, I don\'t know about that."\n'
     "注意仅在引用标记中插入数字。你必须使用和提问相同的语言进行回答。\n\n"
     "例如:\n"
     "参考材料\n"
@@ -93,7 +97,7 @@ CITATION_TEXT_QA_TMPL_EN = (
     "When you generate content that references a text source, please quote the corresponding text number in the content to indicate the relevant information source,"
     "For example, [1], this will make your answer look more reliable."
     "Your answer must contain at least one relevant reference mark."
-    "Only insert reference marks when you actually quote the text. If you don't find anything worth citing, just reply that you don't know."
+    "Only insert reference marks when you actually quote the text. If you don't find anything worth citing, just reply with \"Sorry, I don't know about that.\"."
     "Note that only numbers are inserted in reference marks. You must answer in the same language as the question.\n\n"
     "For example:\n"
     "References\n"
@@ -128,7 +132,7 @@ DEFAULT_LLM_CHAT_TMPL = (
 DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
     "根据上面给出的图片和下面给出的参考材料来回答用户的问题。\n"
     "参考材料中包含一组文字描述和一组图片链接，图片链接分别对应到前面给出的图片的地址。\n"
-    "请根据给定的材料回答给出的问题，回答中需要有文字描述和图片链接。如果材料中没有答案相关的信息，就回复你不知道。\n"
+    '请根据给定的材料回答给出的问题，回答中需要有文字描述和图片链接。如果材料中没有答案相关的信息，直接回复"Sorry, I don\'t know about that."\n'
     "如果上面有图片对你生成答案有帮助，请找到图片链接并用markdown格式给出，如![](image_url)。\n\n"
     "你必须使用和提问相同的语言进行回答。"
     "例如：\n"
@@ -157,7 +161,7 @@ DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL = (
 DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL_EN = (
     "Answer the user's question based on the pictures given above and the reference materials given below.\n"
     "The reference materials contain a set of text descriptions and a set of image links, which correspond to the addresses of the pictures given above.\n"
-    "Please answer the given questions based on the given materials. The answers need to have text descriptions and image links. If there is no information related to the answer in the materials, reply that you don't know.\n"
+    'Please answer the given questions based on the given materials. The answers need to have text descriptions and image links. If there is no information related to the answer in the materials, directly reply "Sorry, I don\'t know about that."\n'
     "If there are pictures above that help you generate answers, please find the image link and give it in markdown format, such as ![](image_url).\n\n"
     "You must answer in the same language as the question."
     "For example:\n"
@@ -244,11 +248,11 @@ QueryTextType = QueryType
 
 
 def empty_response_generator() -> Generator[str, None, None]:
-    yield "Empty Response"
+    yield DEFAULT_EMPTY_RESPONSE_GEN
 
 
 async def empty_response_agenerator() -> AsyncGenerator[str, None]:
-    yield "Empty Response"
+    yield DEFAULT_EMPTY_RESPONSE_GEN
 
 
 @dataclass
@@ -336,7 +340,7 @@ class PaiSynthesizer(BaseSynthesizer):
                 )
                 return empty_response
             else:
-                empty_response = Response("Empty Response")
+                empty_response = Response(DEFAULT_EMPTY_RESPONSE_GEN)
                 dispatcher.event(
                     SynthesizeEndEvent(
                         query=query,
@@ -419,7 +423,7 @@ class PaiSynthesizer(BaseSynthesizer):
                 )
                 return empty_response
             else:
-                empty_response = Response("Empty Response")
+                empty_response = Response(DEFAULT_EMPTY_RESPONSE_GEN)
                 dispatcher.event(
                     SynthesizeEndEvent(
                         query=query,
@@ -522,7 +526,7 @@ class PaiSynthesizer(BaseSynthesizer):
                 image_documents=image_documents,
                 **response_kwargs,
             )
-            response = llm_response.text or "Empty Response"
+            response = llm_response.text or DEFAULT_EMPTY_RESPONSE_GEN
             return response
 
     async def _aget_multi_modal_response(
@@ -571,7 +575,7 @@ class PaiSynthesizer(BaseSynthesizer):
                 image_documents=image_documents,
                 **response_kwargs,
             )
-            response = llm_response.text or "Empty Response"
+            response = llm_response.text or DEFAULT_EMPTY_RESPONSE_GEN
             return response
 
     async def aget_response(
@@ -630,7 +634,7 @@ class PaiSynthesizer(BaseSynthesizer):
             )
 
         if isinstance(response, str):
-            response = response or "Empty Response"
+            response = response or DEFAULT_EMPTY_RESPONSE_GEN
         else:
             response = cast(Generator, response)
 
@@ -684,7 +688,7 @@ class PaiSynthesizer(BaseSynthesizer):
             )
 
         if isinstance(response, str):
-            response = response or "Empty Response"
+            response = response or DEFAULT_EMPTY_RESPONSE_GEN
         else:
             response = cast(Generator, response)
 
@@ -711,7 +715,7 @@ class PaiSynthesizer(BaseSynthesizer):
             )
 
         if isinstance(response, str):
-            response = response or "Empty Response"
+            response = response or DEFAULT_EMPTY_RESPONSE_GEN
         else:
             response = cast(Generator, response)
 
@@ -738,7 +742,7 @@ class PaiSynthesizer(BaseSynthesizer):
             )
 
         if isinstance(response, str):
-            response = response or "Empty Response"
+            response = response or DEFAULT_EMPTY_RESPONSE_GEN
         else:
             response = cast(Generator, response)
 

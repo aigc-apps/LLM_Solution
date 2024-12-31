@@ -4,6 +4,8 @@ from pathlib import Path
 import pytest
 import shutil
 
+from pai_rag.integrations.synthesizer.pai_synthesizer import DEFAULT_EMPTY_RESPONSE_GEN
+
 BASE_DIR = Path(__file__).parent.parent.parent
 TEST_INDEX_PATH = "localdata/teststorage"
 
@@ -43,7 +45,7 @@ def test_query(rag_app):
 
     query = RagQuery(question="Why did he decide to learn AI?")
     response = asyncio.run(rag_app.aquery(query, chat_type=RagChatType.RAG))
-    assert len(response.answer) > 10 and response.answer != "Empty Response"
+    assert len(response.answer) > 10 and response.answer != DEFAULT_EMPTY_RESPONSE_GEN
 
     query = RagQuery(question="")
     response = asyncio.run(rag_app.aquery(query, chat_type=RagChatType.RAG))
