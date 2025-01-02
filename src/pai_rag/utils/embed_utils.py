@@ -7,6 +7,35 @@ from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.core.embeddings.multi_modal_base import MultiModalEmbedding
 from llama_index.core.schema import BaseNode, MetadataMode, ImageNode
 from typing import Dict, List, Sequence
+import requests
+
+
+def sync_download_url(url):
+    if not url:
+        return None
+
+    image_stream = BytesIO()
+
+    # Set the timeout in seconds
+    timeout = (5, 10)  # (connect timeout, read timeout)
+
+    try:
+        response = requests.get(url, timeout=timeout)
+        logger.debug(response.text)
+    except requests.RequestException as exc:
+        logger.info(
+            f"An error occurred while requesting {url!r} , exc: {exc.strerror}."
+        )
+        return None
+
+    if response.status_code == 200:
+        # Create a temporary file in the temporary directory
+        image_stream.write(response.content)
+        image_stream.seek(0)
+        return image_stream
+    else:
+        logger.error(f"Failed to download {url}: Status code {response.status_code}")
+        return None
 
 
 async def download_url(url):
@@ -16,7 +45,25 @@ async def download_url(url):
     image_stream = BytesIO()
 
     async with httpx.AsyncClient() as client:
-        response = await client.get(url)
+        timeout = httpx.Timeout(
+            connect=5.0,  # 连接超时时间为5秒
+            read=10.0,  # 读取超时时间为10秒
+            write=10.0,  # 写入超时时间为10秒
+            pool=20.0,  # 连接池超时时间为20秒
+        )
+        logger.info("download_url url", url)
+        try:
+            response = await client.get(url, timeout=timeout)
+            logger.debug(response.text)
+        except httpx.RequestError as exc:
+            logger.info(
+                f"An error occurred while requesting {exc.request.url!r} ,  exc: {exc}."
+            )
+        except httpx.TimeoutException as exc:
+            logger.info(f"Request timed out: {exc.request.url!r}.")
+        except httpx.HTTPStatusError as exc:
+            logger.info(f"HTTP error: {exc}")
+
         if response.status_code == 200:
             # Create a temporary file in the temporary directory
             image_stream.write(response.content)

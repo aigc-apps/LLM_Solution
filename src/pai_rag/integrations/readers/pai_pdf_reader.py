@@ -11,7 +11,6 @@ from pai_rag.utils.markdown_utils import (
 )
 from bs4 import BeautifulSoup
 from llama_index.core import Settings
-
 from magic_pdf.pipe.UNIPipe import UNIPipe
 from magic_pdf.pipe.OCRPipe import OCRPipe
 import magic_pdf.model as model_config
