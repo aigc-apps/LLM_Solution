@@ -69,8 +69,6 @@ endpoint = "oss-cn-hangzhou.aliyuncs.com"
 [rag.postprocessor]
 reranker_type = "no-reranker" # [simple-weighted-reranker, model-based-reranker]
 reranker_model = "bge-reranker-base" # [bge-reranker-base, bge-reranker-large]
-keyword_weight = 0.3
-vector_weight = 0.7
 similarity_threshold = 0.5
 top_n = 2
 

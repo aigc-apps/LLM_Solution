@@ -55,7 +55,8 @@ class PaiEmbedding(BaseEmbedding):
         return await self._embed_model.aget_query_embedding(query)
 
     async def aget_text_embedding(self, text: str) -> Embedding:
-        return await self._embed_model.aget_text_embedding(text)
+        text_to_embed = text[:2000]
+        return await self._embed_model.aget_text_embedding(text_to_embed)
 
     async def aget_agg_embedding_from_queries(
         self,
@@ -67,19 +68,24 @@ class PaiEmbedding(BaseEmbedding):
     async def aget_text_embedding_batch(
         self, texts: List[str], show_progress: bool = False
     ) -> List[List[float]]:
-        return await self._embed_model.aget_text_embedding_batch(texts, show_progress)
+        texts_to_embed = [text[:2000] for text in texts]
+        return await self._embed_model.aget_text_embedding_batch(
+            texts_to_embed, show_progress
+        )
 
     def get_query_embedding(self, query: str) -> List[float]:
         return self._embed_model.get_query_embedding(query)
 
     def get_text_embedding(self, text: str) -> List[float]:
-        return self._embed_model.get_text_embedding(text)
+        text_to_embed = text[:2000]
+        return self._embed_model.get_text_embedding(text_to_embed)
 
     def get_text_embedding_batch(
         self, texts: List[str], show_progress: bool = False, **kwargs: Any
     ) -> List[List[float]]:
+        texts_to_embed = [text[:2000] for text in texts]
         return self._embed_model.get_text_embedding_batch(
-            texts, show_progress, **kwargs
+            texts_to_embed, show_progress, **kwargs
         )
 
     def get_agg_embedding_from_queries(

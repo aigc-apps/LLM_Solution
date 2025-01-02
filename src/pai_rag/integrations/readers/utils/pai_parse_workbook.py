@@ -48,10 +48,10 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
     """
     Split a row group into smaller pieces.
     """
-    row_size_limit = 1200
+    row_size_limit = 1000
 
     if len(row_group) == 1:
-        row_size_limit = 3000
+        row_size_limit = 1000
 
     raw_text = ""
     form_title = form_title + "\n\n"
@@ -85,7 +85,7 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
             else:
                 column_text = f"{headers[j]}: {format_text(first_value)}\n\n\n"
 
-            if len(column_text) < row_size_limit:
+            if len(column_text) < 300:
                 title_text += column_text
             else:
                 is_same_value = False
@@ -127,7 +127,7 @@ def split_row_group(row_group, headers=[], splitter=None, form_title=None):
         ]
     else:
         if len(row_group) == 1:
-            chunk_size = 3000
+            chunk_size = 1000
         else:
             chunk_size = 800
         return [
@@ -189,6 +189,7 @@ def chunk_form(form_title, form_data, header_row=-1, splitter=None):
                         values[i + 1][j] is not None
                         and values[i + 1][j] != ""
                         and values[i + 1][j] == values[i][j]
+                        and isinstance(values[i + 1][j], str)
                         and len(values[i + 1][j]) < 150
                     ):
                         should_merge = True

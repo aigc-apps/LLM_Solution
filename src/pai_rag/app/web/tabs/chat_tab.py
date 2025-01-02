@@ -141,14 +141,36 @@ def create_chat_tab() -> Dict[str, Any]:
                         visible=(retrieval_mode == "Hybrid"),
                     )
 
+                    similarity_top_k = gr.Slider(
+                        minimum=0,
+                        maximum=100,
+                        step=1,
+                        elem_id="similarity_top_k",
+                        label="Text Top K (choose between 0 and 100)",
+                    )
+                    image_similarity_top_k = gr.Slider(
+                        minimum=0,
+                        maximum=10,
+                        step=1,
+                        elem_id="image_similarity_top_k",
+                        label="Image Top K (choose between 0 and 10)",
+                    )
+                    similarity_threshold = gr.Slider(
+                        minimum=0,
+                        maximum=1,
+                        step=0.01,
+                        elem_id="similarity_threshold",
+                        label="Similarity Score Threshold (The more similar the items, the bigger the value.)",
+                    )
+
                     reranker_type = gr.Radio(
                         ["no-reranker", "model-based-reranker"],
                         label="Reranker Type",
                         elem_id="reranker_type",
                     )
-
                     with gr.Column(
-                        visible=(reranker_type == "model-based-reranker")
+                        visible=(reranker_type == "model-based-reranker"),
+                        elem_id="model_reranker_col",
                     ) as model_reranker_col:
                         reranker_model = gr.Radio(
                             [
@@ -165,28 +187,12 @@ def create_chat_tab() -> Dict[str, Any]:
                             elem_id="reranker_similarity_threshold",
                             label="Reranker Similarity Score Threshold (The more similar the items, the bigger the value.)",
                         )
-
-                    with gr.Column():
-                        similarity_top_k = gr.Slider(
+                        reranker_similarity_top_k = gr.Slider(
                             minimum=0,
-                            maximum=100,
+                            maximum=50,
                             step=1,
-                            elem_id="similarity_top_k",
-                            label="Text Top K (choose between 0 and 100)",
-                        )
-                        image_similarity_top_k = gr.Slider(
-                            minimum=0,
-                            maximum=10,
-                            step=1,
-                            elem_id="image_similarity_top_k",
-                            label="Image Top K (choose between 0 and 10)",
-                        )
-                        similarity_threshold = gr.Slider(
-                            minimum=0,
-                            maximum=1,
-                            step=0.01,
-                            elem_id="similarity_threshold",
-                            label="Similarity Score Threshold (The more similar the items, the bigger the value.)",
+                            elem_id="reranker_similarity_top_k",
+                            label="Reranker Text Top K (choose between 0 and 50)",
                         )
 
                     def change_weight(change_weight):
@@ -246,6 +252,7 @@ def create_chat_tab() -> Dict[str, Any]:
                     similarity_threshold,
                     reranker_similarity_threshold,
                     reranker_model,
+                    reranker_similarity_top_k,
                 }
 
             with gr.Column(visible=True) as llm_col:
@@ -454,6 +461,7 @@ def create_chat_tab() -> Dict[str, Any]:
             keyword_weight.elem_id: keyword_weight,
             similarity_threshold.elem_id: similarity_threshold,
             reranker_similarity_threshold.elem_id: reranker_similarity_threshold,
+            reranker_similarity_top_k.elem_id: reranker_similarity_top_k,
             multimodal_qa_template.elem_id: multimodal_qa_template,
             citation_multimodal_qa_template.elem_id: citation_multimodal_qa_template,
             citation_text_qa_template.elem_id: citation_text_qa_template,
@@ -461,4 +469,5 @@ def create_chat_tab() -> Dict[str, Any]:
             search_lang.elem_id: search_lang,
             search_api_key.elem_id: search_api_key,
             search_count.elem_id: search_count,
+            model_reranker_col.elem_id: model_reranker_col,
         }
