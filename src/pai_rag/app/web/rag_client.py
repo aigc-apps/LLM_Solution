@@ -129,10 +129,7 @@ class RagWebClient:
         is_finished = response.get("is_finished", True)
 
         referenced_docs = ""
-        if is_finished and len(docs) == 0 and not text:
-            response["result"] = EMPTY_KNOWLEDGEBASE_MESSAGE.format(query_str=question)
-            return response
-        elif is_finished:
+        if is_finished:
             content_list = []
             self.session_id = session_id
             for i, doc in enumerate(docs):

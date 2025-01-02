@@ -10,6 +10,7 @@ import faiss
 from loguru import logger
 
 from pai_rag.integrations.search.bs4_reader import ParallelBeautifulSoupWebReader
+from pai_rag.integrations.synthesizer.pai_synthesizer import DEFAULT_EMPTY_RESPONSE_GEN
 
 
 DEFAULT_ENDPOINT_BASE_URL = "https://api.bing.microsoft.com/v7.0/search"
@@ -90,7 +91,7 @@ class BingSearchTool:
         dists = list(dists[0])
         # if empty, then return an empty response
         if len(indices) == 0:
-            return "Empty Response"
+            return DEFAULT_EMPTY_RESPONSE_GEN
 
         # returned dimension is 1 x k
         node_idxs = indices[0]

@@ -27,17 +27,18 @@ import llama_index.core.instrumentation as instrument
 from pai_rag.integrations.data_analysis.nl2sql.nl2sql_prompts import (
     DEFAULT_RESPONSE_SYNTHESIS_PROMPT,
 )
+from pai_rag.integrations.synthesizer.pai_synthesizer import DEFAULT_EMPTY_RESPONSE_GEN
 
 
 dispatcher = instrument.get_dispatcher(__name__)
 
 
 def empty_response_generator() -> Generator[str, None, None]:
-    yield "Empty Response"
+    yield DEFAULT_EMPTY_RESPONSE_GEN
 
 
 async def empty_response_agenerator() -> AsyncGenerator[str, None]:
-    yield "Empty Response"
+    yield DEFAULT_EMPTY_RESPONSE_GEN
 
 
 class DataAnalysisSynthesizer(BaseSynthesizer):
@@ -125,7 +126,7 @@ class DataAnalysisSynthesizer(BaseSynthesizer):
             )
 
         if isinstance(response, str):
-            response = response or "Empty Response"
+            response = response or DEFAULT_EMPTY_RESPONSE_GEN
         else:
             response = cast(Generator, response)
 
@@ -180,7 +181,7 @@ class DataAnalysisSynthesizer(BaseSynthesizer):
             )
 
         if isinstance(response, str):
-            response = response or "Empty Response"
+            response = response or DEFAULT_EMPTY_RESPONSE_GEN
         else:
             response = cast(Generator, response)
 
@@ -215,7 +216,7 @@ class DataAnalysisSynthesizer(BaseSynthesizer):
                 )
                 return empty_response
             else:
-                empty_response = Response("Empty Response")
+                empty_response = Response(DEFAULT_EMPTY_RESPONSE_GEN)
                 dispatcher.event(
                     SynthesizeEndEvent(
                         query=query,
@@ -282,7 +283,7 @@ class DataAnalysisSynthesizer(BaseSynthesizer):
                 )
                 return empty_response
             else:
-                empty_response = Response("Empty Response")
+                empty_response = Response(DEFAULT_EMPTY_RESPONSE_GEN)
                 dispatcher.event(
                     SynthesizeEndEvent(
                         query=query,
