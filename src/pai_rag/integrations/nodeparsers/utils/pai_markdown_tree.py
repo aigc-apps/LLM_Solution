@@ -9,6 +9,7 @@ from mistletoe.block_token import (
     HTMLBlock,
 )
 from mistletoe.span_token import RawText, Emphasis, Strong, InlineCode, Link, Image
+from mistletoe import Document
 from typing import List as TList, Union
 
 
@@ -18,14 +19,11 @@ class TreeNode:
         self.level = level  # 层级
         self.category = category  # 所属类别
         self.content = content  # 节点内容
-        self.content_token_count = len(content)  # 本节点内容token数
-        self.all_children_tokens_count = 0  # 所有子节点所有字符数之和
+        self.content_token_count = len(content)  # 本节点内容和本节点所有子节点token数
         self.children: TList["TreeNode"] = []  # 子节点列表
 
     def add_child(self, node: "TreeNode"):
         self.children.append(node)
-        # 更新所有子节点的token计数
-        self.all_children_tokens_count += node.content_token_count
 
     def compute_total_tokens(self) -> int:
         """
@@ -33,14 +31,13 @@ class TreeNode:
         将结果存储在 content_token_count 中。
         """
         if not self.children:
-            self.all_children_tokens_count = 0
             return len(self.content)
         total = 0
         for child in self.children:
-            if not child.category == "image":
+            if child.category != "image":
                 total += child.compute_total_tokens()
-        self.all_children_tokens_count = total
-        return total + len(self.content)
+        self.content_token_count += total
+        return self.content_token_count
 
     def to_dict(self):
         return {
@@ -48,7 +45,6 @@ class TreeNode:
             "category": self.category,
             "content": self.content,
             "content_token_count": self.content_token_count,
-            "all_children_tokens_count": self.all_children_tokens_count,
             "children": [child.to_dict() for child in self.children],
         }
 
@@ -113,7 +109,7 @@ class ASTTreeBuilder:
     def handle_code_fence(self, node: CodeFence):
         language = node.language or ""
         content = node.children[0].content.rstrip() if node.children else ""
-        code_content = f"{language}\n{content}" if language else content
+        code_content = f"{language}:\n{content}" if language else content
         new_node = TreeNode(
             level=self.stack[-1].level + 1, category="code", content=code_content
         )
@@ -263,3 +259,14 @@ class ASTTreeBuilder:
 
     def get_tree(self) -> TreeNode:
         return self.root
+
+
+def build_markdown_tree(markdown_text: str) -> TreeNode:
+    doc = Document(markdown_text)
+    builder = ASTTreeBuilder()
+
+    for node in doc.children:
+        builder.build_tree(node)
+    ast_root = builder.get_tree()
+    ast_root.compute_total_tokens()
+    return ast_root

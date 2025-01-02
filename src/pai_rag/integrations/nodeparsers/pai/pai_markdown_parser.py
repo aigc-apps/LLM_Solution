@@ -13,9 +13,8 @@ from llama_index.core.schema import (
     NodeRelationship,
     MetadataMode,
 )
-from mistletoe import Document
 from pai_rag.integrations.nodeparsers.utils.pai_markdown_tree import (
-    ASTTreeBuilder,
+    build_markdown_tree,
     TreeNode,
 )
 
@@ -142,7 +141,7 @@ class StructuredNodeParser(BaseModel):
     ):
         ref_doc = ref_doc or doc_node
         # 判断是否可以将整个树节点作为一个chunk
-        if root.content_token_count + root.all_children_tokens_count <= self.chunk_size:
+        if root.content_token_count <= self.chunk_size:
             new_chunk_text = self._format_tree_nodes(root, doc_node, ref_doc)
             # 避免插入内容为空的节点
             if len(new_chunk_text) > 0:
@@ -212,10 +211,7 @@ class StructuredNodeParser(BaseModel):
                     self.title_stack.pop()
                 self.title_stack.append(child)
 
-            if (
-                child.content_token_count + child.all_children_tokens_count
-                > self.chunk_size
-            ):
+            if child.content_token_count > self.chunk_size:
                 # 避免插入内容为空的节点
                 if len(chunk_text) > 0:
                     new_chunk_text = (
@@ -226,16 +222,9 @@ class StructuredNodeParser(BaseModel):
                 chunk_text = ""
                 tree_tokens = 0
                 self.traverse_tree(child, doc_node, ref_doc)
-            elif (
-                tree_tokens
-                + child.content_token_count
-                + child.all_children_tokens_count
-                <= self.chunk_size
-            ):
+            elif tree_tokens + child.content_token_count <= self.chunk_size:
                 chunk_text += self._format_tree_nodes(child, doc_node, ref_doc)
-                tree_tokens += (
-                    child.content_token_count + child.all_children_tokens_count
-                )
+                tree_tokens += child.content_token_count
             else:
                 if len(chunk_text) > 0:
                     new_chunk_text = (
@@ -244,9 +233,7 @@ class StructuredNodeParser(BaseModel):
                     self._add_text_node(new_chunk_text, doc_node, ref_doc)
                     self.chunk_images_list.clear()
                 chunk_text = self._format_tree_nodes(child, doc_node, ref_doc)
-                tree_tokens = (
-                    child.content_token_count + child.all_children_tokens_count
-                )
+                tree_tokens = child.content_token_count
 
         # 处理最后的段落
         if len(chunk_text) > 0:
@@ -279,15 +266,7 @@ class MarkdownNodeParser(NodeParser):
 
         for node in nodes_with_progress:
             text = node.get_content(metadata_mode=MetadataMode.NONE)
-
-            doc = Document(text)
-            builder = ASTTreeBuilder()
-
-            for tree_node in doc.children:
-                builder.build_tree(tree_node)
-
-            ast_root = builder.get_tree()
-            ast_root.compute_total_tokens()
+            ast_root = build_markdown_tree(text)
             parser = StructuredNodeParser(
                 chunk_size=self.chunk_size,
                 chunk_overlap_size=self.chunk_overlap_size,
