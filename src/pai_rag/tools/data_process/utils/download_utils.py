@@ -18,9 +18,9 @@ def download_models_via_lock(model_dir, model_name, accelerator="cpu"):
 
                 # 检查模型文件是否已经下载
                 if os.path.exists(model_path):
-                    logger.info(f"进程 {os.getpid()} 检查到: 模型已下载完成")
+                    logger.info(f"进程 {os.getpid()} 检查到: 模型已下载完成，环境: {accelerator}。")
                 else:
-                    logger.info(f"进程 {os.getpid()} 开始下载模型")
+                    logger.info(f"进程 {os.getpid()} 开始下载模型，环境: {accelerator}。")
                     ModelScopeDownloader(
                         fetch_config=True,
                         download_directory_path=model_dir,
@@ -30,7 +30,7 @@ def download_models_via_lock(model_dir, model_name, accelerator="cpu"):
                             fetch_config=True,
                             download_directory_path=model_dir,
                         ).load_mineru_config(accelerator)
-                    logger.info(f"进程 {os.getpid()} 下载模型完成")
+                    logger.info(f"进程 {os.getpid()} 下载模型完成，环境: {accelerator}。")
 
                 # 释放锁并结束循环
                 fcntl.flock(lock_file, fcntl.LOCK_UN)
