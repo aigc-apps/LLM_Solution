@@ -11,7 +11,7 @@ from pai_rag.integrations.embeddings.pai.pai_embedding_config import parse_embed
 from pai_rag.tools.data_process.utils.download_utils import download_models_via_lock
 
 
-OP_NAME = "pai_rag_embedder"
+OP_NAME = "rag_embedder"
 
 
 @OPERATORS.register_module(OP_NAME)

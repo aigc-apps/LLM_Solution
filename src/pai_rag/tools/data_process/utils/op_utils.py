@@ -3,7 +3,7 @@ from pai_rag.tools.data_process.ops.base_op import OPERATORS
 from pai_rag.tools.data_process.utils.mm_utils import size_to_bytes
 from pai_rag.tools.data_process.utils.cuda_utils import get_num_gpus, calculate_np
 
-OPERATIONS = ["pai_rag_parser", "pai_rag_splitter", "pai_rag_embedder"]
+OPERATIONS = ["rag_parser", "rag_splitter", "rag_embedder"]
 
 
 def get_previous_operation(operation):

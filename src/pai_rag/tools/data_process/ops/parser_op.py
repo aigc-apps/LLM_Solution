@@ -9,7 +9,7 @@ from pai_rag.integrations.readers.pai.pai_data_reader import BaseDataReaderConfi
 from pai_rag.tools.data_process.utils.formatters import convert_document_to_dict
 from pai_rag.tools.data_process.utils.download_utils import download_models_via_lock
 
-OP_NAME = "pai_rag_parser"
+OP_NAME = "rag_parser"
 
 
 @OPERATORS.register_module(OP_NAME)

@@ -151,37 +151,37 @@ def init_configs():
         "--accelerator",
         type=str,
         default="cpu",
-        help="Accelerator type for pai_rag_parser and pai_rag_embedder operator.",
+        help="Accelerator type for rag_parser and rag_embedder operator.",
     )
     parser_parser.add_argument(
         "--enable_mandatory_ocr",
         type=bool,
         default=False,
-        help="Whether to enable mandatory OCR for pai_rag_parser operator.",
+        help="Whether to enable mandatory OCR for rag_parser operator.",
     )
     parser_parser.add_argument(
         "--concat_csv_rows",
         type=bool,
         default=False,
-        help="Whether to concat csv rows for pai_rag_parser operator.",
+        help="Whether to concat csv rows for rag_parser operator.",
     )
     parser_parser.add_argument(
         "--enable_table_summary",
         type=bool,
         default=False,
-        help="Whether to enable table summary for pai_rag_parser operator.",
+        help="Whether to enable table summary for rag_parser operator.",
     )
     parser_parser.add_argument(
         "--format_sheet_data_to_json",
         type=bool,
         default=False,
-        help="Whether to format sheet data to json for pai_rag_parser operator.",
+        help="Whether to format sheet data to json for rag_parser operator.",
     )
     parser_parser.add_argument(
         "--sheet_column_filters",
         type=List[str],
         default=[],
-        help="Column filters for pai_rag_parser operator.",
+        help="Column filters for rag_parser operator.",
     )
 
     # SubParser for rag_splitter
@@ -190,25 +190,25 @@ def init_configs():
         "--type",
         type=str,
         default="Token",
-        help="Split type for pai_rag_splitter operator.",
+        help="Split type for rag_splitter operator.",
     )
     parser_splitter.add_argument(
         "--chunk_size",
         type=int,
         default=1024,
-        help="Chunk size for pai_rag_splitter operator.",
+        help="Chunk size for rag_splitter operator.",
     )
     parser_splitter.add_argument(
         "--chunk_overlap",
         type=int,
         default=20,
-        help="Chunk overlap for pai_rag_splitter operator.",
+        help="Chunk overlap for rag_splitter operator.",
     )
     parser_splitter.add_argument(
         "--enable_multimodal",
         type=bool,
         default=False,
-        help="Whether to enable multimodal for pai_rag_splitter and pai_rag_embedder operator.",
+        help="Whether to enable multimodal for rag_splitter and rag_embedder operator.",
     )
 
     # SubParser for rag_embedder
@@ -217,37 +217,37 @@ def init_configs():
         "--accelerator",
         type=str,
         default="cpu",
-        help="Accelerator type for pai_rag_parser and pai_rag_embedder operator.",
+        help="Accelerator type for rag_parser and rag_embedder operator.",
     )
     parser_embedder.add_argument(
         "--source",
         type=str,
         default="huggingface",
-        help="Embedding model source for pai_rag_embedder operator.",
+        help="Embedding model source for rag_embedder operator.",
     )
     parser_embedder.add_argument(
         "--model",
         type=str,
         default="bge-large-zh-v1.5",
-        help="Embedding model name for pai_rag_embedder operator.",
+        help="Embedding model name for rag_embedder operator.",
     )
     parser_embedder.add_argument(
         "--enable_sparse",
         type=bool,
         default=False,
-        help="Whether to enable sparse for pai_rag_embedder operator.",
+        help="Whether to enable sparse for rag_embedder operator.",
     )
     parser_embedder.add_argument(
         "--multimodal_source",
         type=str,
         default="cnclip",
-        help="Multi-modal embedding model source for pai_rag_embedder operator.",
+        help="Multi-modal embedding model source for rag_embedder operator.",
     )
     parser_embedder.add_argument(
         "--enable_multimodal",
         type=bool,
         default=False,
-        help="Whether to enable multimodal for pai_rag_splitter and pai_rag_embedder operator.",
+        help="Whether to enable multimodal for rag_splitter and rag_embedder operator.",
     )
 
     args = parser.parse_args()
@@ -264,6 +264,7 @@ def init_configs():
     else:
         parser.print_help()
 
+    logger.info(f"Final args: {args}")
     return args
 
 
