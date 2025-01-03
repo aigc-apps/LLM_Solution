@@ -5,7 +5,6 @@ from pathlib import Path
 from PIL import Image
 from typing import Dict, List, Optional, Union, Any
 import re
-import time
 import os
 from llama_index.core.readers.base import BaseReader
 from llama_index.core.schema import Document
@@ -16,7 +15,14 @@ from loguru import logger
 REGEX_H1 = "===+"
 REGEX_H2 = "---+"
 REGEX_USELESS_PHRASE = "\{#[0-9a-z]+\}"  # Only for aliyun docs
-IMAGE_URL_PATTERN = r"!\[(?P<alt_text>.*?)\]\((?P<url>(?:https?://[^\s()]+|[^\s()]+)\.(?P<image_type>jpg|jpeg|png|gif|bmp))\)"
+MARKDOWN_IMAGE_PATTERN = re.compile(
+    r"!\[.*?\]\(((?!https?://|www\.)[^\s)]+\.(?:png|jpe?g|gif|bmp|svg|webp|tiff))\)",
+    re.IGNORECASE,
+)
+HTML_IMAGE_PATTERN = re.compile(
+    r'<img[^>]*src=["\']((?!https?://|www\.)[^"\']+\.(?:png|jpe?g|gif|bmp|svg|webp|tiff))["\'][^>]*>',
+    re.IGNORECASE,
+)
 
 
 class PaiMarkdownReader(BaseReader):
@@ -32,20 +38,32 @@ class PaiMarkdownReader(BaseReader):
         )
 
     def replace_image_paths(self, markdown_name: str, content: str):
-        image_pattern = IMAGE_URL_PATTERN
-        matches = re.findall(image_pattern, content)
-        for alt_text, local_url, image_type in matches:
+        markdown_image_matches = MARKDOWN_IMAGE_PATTERN.finditer(content)
+        html_image_matches = HTML_IMAGE_PATTERN.finditer(content)
+        for match in markdown_image_matches:
+            full_match = match.group(0)  # 整个匹配
+            local_url = match.group(1)  # 捕获的URL
+
             if self._oss_cache:
-                time_tag = int(time.time())
                 oss_url = self._transform_local_to_oss(markdown_name, local_url)
-                updated_alt_text = f"pai_rag_image_{time_tag}_{alt_text}"
                 if oss_url:
-                    content = content.replace(
-                        f"![{alt_text}]({local_url})",
-                        f"![{updated_alt_text}]({oss_url})",
-                    )
+                    content = content.replace(local_url, oss_url)
+                else:
+                    content = content.replace(full_match, "")
             else:
-                content = content.replace(f"![{alt_text}]({local_url})", "")
+                content = content.replace(full_match, "")
+        for match in html_image_matches:
+            full_match = match.group(0)  # 整个匹配
+            local_url = match.group(1)  # 捕获的URL
+
+            if self._oss_cache:
+                oss_url = self._transform_local_to_oss(markdown_name, local_url)
+                if oss_url:
+                    content = content.replace(local_url, oss_url)
+                else:
+                    content = content.replace(full_match, "")
+            else:
+                content = content.replace(full_match, "")
 
         return content
 
