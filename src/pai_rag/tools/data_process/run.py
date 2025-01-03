@@ -1,87 +1,87 @@
 import argparse
+import yaml
 from loguru import logger
 from typing import List
+from pai_rag.tools.data_process.ops.base_op import OPERATORS
 from pai_rag.tools.data_process.ray_executor import RayExecutor
 
 
-def process_parser(
-    dataset_path,
-    export_path,
-    working_dir,
-    cpu_required,
-    mem_required,
-    accelerator,
-    enable_mandatory_ocr,
-    concat_csv_rows,
-    enable_table_summary,
-    format_sheet_data_to_json,
-    sheet_column_filters,
-):
+def extract_parameters(yaml_dict, cfg):
+    print("yaml_dict", yaml_dict)
+    extracted_params = {key: value for key, value in yaml_dict.items() if key != "op"}
+    extracted_params["working_dir"] = cfg.working_dir
+    extracted_params["dataset_path"] = cfg.dataset_path
+    extracted_params["export_path"] = cfg.export_path
+    return extracted_params
+
+
+def update_op_process(args):
+    op_keys = list(OPERATORS.modules.keys())
+    logger.info(f"Loading all operation keys: {op_keys}")
+
+    if args.process is None:
+        args.process = []
+
+    with open(args.config_file) as file:
+        process_cfg = yaml.safe_load(file)
+    for i, process_op in enumerate(process_cfg["process"]):
+        if process_op["op"] in op_keys:
+            args.process.append(process_op["op"])
+            args.process[i] = {process_op["op"]: extract_parameters(process_op, args)}
+
+    return args
+
+
+def process_parser(args):
     parser_dict = {}
-    parser_dict["dataset_path"] = dataset_path
-    parser_dict["export_path"] = export_path
-    parser_dict["working_dir"] = working_dir
-    parser_dict["cpu_required"] = cpu_required
-    parser_dict["mem_required"] = mem_required
-    parser_dict["accelerator"] = accelerator
-    parser_dict["enable_mandatory_ocr"] = enable_mandatory_ocr
-    parser_dict["concat_csv_rows"] = concat_csv_rows
-    parser_dict["enable_table_summary"] = enable_table_summary
-    parser_dict["format_sheet_data_to_json"] = format_sheet_data_to_json
-    parser_dict["sheet_column_filters"] = sheet_column_filters
-    return parser_dict
+    parser_dict["dataset_path"] = args.dataset_path
+    parser_dict["export_path"] = args.export_path
+    parser_dict["working_dir"] = args.working_dir
+    parser_dict["cpu_required"] = args.cpu_required
+    parser_dict["mem_required"] = args.mem_required
+    parser_dict["accelerator"] = args.accelerator
+    parser_dict["enable_mandatory_ocr"] = args.enable_mandatory_ocr
+    parser_dict["concat_csv_rows"] = args.concat_csv_rows
+    parser_dict["enable_table_summary"] = args.enable_table_summary
+    parser_dict["format_sheet_data_to_json"] = args.format_sheet_data_to_json
+    parser_dict["sheet_column_filters"] = args.sheet_column_filters
+    args.process.append("rag_parser")
+    args.process[0] = {"rag_parser": parser_dict}
+    return args
 
 
-def process_splitter(
-    dataset_path,
-    export_path,
-    working_dir,
-    cpu_required,
-    mem_required,
-    type,
-    chunk_size,
-    chunk_overlap,
-    enable_multimodal,
-):
+def process_splitter(args):
     splitter_dict = {}
-    splitter_dict["dataset_path"] = dataset_path
-    splitter_dict["export_path"] = export_path
-    splitter_dict["working_dir"] = working_dir
-    splitter_dict["cpu_required"] = cpu_required
-    splitter_dict["mem_required"] = mem_required
-    splitter_dict["type"] = type
-    splitter_dict["chunk_size"] = chunk_size
-    splitter_dict["chunk_overlap"] = chunk_overlap
-    splitter_dict["enable_multimodal"] = enable_multimodal
-    return splitter_dict
+    splitter_dict["dataset_path"] = args.dataset_path
+    splitter_dict["export_path"] = args.export_path
+    splitter_dict["working_dir"] = args.working_dir
+    splitter_dict["cpu_required"] = args.cpu_required
+    splitter_dict["mem_required"] = args.mem_required
+    splitter_dict["type"] = args.type
+    splitter_dict["chunk_size"] = args.chunk_size
+    splitter_dict["chunk_overlap"] = args.chunk_overlap
+    splitter_dict["enable_multimodal"] = args.enable_multimodal
+    args.process.append("rag_splitter")
+    args.process[0] = {"rag_splitter": splitter_dict}
+    return args
 
 
-def process_embedder(
-    dataset_path,
-    export_path,
-    working_dir,
-    cpu_required,
-    mem_required,
-    accelerator,
-    source,
-    model,
-    enable_sparse,
-    multimodal_source,
-    enable_multimodal,
-):
+def process_embedder(args):
     embedder_dict = {}
-    embedder_dict["dataset_path"] = dataset_path
-    embedder_dict["export_path"] = export_path
-    embedder_dict["working_dir"] = working_dir
-    embedder_dict["cpu_required"] = cpu_required
-    embedder_dict["mem_required"] = mem_required
-    embedder_dict["accelerator"] = accelerator
-    embedder_dict["source"] = source
-    embedder_dict["model"] = model
-    embedder_dict["enable_sparse"] = enable_sparse
-    embedder_dict["multimodal_source"] = multimodal_source
-    embedder_dict["enable_multimodal"] = enable_multimodal
-    return embedder_dict
+    embedder_dict["dataset_path"] = args.dataset_path
+    embedder_dict["export_path"] = args.export_path
+    embedder_dict["working_dir"] = args.working_dir
+    embedder_dict["cpu_required"] = args.cpu_required
+    embedder_dict["mem_required"] = args.mem_required
+    embedder_dict["accelerator"] = args.accelerator
+    embedder_dict["source"] = args.source
+    embedder_dict["model"] = args.model
+    embedder_dict["enable_sparse"] = args.enable_sparse
+    embedder_dict["multimodal_source"] = args.multimodal_source
+    embedder_dict["enable_multimodal"] = args.enable_multimodal
+    args.process.append("rag_embedder")
+    args.process[0] = {"rag_embedder": embedder_dict}
+    return args
 
 
 def init_configs():
@@ -128,6 +128,16 @@ def init_configs():
         type=str,
         default="1GB",
         help="Memory required for each rag operator.",
+    )
+    # Only used for multi-operators mode
+    parser.add_argument(
+        "--config_file",
+        help="Path to a dj basic configuration file.",
+        type=str,
+        default=None,
+    )
+    parser.add_argument(
+        "--process", default=[], help="list of operator processes to run"
     )
 
     # Add subparsers
@@ -243,56 +253,24 @@ def init_configs():
     args = parser.parse_args()
 
     # Determine which process to run with shared and unique parameters
-    if args.operator == "rag_parser":
-        op_params = process_parser(
-            args.dataset_path,
-            args.export_path,
-            args.working_dir,
-            args.cpu_required,
-            args.mem_required,
-            args.accelerator,
-            args.enable_mandatory_ocr,
-            args.concat_csv_rows,
-            args.enable_table_summary,
-            args.format_sheet_data_to_json,
-            args.sheet_column_filters,
-        )
+    if args.config_file is not None:
+        args = update_op_process(args)
+    elif args.operator == "rag_parser":
+        args = process_parser(args)
     elif args.operator == "rag_splitter":
-        op_params = process_splitter(
-            args.dataset_path,
-            args.export_path,
-            args.working_dir,
-            args.cpu_required,
-            args.mem_required,
-            args.type,
-            args.chunk_size,
-            args.chunk_overlap,
-            args.enable_multimodal,
-        )
+        args = process_splitter(args)
     elif args.operator == "rag_embedder":
-        op_params = process_embedder(
-            args.dataset_path,
-            args.export_path,
-            args.working_dir,
-            args.cpu_required,
-            args.mem_required,
-            args.accelerator,
-            args.source,
-            args.model,
-            args.enable_sparse,
-            args.multimodal_source,
-            args.enable_multimodal,
-        )
+        args = process_embedder(args)
     else:
         parser.print_help()
 
-    return args, op_params
+    return args
 
 
 @logger.catch(reraise=True)
 def main():
-    cfg, op_params = init_configs()
-    executor = RayExecutor(cfg, op_params)
+    cfg = init_configs()
+    executor = RayExecutor(cfg)
     executor.run()
 
 
