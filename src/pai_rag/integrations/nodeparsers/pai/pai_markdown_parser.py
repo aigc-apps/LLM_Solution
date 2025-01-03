@@ -66,10 +66,7 @@ class StructuredNodeParser(BaseModel):
 
     def _cut(self, raw_section: str) -> Iterator[str]:
         # 可能存在单个node 字符数大于chunk_size，此时需要将node进行拆分。拆分元素里不会含有image。
-        return [
-            f"{self._format_section_header(self.title_stack)}:{chunk}"
-            for chunk in self.base_parser.split_text(raw_section)
-        ]
+        return self.base_parser.split_text(raw_section)
 
     def _format_section_header(self, section_headers):
         return " >> ".join([h.content for h in section_headers])
@@ -152,96 +149,93 @@ class StructuredNodeParser(BaseModel):
 
         return self.nodes_list.copy()
 
+    def _split_level_nodes(self, tree_nodes: list[TreeNode]):
+        tree_nodes_group = []
+        tree_tokens = 0
+        for tree_node in tree_nodes:
+            if tree_node.category == "image" and self.enable_multimodal:
+                if tree_nodes_group:
+                    tree_nodes_group[-1].append(tree_node)
+                else:
+                    tree_nodes_group.append([tree_node])
+            elif tree_node.content_token_count > self.chunk_size:
+                if tree_nodes_group and len(tree_nodes_group[-1]) == 0:
+                    tree_nodes_group[-1].append(tree_node)
+                else:
+                    tree_nodes_group.append([tree_node])
+                tree_nodes_group.append([])
+                tree_tokens = 0
+            elif (
+                tree_nodes_group
+                and tree_tokens + tree_node.content_token_count <= self.chunk_size
+            ):
+                tree_nodes_group[-1].append(tree_node)
+                tree_tokens += tree_node.content_token_count
+            else:
+                tree_nodes_group.append([tree_node])
+                tree_tokens = tree_node.content_token_count
+        return tree_nodes_group
+
     def traverse_tree(self, tree_node, doc_node, ref_doc):
         relationships = {NodeRelationship.SOURCE: ref_doc.as_related_node_info()}
-
         if tree_node.category == "title":
             while self.title_stack and self.title_stack[-1].level >= tree_node.level:
                 self.title_stack.pop()
             self.title_stack.append(tree_node)
-        elif tree_node.category == "image":
-            image_node = ImageNode(
-                embedding=doc_node.embedding,
-                image_url=tree_node.content,
-                excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
-                excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
-                metadata_template=doc_node.metadata_template,
-                text_template=doc_node.text_template,
-                metadata={
-                    "image_url": tree_node.content,
-                    **doc_node.extra_info,
-                },
-                relationships=relationships,
-            )
-            self.nodes_list.append(image_node)
-            image_info = ImageInfo(image_url=tree_node.content)
-            self.chunk_images_list.append(json.dumps(image_info.__dict__))
 
         # 单个节点token数大于chunk_size，则需要将节点进行拆分。拆分元素里不会含有image。
         if not tree_node.children:
-            for new_chunk_chunk in self._cut(tree_node.content):
-                self._add_text_node(new_chunk_chunk, doc_node, ref_doc)
+            for chunk_text in self._cut(tree_node.content):
+                if self.title_stack:
+                    new_chunk_text = (
+                        f"{self._format_section_header(self.title_stack)}:{chunk_text}"
+                    )
+                else:
+                    new_chunk_text = chunk_text
+                self._add_text_node(new_chunk_text, doc_node, ref_doc)
                 self.chunk_images_list.clear()
 
-        tree_tokens = tree_node.content_token_count
-        chunk_text = tree_node.content
-        for child in tree_node.children:
-            if child.category == "image" and self.enable_multimodal:
-                image_node = ImageNode(
-                    embedding=doc_node.embedding,
-                    image_url=child.content,
-                    excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
-                    excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                    metadata_seperator=doc_node.metadata_seperator,
-                    metadata_template=doc_node.metadata_template,
-                    text_template=doc_node.text_template,
-                    metadata={
-                        "image_url": child.content,
-                        **doc_node.extra_info,
-                    },
-                    relationships=relationships,
-                )
-                self.nodes_list.append(image_node)
-                image_info = ImageInfo(image_url=child.content)
-                self.chunk_images_list.append(json.dumps(image_info.__dict__))
+        nodes_groups = self._split_level_nodes(tree_node.children)
+        for node_group in nodes_groups:
+            if len(node_group) == 0:
                 continue
-            elif child.category == "title":
-                while self.title_stack and self.title_stack[-1].level >= child.level:
-                    self.title_stack.pop()
-                self.title_stack.append(child)
-
-            if child.content_token_count > self.chunk_size:
-                # 避免插入内容为空的节点
-                if len(chunk_text) > 0:
-                    new_chunk_text = (
-                        f"{self._format_section_header(self.title_stack)}:{chunk_text}"
-                    )
-                    self._add_text_node(new_chunk_text, doc_node, ref_doc)
-                    self.chunk_images_list.clear()
-                chunk_text = ""
-                tree_tokens = 0
-                self.traverse_tree(child, doc_node, ref_doc)
-            elif tree_tokens + child.content_token_count <= self.chunk_size:
-                chunk_text += self._format_tree_nodes(child, doc_node, ref_doc)
-                tree_tokens += child.content_token_count
+            # 一个group里只有一个节点，且该节点的size数超过chunk_size
+            if (
+                len(node_group) == 1
+                and node_group[0].content_token_count >= self.chunk_size
+            ):
+                self.traverse_tree(node_group[0], doc_node, ref_doc)
             else:
-                if len(chunk_text) > 0:
+                chunk_text = ""
+                for child in node_group:
+                    if child.category == "image":
+                        image_node = ImageNode(
+                            embedding=doc_node.embedding,
+                            image_url=child.content,
+                            excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
+                            excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
+                            metadata_seperator=doc_node.metadata_seperator,
+                            metadata_template=doc_node.metadata_template,
+                            text_template=doc_node.text_template,
+                            metadata={
+                                "image_url": child.content,
+                                **doc_node.extra_info,
+                            },
+                            relationships=relationships,
+                        )
+                        self.nodes_list.append(image_node)
+                        image_info = ImageInfo(image_url=child.content)
+                        self.chunk_images_list.append(json.dumps(image_info.__dict__))
+                    else:
+                        chunk_text += self._format_tree_nodes(child, doc_node, ref_doc)
+                if self.title_stack:
                     new_chunk_text = (
                         f"{self._format_section_header(self.title_stack)}:{chunk_text}"
                     )
-                    self._add_text_node(new_chunk_text, doc_node, ref_doc)
-                    self.chunk_images_list.clear()
-                chunk_text = self._format_tree_nodes(child, doc_node, ref_doc)
-                tree_tokens = child.content_token_count
-
-        # 处理最后的段落
-        if len(chunk_text) > 0:
-            new_chunk_text = (
-                f"{self._format_section_header(self.title_stack)}:{chunk_text}"
-            )
-            self._add_text_node(new_chunk_text, doc_node, ref_doc)
-            self.chunk_images_list.clear()
+                else:
+                    new_chunk_text = chunk_text
+                self._add_text_node(new_chunk_text, doc_node, ref_doc)
+                self.chunk_images_list.clear()
 
 
 class MarkdownNodeParser(NodeParser):
