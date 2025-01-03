@@ -10,7 +10,7 @@ from pai_rag.integrations.readers.pai.pai_data_reader import get_input_files
 class FileDataset(ABC):
     def __init__(self, dataset_path: str = None, cfg=None) -> None:
         logger.info(f"Loading file dataset from {dataset_path}.")
-        self.data = get_input_files(dataset_path)
+        self.data, _ = get_input_files(dataset_path)
         if cfg:
             self.export_path = cfg.export_path
 
