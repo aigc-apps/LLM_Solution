@@ -56,8 +56,6 @@ class StructuredNodeParser(BaseModel):
     )
 
     title_stack: List = Field(default_factory=list)
-    nodes_list: List[TextNode] = Field(default_factory=list)
-    chunk_images_list: List[str] = Field(default_factory=list)
 
     @classmethod
     def class_name(cls) -> str:
@@ -71,7 +69,9 @@ class StructuredNodeParser(BaseModel):
     def _format_section_header(self, section_headers):
         return " >> ".join([h.content for h in section_headers])
 
-    def _format_tree_nodes(self, node, doc_node, ref_doc):
+    def _format_tree_nodes(
+        self, node, doc_node, ref_doc, nodes_list, chunk_images_list
+    ):
         relationships = {NodeRelationship.SOURCE: ref_doc.as_related_node_info()}
         if node.category == "image" and self.enable_multimodal:
             image_node = ImageNode(
@@ -88,22 +88,26 @@ class StructuredNodeParser(BaseModel):
                 },
                 relationships=relationships,
             )
-            self.nodes_list.append(image_node)
+            nodes_list.append(image_node)
             image_info = ImageInfo(image_url=node.content)
-            self.chunk_images_list.append(json.dumps(image_info.__dict__))
+            chunk_images_list.append(json.dumps(image_info.__dict__))
             return ""
         if not node.children:
             return node.content
-        return node.content + "\n".join(
+        return node.content + "\n\n".join(
             [
-                self._format_tree_nodes(child, doc_node, ref_doc)
+                self._format_tree_nodes(
+                    child, doc_node, ref_doc, nodes_list, chunk_images_list
+                )
                 for child in node.children
             ]
         )
 
-    def _add_text_node(self, chunk_content, doc_node, ref_doc):
+    def _add_text_node(
+        self, chunk_content, doc_node, ref_doc, nodes_list, chunk_images_list
+    ):
         relationships = {NodeRelationship.SOURCE: ref_doc.as_related_node_info()}
-        if len(self.chunk_images_list) > 0 and self.enable_multimodal:
+        if len(chunk_images_list) > 0 and self.enable_multimodal:
             text_node = TextNode(
                 text=chunk_content,
                 embedding=doc_node.embedding,
@@ -113,7 +117,7 @@ class StructuredNodeParser(BaseModel):
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 metadata={
-                    "image_info_list": self.chunk_images_list.copy(),
+                    "image_info_list": chunk_images_list.copy(),
                     **doc_node.extra_info,
                 },
                 relationships=relationships,
@@ -131,23 +135,29 @@ class StructuredNodeParser(BaseModel):
                 relationships=relationships,
             )
 
-        self.nodes_list.append(text_node)
+        nodes_list.append(text_node)
 
-    def get_nodes_form_tree(
+    def get_nodes_from_tree(
         self, root: TreeNode, doc_node: BaseNode, ref_doc: Optional[BaseNode] = None
     ):
         ref_doc = ref_doc or doc_node
+        nodes_list = []
+        chunk_images_list = []
         # 判断是否可以将整个树节点作为一个chunk
         if root.content_token_count <= self.chunk_size:
-            new_chunk_text = self._format_tree_nodes(root, doc_node, ref_doc)
+            new_chunk_text = self._format_tree_nodes(
+                root, doc_node, ref_doc, nodes_list, chunk_images_list
+            )
             # 避免插入内容为空的节点
             if len(new_chunk_text) > 0:
-                self._add_text_node(new_chunk_text, doc_node, ref_doc)
-                self.chunk_images_list.clear()
+                self._add_text_node(
+                    new_chunk_text, doc_node, ref_doc, nodes_list, chunk_images_list
+                )
+                chunk_images_list.clear()
         else:
-            self.traverse_tree(root, doc_node, ref_doc)
+            self.traverse_tree(root, doc_node, ref_doc, nodes_list, chunk_images_list)
 
-        return self.nodes_list.copy()
+        return nodes_list.copy()
 
     def _split_level_nodes(self, tree_nodes: list[TreeNode]):
         tree_nodes_group = []
@@ -176,7 +186,9 @@ class StructuredNodeParser(BaseModel):
                 tree_tokens = tree_node.content_token_count
         return tree_nodes_group
 
-    def traverse_tree(self, tree_node, doc_node, ref_doc):
+    def traverse_tree(
+        self, tree_node, doc_node, ref_doc, nodes_list, chunk_images_list
+    ):
         relationships = {NodeRelationship.SOURCE: ref_doc.as_related_node_info()}
         if tree_node.category == "title":
             while self.title_stack and self.title_stack[-1].level >= tree_node.level:
@@ -192,8 +204,10 @@ class StructuredNodeParser(BaseModel):
                     )
                 else:
                     new_chunk_text = chunk_text
-                self._add_text_node(new_chunk_text, doc_node, ref_doc)
-                self.chunk_images_list.clear()
+                self._add_text_node(
+                    new_chunk_text, doc_node, ref_doc, nodes_list, chunk_images_list
+                )
+                chunk_images_list.clear()
 
         nodes_groups = self._split_level_nodes(tree_node.children)
         for node_group in nodes_groups:
@@ -204,7 +218,9 @@ class StructuredNodeParser(BaseModel):
                 len(node_group) == 1
                 and node_group[0].content_token_count >= self.chunk_size
             ):
-                self.traverse_tree(node_group[0], doc_node, ref_doc)
+                self.traverse_tree(
+                    node_group[0], doc_node, ref_doc, nodes_list, chunk_images_list
+                )
             else:
                 chunk_text = ""
                 for child in node_group:
@@ -223,19 +239,23 @@ class StructuredNodeParser(BaseModel):
                             },
                             relationships=relationships,
                         )
-                        self.nodes_list.append(image_node)
+                        nodes_list.append(image_node)
                         image_info = ImageInfo(image_url=child.content)
-                        self.chunk_images_list.append(json.dumps(image_info.__dict__))
+                        chunk_images_list.append(json.dumps(image_info.__dict__))
                     else:
-                        chunk_text += self._format_tree_nodes(child, doc_node, ref_doc)
+                        chunk_text += self._format_tree_nodes(
+                            child, doc_node, ref_doc, nodes_list, chunk_images_list
+                        )
                 if self.title_stack:
                     new_chunk_text = (
                         f"{self._format_section_header(self.title_stack)}:{chunk_text}"
                     )
                 else:
                     new_chunk_text = chunk_text
-                self._add_text_node(new_chunk_text, doc_node, ref_doc)
-                self.chunk_images_list.clear()
+                self._add_text_node(
+                    new_chunk_text, doc_node, ref_doc, nodes_list, chunk_images_list
+                )
+                chunk_images_list.clear()
 
 
 class MarkdownNodeParser(NodeParser):
@@ -267,6 +287,6 @@ class MarkdownNodeParser(NodeParser):
                 enable_multimodal=self.enable_multimodal,
                 base_parser=self.base_parser,
             )
-            nodes = parser.get_nodes_form_tree(ast_root, node)
+            nodes = parser.get_nodes_from_tree(ast_root, node)
             all_nodes.extend(nodes)
         return all_nodes
