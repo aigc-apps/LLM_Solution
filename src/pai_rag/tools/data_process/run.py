@@ -45,6 +45,8 @@ def process_parser(args):
     parser_dict["enable_table_summary"] = args.enable_table_summary
     parser_dict["format_sheet_data_to_json"] = args.format_sheet_data_to_json
     parser_dict["sheet_column_filters"] = args.sheet_column_filters
+    parser_dict["oss_bucket"] = args.oss_bucket
+    parser_dict["oss_endpoint"] = args.oss_endpoint
     args.process.append("rag_parser")
     args.process[0] = {"rag_parser": parser_dict}
     return args
