@@ -79,8 +79,8 @@ def process_embedder(args):
     embedder_dict["source"] = args.source
     embedder_dict["model"] = args.model
     embedder_dict["enable_sparse"] = args.enable_sparse
-    embedder_dict["multimodal_source"] = args.multimodal_source
     embedder_dict["enable_multimodal"] = args.enable_multimodal
+    embedder_dict["multimodal_source"] = args.multimodal_source
     args.process.append("rag_embedder")
     args.process[0] = {"rag_embedder": embedder_dict}
     return args
