@@ -33,7 +33,15 @@ class Parser(BaseOP):
 
         logger.info(f"当前线程的 ID: {current_thread.ident} 进程ID: {os.getpid()}")
 
-        self.data_reader_config = BaseDataReaderConfig()
+        self.data_reader_config = BaseDataReaderConfig(
+            concat_csv_rows=self.kwargs.get("concat_csv_rows", False),
+            enable_mandatory_ocr=self.kwargs.get("enable_mandatory_ocr", False),
+            enable_table_summary=self.kwargs.get("enable_table_summary", False),
+            format_sheet_data_to_json=self.kwargs.get(
+                "format_sheet_data_to_json", False
+            ),
+            sheet_column_filters=self.kwargs.get("sheet_column_filters", None),
+        )
         if self.kwargs.get("oss_bucket", None) and self.kwargs.get(
             "oss_endpoint", None
         ):
