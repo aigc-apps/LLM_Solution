@@ -2,9 +2,8 @@
 # a list of several pai_rag offline process operators with their arguments
 process:
   - op: "rag_parser"
-    oss_store:
-      bucket: "pai-rag"
-      endpoint: "oss-cn-hangzhou.aliyuncs.com"
+    oss_bucket: "pai-rag"
+    oss_endpoint: "oss-cn-hangzhou.aliyuncs.com"
     accelerator: "cpu" # cpu or cuda
     cpu_required: 6
     mem_required: "4GB"

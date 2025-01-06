@@ -179,6 +179,18 @@ def init_configs():
         default=[],
         help="Column filters for rag_parser operator.",
     )
+    parser.add_argument(
+        "--oss_bucket",
+        type=str,
+        default=None,
+        help="OSS Bucket for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--oss_endpoint",
+        type=str,
+        default="oss-cn-hangzhou.aliyuncs.com",
+        help="OSS Endpoint for rag_parser operator.",
+    )
 
     # arguments for rag_splitter
     parser.add_argument(

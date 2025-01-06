@@ -34,11 +34,11 @@ class Parser(BaseOP):
         logger.info(f"当前线程的 ID: {current_thread.ident} 进程ID: {os.getpid()}")
 
         self.data_reader_config = BaseDataReaderConfig()
-        if self.kwargs.get("oss_store", None):
+        if self.kwargs.get("oss_bucket", None) or self.kwargs.get("oss_endpoint", None):
             self.oss_store = resolve(
                 cls=OssClient,
-                bucket_name=self.kwargs["oss_store"]["bucket"],
-                endpoint=self.kwargs["oss_store"]["endpoint"],
+                bucket_name=self.kwargs["oss_bucket"],
+                endpoint=self.kwargs["oss_endpoint"],
             )
         else:
             self.oss_store = None
