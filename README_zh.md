@@ -27,7 +27,7 @@ PAI-RAG 是一个易于使用的模块化 RAG（检索增强生成）开源框�
 # 🌟 主要模块和功能
 
 - 模块化设计，灵活可配置
-- 功能丰富，包括Agentic RAG, 多模态问答和nl2sql等
+- 功能丰富，包括[Agentic RAG](docs/agentic_rag.md), [多模态问答](docs/multimodal_rag.md)和[nl2sql](docs/data_analysis_doc.md)等
 - 基于社区开源组件构建，定制化门槛低
 - 多维度自动评估体系，轻松掌握各模块性能质量
 - 集成全链路可观测和评估可视化工具
@@ -151,6 +151,10 @@ PAI-RAG 是一个易于使用的模块化 RAG（检索增强生成）开源框�
 ## API服务
 
 可以直接通过API服务调用RAG能力（上传数据，RAG查询，检索，NL2SQL, Function call等等）。更多细节可以查看[API文档](./docs/api_zh.md)
+
+## 多模态问答
+
+可以配置OSS存储和多模态大语言模型来实现文档中的图片理解和问答。请参考问答[多模态问答](./docs/multimodal_rag.md)
 
 ## Agentic RAG
 
