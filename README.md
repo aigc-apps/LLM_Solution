@@ -32,7 +32,7 @@ PAI-RAG is an easy-to-use opensource framework for modular RAG (Retrieval-Augmen
 # 🌟 Key Features
 
 - Modular design, flexible and configurable
-- Powerful RAG capability: multi-modal rag, agentic-rag and nl2sql support
+- Powerful RAG capability: [multi-modal rag](docs/multimodal_rag.md), [agentic-rag](docs/agentic_rag.md) and [nl2sql](docs/data_analysis_doc.md) support
 - Built on community open source components, low customization threshold
 - Multi-dimensional automatic evaluation system, easy to grasp the performance quality of each module
 - Integrated llm-based-application tracing and evaluation visualization tools
@@ -152,6 +152,10 @@ If you prefer to run or develop PAI-RAG locally, please refer to [local developm
 ## API specification
 
 You can access and integrate our RAG service according to our [API specification](./docs/api.md).
+
+## MultiModal RAG
+
+You can use multimodal RAG to process documents with images, please refer to the documentation: [MultiModal RAG](./docs/multimodal_rag.md)
 
 ## Agentic RAG
 
