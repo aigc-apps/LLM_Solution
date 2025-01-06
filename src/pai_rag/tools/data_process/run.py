@@ -129,6 +129,9 @@ def init_configs():
         default="1GB",
         help="Memory required for each rag operator.",
     )
+    parser.add_argument(
+        "--process", default=[], help="list of operator processes to run"
+    )
     # Only used for multi-operators mode
     parser.add_argument(
         "--config_file",
@@ -136,123 +139,102 @@ def init_configs():
         type=str,
         default=None,
     )
+    # Only used for single-operator mode
+    parser.add_argument("--operator", default=None, help="Choose a rag operator to run")
+
+    # arguments for rag_parser
     parser.add_argument(
-        "--process", default=[], help="list of operator processes to run"
-    )
-
-    # Add subparsers
-    subparsers = parser.add_subparsers(
-        dest="operator", help="Choose a rag operator to run"
-    )
-
-    # SubParser for rag_parser
-    parser_parser = subparsers.add_parser("rag_parser", help="Run rag_parser")
-    parser_parser.add_argument(
         "--accelerator",
         type=str,
         default="cpu",
         help="Accelerator type for rag_parser and rag_embedder operator.",
     )
-    parser_parser.add_argument(
+    parser.add_argument(
         "--enable_mandatory_ocr",
         type=bool,
         default=False,
         help="Whether to enable mandatory OCR for rag_parser operator.",
     )
-    parser_parser.add_argument(
+    parser.add_argument(
         "--concat_csv_rows",
         type=bool,
         default=False,
         help="Whether to concat csv rows for rag_parser operator.",
     )
-    parser_parser.add_argument(
+    parser.add_argument(
         "--enable_table_summary",
         type=bool,
         default=False,
         help="Whether to enable table summary for rag_parser operator.",
     )
-    parser_parser.add_argument(
+    parser.add_argument(
         "--format_sheet_data_to_json",
         type=bool,
         default=False,
         help="Whether to format sheet data to json for rag_parser operator.",
     )
-    parser_parser.add_argument(
+    parser.add_argument(
         "--sheet_column_filters",
         type=List[str],
         default=[],
         help="Column filters for rag_parser operator.",
     )
 
-    # SubParser for rag_splitter
-    parser_splitter = subparsers.add_parser("rag_splitter", help="Run rag_splitter")
-    parser_splitter.add_argument(
+    # arguments for rag_splitter
+    parser.add_argument(
         "--type",
         type=str,
         default="Token",
         help="Split type for rag_splitter operator.",
     )
-    parser_splitter.add_argument(
+    parser.add_argument(
         "--chunk_size",
         type=int,
         default=1024,
         help="Chunk size for rag_splitter operator.",
     )
-    parser_splitter.add_argument(
+    parser.add_argument(
         "--chunk_overlap",
         type=int,
         default=20,
         help="Chunk overlap for rag_splitter operator.",
     )
-    parser_splitter.add_argument(
+    parser.add_argument(
         "--enable_multimodal",
         type=bool,
         default=False,
         help="Whether to enable multimodal for rag_splitter and rag_embedder operator.",
     )
 
-    # SubParser for rag_embedder
-    parser_embedder = subparsers.add_parser("rag_embedder", help="Run rag_embedder")
-    parser_embedder.add_argument(
-        "--accelerator",
-        type=str,
-        default="cpu",
-        help="Accelerator type for rag_parser and rag_embedder operator.",
-    )
-    parser_embedder.add_argument(
+    # arguments for rag_embedder
+    parser.add_argument(
         "--source",
         type=str,
         default="huggingface",
         help="Embedding model source for rag_embedder operator.",
     )
-    parser_embedder.add_argument(
+    parser.add_argument(
         "--model",
         type=str,
         default="bge-large-zh-v1.5",
         help="Embedding model name for rag_embedder operator.",
     )
-    parser_embedder.add_argument(
+    parser.add_argument(
         "--enable_sparse",
         type=bool,
         default=False,
         help="Whether to enable sparse for rag_embedder operator.",
     )
-    parser_embedder.add_argument(
+    parser.add_argument(
         "--multimodal_source",
         type=str,
         default="cnclip",
         help="Multi-modal embedding model source for rag_embedder operator.",
     )
-    parser_embedder.add_argument(
-        "--enable_multimodal",
-        type=bool,
-        default=False,
-        help="Whether to enable multimodal for rag_splitter and rag_embedder operator.",
-    )
 
     args = parser.parse_args()
 
-    # Determine which process to run with shared and unique parameters
+    # Determine which way to run with rag operators [config_file, cmd_args]
     if args.config_file is not None:
         args = update_op_process(args)
     elif args.operator == "rag_parser":
