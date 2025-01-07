@@ -29,7 +29,9 @@ RAG服务可以部署CPU和GPU版本，GPU版本在pdf文档解析、embedding�
 
 4. 配置VPC
 
-EAS服务默认不通公网，在访问通义千问大模型服务API或者访问云向量数据库时，需要配置VPC，请参考[EAS配置公网连接](https://help.aliyun.com/zh/pai/user-guide/configure-network-connectivity#1d893e761dnkz)。
+EAS服务可通过配置VPC连接信息访问Elasticsearch, Milvus, OpenSearch，Hologres等阿里云上的向量数据库服务。需要配置VPC信息，请参考[配置VPC专有网络](https://help.aliyun.com/zh/pai/user-guide/configure-network-connectivity#section-igc-x2v-hfz)
+
+EAS服务默认不通公网，在需要访问通义千问大模型服务API时，需要配置公网连接，请参考[EAS配置公网连接](https://help.aliyun.com/zh/pai/user-guide/configure-network-connectivity#1d893e761dnkz)。
 
 <img src="./figures/deploy/eas/deploy_vpc.jpg" width="800px" />
 
