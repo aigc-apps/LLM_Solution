@@ -6,6 +6,17 @@ from pai_rag.tools.data_process.ops.base_op import OPERATORS
 from pai_rag.tools.data_process.ray_executor import RayExecutor
 
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
+
 def extract_parameters(yaml_dict, cfg):
     print("yaml_dict", yaml_dict)
     extracted_params = {key: value for key, value in yaml_dict.items() if key != "op"}
@@ -168,25 +179,33 @@ def init_configs():
     )
     parser.add_argument(
         "--enable_mandatory_ocr",
-        type=bool,
+        type=str2bool,
+        nargs="?",
+        const=True,
         default=False,
         help="Whether to enable mandatory OCR for rag_parser operator.",
     )
     parser.add_argument(
         "--concat_csv_rows",
-        type=bool,
+        type=str2bool,
+        nargs="?",
+        const=True,
         default=False,
         help="Whether to concat csv rows for rag_parser operator.",
     )
     parser.add_argument(
         "--enable_table_summary",
-        type=bool,
+        type=str2bool,
+        nargs="?",
+        const=True,
         default=False,
         help="Whether to enable table summary for rag_parser operator.",
     )
     parser.add_argument(
         "--format_sheet_data_to_json",
-        type=bool,
+        type=str2bool,
+        nargs="?",
+        const=True,
         default=False,
         help="Whether to format sheet data to json for rag_parser operator.",
     )
@@ -230,7 +249,9 @@ def init_configs():
     )
     parser.add_argument(
         "--enable_multimodal",
-        type=bool,
+        type=str2bool,
+        nargs="?",
+        const=True,
         default=False,
         help="Whether to enable multimodal for rag_splitter and rag_embedder operator.",
     )
@@ -250,7 +271,9 @@ def init_configs():
     )
     parser.add_argument(
         "--enable_sparse",
-        type=bool,
+        type=str2bool,
+        nargs="?",
+        const=True,
         default=False,
         help="Whether to enable sparse for rag_embedder operator.",
     )
