@@ -11,7 +11,7 @@ from pai_rag.integrations.embeddings.pai.pai_embedding_config import parse_embed
 from pai_rag.tools.data_process.utils.download_utils import download_models_via_lock
 
 
-OP_NAME = "pai_rag_embedder"
+OP_NAME = "rag_embedder"
 
 
 @OPERATORS.register_module(OP_NAME)
@@ -23,30 +23,50 @@ class Embedder(BaseOP):
     _accelerator = "cpu"
     _batched_op = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        source: str = None,
+        model: str = None,
+        enable_sparse: bool = False,
+        enable_multimodal: bool = False,
+        multimodal_source: str = None,
+        *args,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.embedder_cfg = parse_embed_config(
             {
-                "source": kwargs.get("source", None),
-                "model": kwargs.get("model", None),
-                "enable_sparse": kwargs.get("enable_sparse", None),
+                "source": source,
+                "model": model,
+                "enable_sparse": enable_sparse,
             }
         )
+        # Init model download list
         self.download_model_list = []
         if self.embedder_cfg.source.lower() == "huggingface":
             self.download_model_list.append(self.embedder_cfg.model)
         if self.embedder_cfg.enable_sparse:
             self.download_model_list.append("bge-m3")
-        self.enable_multimodal = (
-            True if kwargs.get("enable_multimodal", None) else False
-        )
+        self.enable_multimodal = enable_multimodal
         if self.enable_multimodal:
-            self.mm_embedder_cfg = parse_embed_config(
-                {"source": kwargs.get("multimodal_source", None)}
-            )
+            self.mm_embedder_cfg = parse_embed_config({"source": multimodal_source})
             self.download_model_list.append("chinese-clip-vit-large-patch14")
         for model_name in self.download_model_list:
             download_models_via_lock(self.model_dir, model_name)
+
+        # Init embedding models
+        self.embed_model = create_embedding(self.embedder_cfg)
+        logger.info("Dense embedding model loaded.")
+        if self.embedder_cfg.enable_sparse:
+            self.sparse_embed_model = BGEM3SparseEmbeddingFunction(
+                model_name_or_path=self.model_dir
+            )
+            logger.info("Sparse embedding model loaded.")
+        if self.enable_multimodal:
+            self.multimodal_embed_model = create_embedding(
+                self.mm_embedder_cfg, pai_rag_model_dir=self.model_dir
+            )
+            logger.info("Multi-modal embedding model loaded.")
         logger.info("Embedder init finished.")
 
     def process_extra_metadata(self, nodes):
@@ -70,15 +90,9 @@ class Embedder(BaseOP):
         text_nodes = [node for node in nodes if node["type"] == "text"]
         image_nodes = [node for node in nodes if node["type"] == "image"]
         if len(text_nodes) > 0:
-            self.embed_model = create_embedding(self.embedder_cfg)
-            logger.info("Dense embed model loaded.")
             text_contents = [node["text"] for node in text_nodes]
             embeddings = self.embed_model.get_text_embedding_batch(text_contents)
             if self.embedder_cfg.enable_sparse:
-                self.sparse_embed_model = BGEM3SparseEmbeddingFunction(
-                    model_name_or_path=self.model_dir
-                )
-                logger.info("Sparse embed model loaded.")
                 sparse_embeddings = self.sparse_embed_model.encode_documents(
                     text_contents
                 )
@@ -94,12 +108,9 @@ class Embedder(BaseOP):
             logger.info("No text nodes to process.")
 
         if len(image_nodes) > 0:
-            multimodal_embed_model = create_embedding(
-                self.mm_embedder_cfg, pai_rag_model_dir=self.model_dir
-            )
             image_urls = [node["metadata"]["image_url"] for node in image_nodes]
             image_list = self.load_images_from_nodes(image_urls)
-            image_embeddings = multimodal_embed_model.get_image_embedding_batch(
+            image_embeddings = self.multimodal_embed_model.get_image_embedding_batch(
                 image_list
             )
             for node, emb in zip(image_nodes, image_embeddings):

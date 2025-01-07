@@ -1,8 +1,20 @@
-from loguru import logger
-from pai_rag.tools.data_process.ray_executor import RayExecutor
 import argparse
-from pai_rag.tools.data_process.ops.base_op import OPERATORS
 import yaml
+from loguru import logger
+from typing import List
+from pai_rag.tools.data_process.ops.base_op import OPERATORS
+from pai_rag.tools.data_process.ray_executor import RayExecutor
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ("yes", "true", "t", "y", "1"):
+        return True
+    elif v.lower() in ("no", "false", "f", "n", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean value expected.")
 
 
 def extract_parameters(yaml_dict, cfg):
@@ -14,39 +26,103 @@ def extract_parameters(yaml_dict, cfg):
     return extracted_params
 
 
-def update_op_process(cfg):
+def update_op_process(args):
     op_keys = list(OPERATORS.modules.keys())
     logger.info(f"Loading all operation keys: {op_keys}")
 
-    if cfg.process is None:
-        cfg.process = []
+    if args.process is None:
+        args.process = []
 
-    with open(cfg.config) as file:
+    with open(args.config_file) as file:
         process_cfg = yaml.safe_load(file)
     for i, process_op in enumerate(process_cfg["process"]):
         if process_op["op"] in op_keys:
-            cfg.process.append(process_op["op"])
-            cfg.process[i] = {process_op["op"]: extract_parameters(process_op, cfg)}
+            args.process.append(process_op["op"])
+            args.process[i] = {process_op["op"]: extract_parameters(process_op, args)}
 
-    return cfg
+    return args
+
+
+def process_parser(args):
+    args_dict = args.__dict__
+    parser_required_args = {
+        key: args_dict[key]
+        for key in [
+            "dataset_path",
+            "export_path",
+            "working_dir",
+            "cpu_required",
+            "mem_required",
+            "accelerator",
+            "enable_mandatory_ocr",
+            "concat_csv_rows",
+            "enable_table_summary",
+            "format_sheet_data_to_json",
+            "sheet_column_filters",
+            "oss_bucket",
+            "oss_endpoint",
+        ]
+    }
+    args.process.append("rag_parser")
+    args.process[0] = {"rag_parser": parser_required_args}
+    return args
+
+
+def process_splitter(args):
+    args_dict = args.__dict__
+    splitter_required_args = {
+        key: args_dict[key]
+        for key in [
+            "dataset_path",
+            "export_path",
+            "working_dir",
+            "cpu_required",
+            "mem_required",
+            "type",
+            "chunk_size",
+            "chunk_overlap",
+            "enable_multimodal",
+        ]
+    }
+    args.process.append("rag_splitter")
+    args.process[0] = {"rag_splitter": splitter_required_args}
+    return args
+
+
+def process_embedder(args):
+    args_dict = args.__dict__
+    embedder_required_args = {
+        key: args_dict[key]
+        for key in [
+            "dataset_path",
+            "export_path",
+            "working_dir",
+            "cpu_required",
+            "mem_required",
+            "accelerator",
+            "source",
+            "model",
+            "enable_sparse",
+            "enable_multimodal",
+            "multimodal_source",
+        ]
+    }
+    args.process.append("rag_embedder")
+    args.process[0] = {"rag_embedder": embedder_required_args}
+    return args
 
 
 def init_configs():
     """
-    initialize the jsonargparse parser and parse configs from one of:
+    initialize the argparse parser and parse configs from one of:
         1. POSIX-style commands line args;
-        2. config files in yaml (json and jsonnet supersets);
-        3. environment variables
-        4. hard-coded defaults
+        2. environment variables
+        3. hard-coded defaults
 
     :return: a global cfg object used by the Executor or Analyzer
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--config",
-        help="Path to a dj basic configuration file.",
-        required=True,
-    )
+    # shared parameters
     parser.add_argument(
         "--dataset_path",
         type=str,
@@ -69,10 +145,161 @@ def init_configs():
         default="/PAI-RAG",
         help="Path to working dir for ray cluster.",
     )
-    parser.add_argument("--process", type=int, default=None, help="name of processes")
-    cfg = parser.parse_args()
-    cfg = update_op_process(cfg)
-    return cfg
+    parser.add_argument(
+        "--cpu_required",
+        type=int,
+        default=1,
+        help="Cpu required for each rag operator.",
+    )
+    parser.add_argument(
+        "--mem_required",
+        type=str,
+        default="1GB",
+        help="Memory required for each rag operator.",
+    )
+    parser.add_argument(
+        "--process", default=[], help="list of operator processes to run"
+    )
+    # Only used for multi-operators mode
+    parser.add_argument(
+        "--config_file",
+        help="Path to a dj basic configuration file.",
+        type=str,
+        default=None,
+    )
+    # Only used for single-operator mode
+    parser.add_argument("--operator", default=None, help="Choose a rag operator to run")
+
+    # arguments for rag_parser
+    parser.add_argument(
+        "--accelerator",
+        type=str,
+        default="cpu",
+        help="Accelerator type for rag_parser and rag_embedder operator.",
+    )
+    parser.add_argument(
+        "--enable_mandatory_ocr",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Whether to enable mandatory OCR for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--concat_csv_rows",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Whether to concat csv rows for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--enable_table_summary",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Whether to enable table summary for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--format_sheet_data_to_json",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Whether to format sheet data to json for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--sheet_column_filters",
+        type=List[str],
+        default=[],
+        help="Column filters for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--oss_bucket",
+        type=str,
+        default=None,
+        help="OSS Bucket for rag_parser operator.",
+    )
+    parser.add_argument(
+        "--oss_endpoint",
+        type=str,
+        default="oss-cn-hangzhou.aliyuncs.com",
+        help="OSS Endpoint for rag_parser operator.",
+    )
+
+    # arguments for rag_splitter
+    parser.add_argument(
+        "--type",
+        type=str,
+        default="Token",
+        help="Split type for rag_splitter operator.",
+    )
+    parser.add_argument(
+        "--chunk_size",
+        type=int,
+        default=1024,
+        help="Chunk size for rag_splitter operator.",
+    )
+    parser.add_argument(
+        "--chunk_overlap",
+        type=int,
+        default=20,
+        help="Chunk overlap for rag_splitter operator.",
+    )
+    parser.add_argument(
+        "--enable_multimodal",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Whether to enable multimodal for rag_splitter and rag_embedder operator.",
+    )
+
+    # arguments for rag_embedder
+    parser.add_argument(
+        "--source",
+        type=str,
+        default="huggingface",
+        help="Embedding model source for rag_embedder operator.",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="bge-m3",
+        help="Embedding model name for rag_embedder operator.",
+    )
+    parser.add_argument(
+        "--enable_sparse",
+        type=str2bool,
+        nargs="?",
+        const=True,
+        default=False,
+        help="Whether to enable sparse for rag_embedder operator.",
+    )
+    parser.add_argument(
+        "--multimodal_source",
+        type=str,
+        default="cnclip",
+        help="Multi-modal embedding model source for rag_embedder operator.",
+    )
+
+    args = parser.parse_args()
+
+    # Determine which way to run with rag operators [config_file, cmd_args]
+    if args.config_file is not None:
+        args = update_op_process(args)
+    elif args.operator == "rag_parser":
+        args = process_parser(args)
+    elif args.operator == "rag_splitter":
+        args = process_splitter(args)
+    elif args.operator == "rag_embedder":
+        args = process_embedder(args)
+    else:
+        parser.print_help()
+
+    logger.info(f"Final args: {args}")
+    return args
 
 
 @logger.catch(reraise=True)
