@@ -3,7 +3,7 @@ from pai_rag.tools.data_process.ops.base_op import OPERATORS
 from pai_rag.tools.data_process.utils.mm_utils import size_to_bytes
 from pai_rag.tools.data_process.utils.cuda_utils import get_num_gpus, calculate_np
 
-OPERATIONS = ["pai_rag_parser", "pai_rag_splitter", "pai_rag_embedder"]
+OPERATIONS = ["rag_parser", "rag_splitter", "rag_embedder"]
 
 
 def get_previous_operation(operation):
@@ -29,21 +29,7 @@ def load_op(op_name, process_list):
                 logger.info(
                     f"Op {op_name} will be executed on cuda env with op_proc {op_proc} and use {num_cpus} cpus and {num_gpus} GPUs."
                 )
-                # 一个actor，多个并发process task
-
-                """
-                return [
-                    OPERATORS.modules[op_name]
-                    .options(
-                        num_cpus=num_cpus * op_proc,
-                        num_gpus=num_gpus * op_proc,
-                        max_concurrency=op_proc,
-                    )
-                    .remote(**op_args)
-                ]
-                """
-
-                # 多个并发actor
+                # 并发actor
                 return [
                     OPERATORS.modules[op_name]
                     .options(num_cpus=num_cpus, num_gpus=num_gpus)
@@ -55,16 +41,7 @@ def load_op(op_name, process_list):
                 logger.info(
                     f"Op {op_name} will be executed on cpu env with op_proc {op_proc} and use {num_cpus} cpus."
                 )
-                # 一个actor，多个并发process task
-                """
-                return (
-                    OPERATORS.modules[op_name]
-                    .options(num_cpus=num_cpus, max_concurrency=op_proc)
-                    .remote(**op_args)
-                )
-                """
-
-                # 多个并发actor
+                # 并发actor
                 return [
                     OPERATORS.modules[op_name]
                     .options(num_cpus=num_cpus)
