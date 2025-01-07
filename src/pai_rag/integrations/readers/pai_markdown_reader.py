@@ -37,15 +37,18 @@ class PaiMarkdownReader(BaseReader):
             f"PaiMarkdownReader created with enable_table_summary : {self.enable_table_summary}"
         )
 
-    def replace_image_paths(self, markdown_name: str, content: str):
+    def replace_image_paths(self, markdown_dir: str, markdown_name: str, content: str):
         markdown_image_matches = MARKDOWN_IMAGE_PATTERN.finditer(content)
         html_image_matches = HTML_IMAGE_PATTERN.finditer(content)
         for match in markdown_image_matches:
             full_match = match.group(0)  # 整个匹配
             local_url = match.group(1)  # 捕获的URL
+            image_name = os.path.basename(local_url)
+
+            local_path = os.path.join(markdown_dir, image_name)
 
             if self._oss_cache:
-                oss_url = self._transform_local_to_oss(markdown_name, local_url)
+                oss_url = self._transform_local_to_oss(markdown_name, local_path)
                 if oss_url:
                     content = content.replace(local_url, oss_url)
                 else:
@@ -55,9 +58,12 @@ class PaiMarkdownReader(BaseReader):
         for match in html_image_matches:
             full_match = match.group(0)  # 整个匹配
             local_url = match.group(1)  # 捕获的URL
+            image_name = os.path.basename(local_url)
+
+            local_path = os.path.join(markdown_dir, image_name)
 
             if self._oss_cache:
-                oss_url = self._transform_local_to_oss(markdown_name, local_url)
+                oss_url = self._transform_local_to_oss(markdown_name, local_path)
                 if oss_url:
                     content = content.replace(local_url, oss_url)
                 else:
@@ -78,6 +84,7 @@ class PaiMarkdownReader(BaseReader):
     def parse_markdown(self, markdown_path):
         markdown_name = os.path.basename(markdown_path).split(".")[0]
         markdown_name = markdown_name.replace(" ", "_")
+        markdown_dir = os.path.dirname(markdown_path)
         text = ""
         pre_line = ""
         with open(markdown_path) as fp:
@@ -108,7 +115,7 @@ class PaiMarkdownReader(BaseReader):
                     line = fp.readline()
 
         text += pre_line
-        md_content = self.replace_image_paths(markdown_name, text)
+        md_content = self.replace_image_paths(markdown_dir, markdown_name, text)
         return md_content
 
     def load_data(

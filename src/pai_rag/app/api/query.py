@@ -187,10 +187,7 @@ async def upload_data(
         for file in files:
             fn = file.filename
             data = await file.read()
-            file_hash = hashlib.md5(data).hexdigest()
-            tmp_file_dir = os.path.join(
-                tmpdir, f"{COMMON_FILE_PATH_FODER_NAME}/{file_hash}"
-            )
+            tmp_file_dir = os.path.join(tmpdir, f"{COMMON_FILE_PATH_FODER_NAME}")
             os.makedirs(tmp_file_dir, exist_ok=True)
             save_file = os.path.join(tmp_file_dir, fn)
 
