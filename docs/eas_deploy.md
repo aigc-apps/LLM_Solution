@@ -7,7 +7,6 @@
 ## 准备工作
 
 1. 创建一个专有网络(VPC)、交换机和安全组。
-2. 【可选】如果使用通义千问大模型服务API，可以申请一个DASHSCOPE_API_KEY，获取地址为 https://dashscope.console.aliyun.com/apiKey。
 
 ## EAS自定义部署
 
