@@ -43,9 +43,8 @@ class PaiMarkdownReader(BaseReader):
         for match in markdown_image_matches:
             full_match = match.group(0)  # 整个匹配
             local_url = match.group(1)  # 捕获的URL
-            image_name = os.path.basename(local_url)
 
-            local_path = os.path.join(markdown_dir, image_name)
+            local_path = os.path.normpath(os.path.join(markdown_dir, local_url))
 
             if self._oss_cache:
                 oss_url = self._transform_local_to_oss(markdown_name, local_path)
@@ -58,9 +57,8 @@ class PaiMarkdownReader(BaseReader):
         for match in html_image_matches:
             full_match = match.group(0)  # 整个匹配
             local_url = match.group(1)  # 捕获的URL
-            image_name = os.path.basename(local_url)
 
-            local_path = os.path.join(markdown_dir, image_name)
+            local_path = os.path.normpath(os.path.join(markdown_dir, local_url))
 
             if self._oss_cache:
                 oss_url = self._transform_local_to_oss(markdown_name, local_path)
