@@ -11,6 +11,7 @@ from llama_index.core.schema import Document
 from pai_rag.utils.markdown_utils import transform_local_to_oss
 
 from loguru import logger
+from itertools import chain
 
 REGEX_H1 = "===+"
 REGEX_H2 = "---+"
@@ -40,21 +41,8 @@ class PaiMarkdownReader(BaseReader):
     def replace_image_paths(self, markdown_dir: str, markdown_name: str, content: str):
         markdown_image_matches = MARKDOWN_IMAGE_PATTERN.finditer(content)
         html_image_matches = HTML_IMAGE_PATTERN.finditer(content)
-        for match in markdown_image_matches:
-            full_match = match.group(0)  # 整个匹配
-            local_url = match.group(1)  # 捕获的URL
-
-            local_path = os.path.normpath(os.path.join(markdown_dir, local_url))
-
-            if self._oss_cache:
-                oss_url = self._transform_local_to_oss(markdown_name, local_path)
-                if oss_url:
-                    content = content.replace(local_url, oss_url)
-                else:
-                    content = content.replace(full_match, "")
-            else:
-                content = content.replace(full_match, "")
-        for match in html_image_matches:
+        all_image_matches = chain(markdown_image_matches, html_image_matches)
+        for match in all_image_matches:
             full_match = match.group(0)  # 整个匹配
             local_url = match.group(1)  # 捕获的URL
 
