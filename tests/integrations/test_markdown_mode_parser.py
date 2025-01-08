@@ -11,7 +11,9 @@ BASE_DIR = Path(__file__).parent.parent.parent
 )
 def test_markdown_parser():
     from pai_rag.core.rag_module import resolve
-    from pai_rag.integrations.nodeparsers.base import MarkdownNodeParser
+    from pai_rag.integrations.nodeparsers.pai.pai_markdown_parser import (
+        MarkdownNodeParser,
+    )
     from pai_rag.core.rag_config_manager import RagConfigManager
     from pai_rag.integrations.readers.pai.pai_data_reader import PaiDataReader
     from pai_rag.utils.download_models import ModelScopeDownloader
@@ -30,4 +32,4 @@ def test_markdown_parser():
     for doc_node in documents:
         splitted_nodes.extend(md_node_parser.get_nodes_from_documents([doc_node]))
 
-    assert len(splitted_nodes) == 8
+    assert len(splitted_nodes) == 11

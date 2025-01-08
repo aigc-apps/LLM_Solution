@@ -14,7 +14,7 @@ from llama_index.core.node_parser import (
 )
 from llama_index.core.constants import DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP
 from pydantic import BaseModel
-from pai_rag.integrations.nodeparsers.base import MarkdownNodeParser
+from pai_rag.integrations.nodeparsers.pai.pai_markdown_parser import MarkdownNodeParser
 from pai_rag.utils.constants import (
     DEFAULT_NODE_PARSER_TYPE,
     DEFAULT_PARAGRAPH_SEP,
@@ -176,6 +176,8 @@ class PaiNodeParser(TransformComponent):
                     md_node_parser = MarkdownNodeParser(
                         id_func=node_id_hash,
                         enable_multimodal=self._parser_config.enable_multimodal,
+                        max_chunk_size=self._parser_config.chunk_size,
+                        chunk_overlap_size=self._parser_config.chunk_overlap,
                         base_parser=self._parser,
                     )
                     tmp_nodes = md_node_parser.get_nodes_from_documents([doc_node])
