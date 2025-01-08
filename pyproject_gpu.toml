@@ -103,6 +103,7 @@ aspose-slides = "^24.10.0"
 ultralytics = "8.3.43"
 datasketch = "^1.6.5"
 tablestore = "^6.1.0"
+mistletoe = "^1.4.0"
 anyio = "4.6.2.post1"
 
 [tool.poetry.scripts]
