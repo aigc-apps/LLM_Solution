@@ -10,8 +10,8 @@ WORKDIR /app
 COPY . .
 
 RUN poetry install && rm -rf $POETRY_CACHE_DIR
-RUN poetry add ray[default]
 RUN poetry run aliyun-bootstrap -a install
+RUN pip3 install ray[default]
 
 FROM python:3.11-slim AS prod
 
