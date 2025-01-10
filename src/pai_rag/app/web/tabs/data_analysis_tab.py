@@ -137,12 +137,12 @@ def handle_embedding_checkbox_change(enable_db_embedding):
         return gr.Slider.update(visible=False), gr.Slider.update(visible=False)
 
 
-def upload_history_fn(json_file):
+def upload_history_fn(json_file, database):
     if json_file is None:
         return None
     try:
         # 调用接口
-        res = rag_client.add_db_history(json_file.name)
+        res = rag_client.add_db_history(json_file.name, database)
         # 更新config
         update_dict = {
             "db_history_file_path": res["destination_path"],
@@ -303,7 +303,7 @@ def create_data_analysis_tab() -> Dict[str, Any]:
 
                                 history_file_upload.upload(
                                     fn=upload_history_fn,
-                                    inputs=history_file_upload,
+                                    inputs=[history_file_upload, database],
                                     outputs=history_update_state,
                                     api_name="upload_history_fn",
                                 )

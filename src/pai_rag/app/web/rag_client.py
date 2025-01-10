@@ -464,14 +464,17 @@ class RagWebClient:
     def add_db_history(
         self,
         input_file: str,
+        db_name: str,
     ):
         file_obj = open(input_file, "rb")
         mimetype = mimetypes.guess_type(input_file)[0]
         files = {"file": (input_file, file_obj, mimetype)}
+        para = {"db_name": db_name}
         try:
             r = requests.post(
                 self.load_db_history_url,
                 files=files,
+                data=para,
                 timeout=DEFAULT_CLIENT_TIME_OUT,
             )
             response = dotdict(json.loads(r.text))
