@@ -232,7 +232,7 @@ class StructuredNodeParser(BaseModel):
             else:
                 chunk_text = ""
                 for child in node_group:
-                    if child.category == "image":
+                    if child.category == "image" and self.enable_multimodal:
                         image_node = ImageNode(
                             embedding=doc_node.embedding,
                             image_url=child.content,
