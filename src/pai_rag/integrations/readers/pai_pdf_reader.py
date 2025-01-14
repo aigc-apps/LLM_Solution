@@ -10,7 +10,6 @@ from pai_rag.utils.markdown_utils import (
 )
 from operator import itemgetter
 import tempfile
-import re
 from PIL import Image
 import os
 from loguru import logger
@@ -21,6 +20,7 @@ from magic_pdf.dict2md.ocr_mkcontent import merge_para_with_text
 from magic_pdf.config.ocr_content_type import BlockType, ContentType
 from magic_pdf.libs.commons import join_path
 from urllib.parse import urlparse
+from collections import defaultdict
 
 
 DEFAULT_HEADING_DIFF_THRESHOLD = 2
@@ -61,7 +61,7 @@ class PaiPDFReader(BaseReader):
         except ValueError:
             return False
 
-    def create_markdwon(
+    def create_markdown(
         self,
         pdf_name: str,
         pdf_info_dict: list,
@@ -71,33 +71,46 @@ class PaiPDFReader(BaseReader):
         text_height_min = float("inf")
         text_height_max = 0
         title_list = []
+        # 存储每个title及其index
+        title_dict = defaultdict(list)
+        # 记录index
+        index_count = 0
         for page_info in pdf_info_dict:
             paras_of_layout = page_info.get("para_blocks")
             if not paras_of_layout:
                 continue
-            page_markdown, text_height_min, text_height_max = self.create_page_markdwon(
+            (
+                page_markdown,
+                text_height_min,
+                text_height_max,
+                index_count,
+            ) = self.create_page_markdown(
                 pdf_name,
                 paras_of_layout,
                 img_buket_path,
                 title_list,
+                title_dict,
                 text_height_min,
                 text_height_max,
+                index_count,
             )
             output_content.extend(page_markdown)
-        markdwon_content = "\n\n".join(output_content)
-        markdown_result = self.post_process_multi_level_headings(
-            title_list, markdwon_content, text_height_min, text_height_max
+        self.post_process_multi_level_headings(
+            title_list, output_content, title_dict, text_height_min, text_height_max
         )
+        markdown_result = "\n\n".join(output_content)
         return markdown_result
 
-    def create_page_markdwon(
+    def create_page_markdown(
         self,
         pdf_name,
         paras_of_layout,
         img_buket_path,
         title_list,
+        title_dict,
         text_height_min,
         text_height_max,
+        index_count,
     ):
         page_markdown = []
         for para_block in paras_of_layout:
@@ -110,6 +123,7 @@ class PaiPDFReader(BaseReader):
                 para_text = merge_para_with_text(para_block)
             elif para_type == BlockType.Title:
                 para_text = f"# {merge_para_with_text(para_block)}"
+                title_dict[para_text].append(index_count)
             elif para_type == BlockType.InterlineEquation:
                 para_text = merge_para_with_text(para_block)
             elif para_type == BlockType.Image:
@@ -166,8 +180,9 @@ class PaiPDFReader(BaseReader):
                 continue
             else:
                 page_markdown.append(para_text.strip() + "  ")
+            index_count += 1
 
-        return page_markdown, text_height_min, text_height_max
+        return page_markdown, text_height_min, text_height_max, index_count
 
     def collect_title_info(
         self, para_block, title_list, text_height_min, text_height_max
@@ -178,15 +193,9 @@ class PaiPDFReader(BaseReader):
         content_height = y1 - y0
         if para_block["type"] == BlockType.Title:
             title_height = int(content_height)
-            title_text = ""
-            for line in para_block["lines"]:
-                for span in line["spans"]:
-                    if span["type"] == "inline_equation":
-                        span["content"] = " $" + span["content"] + "$ "
-                    title_text += span["content"]
-            title_text = title_text.replace("\\", "\\\\")
+            title_text = merge_para_with_text(para_block)
             title_list.append((title_text, title_height))
-        elif para_block["type"] == "text":
+        elif para_block["type"] == BlockType.Text:
             if content_height < text_height_min:
                 text_height_min = content_height
             if content_height > text_height_max:
@@ -194,7 +203,7 @@ class PaiPDFReader(BaseReader):
         return text_height_min, text_height_max
 
     def post_process_multi_level_headings(
-        self, title_list, md_content, text_height_min, text_height_max
+        self, title_list, output_content, title_dict, text_height_min, text_height_max
     ):
         logger.info(
             "*****************************start process headings*****************************"
@@ -230,13 +239,13 @@ class PaiPDFReader(BaseReader):
                 title_level = ""
             old_title = "# " + title_text
             new_title = title_level + title_text
-            md_content = re.sub(re.escape(old_title), new_title, md_content)
+            if len(title_dict.get(old_title)) > 0:
+                md_index = title_dict.get(old_title).pop()
+                output_content[md_index] = new_title
 
         logger.info(
             "*****************************process headings ended*****************************"
         )
-
-        return md_content
 
     def parse_pdf(
         self,
@@ -256,8 +265,9 @@ class PaiPDFReader(BaseReader):
                 temp_file_path = os.path.join(temp_dir, pdf_name)
 
                 image_writer = FileBasedDataWriter(temp_file_path)
-                reader1 = FileBasedDataReader("")
-                pdf_bytes = reader1.read(pdf_path)
+                # parent_dir is "", if the pdf_path is relative path, it will be joined with parent_dir.
+                file_reader = FileBasedDataReader("")
+                pdf_bytes = file_reader.read(pdf_path)
                 ds = PymuDocDataset(pdf_bytes)
 
                 # 选择解析方式
@@ -273,7 +283,7 @@ class PaiPDFReader(BaseReader):
 
                 content_list = pipe_result._pipe_res["pdf_info"]
 
-                md_content = self.create_markdwon(
+                md_content = self.create_markdown(
                     pdf_name, content_list, temp_file_path
                 )
 
