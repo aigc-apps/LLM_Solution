@@ -142,7 +142,7 @@ def init_configs():
     parser.add_argument(
         "--working_dir",
         type=str,
-        default="/PAI-RAG",
+        default="/app",
         help="Path to working dir for ray cluster.",
     )
     parser.add_argument(
