@@ -49,8 +49,5 @@ class Splitter(BaseOP):
 
     def process(self, documents):
         format_documents = convert_list_to_documents(documents)
-        logger.info(
-            f"self.node_parser._parser_config : {self.node_parser._parser_config}"
-        )
         nodes = self.node_parser.get_nodes_from_documents(format_documents)
         return convert_nodes_to_list(nodes)
