@@ -48,6 +48,7 @@ class PaiDocxReader(BaseReader):
         if image_filename.lower().endswith(".emf") or image_filename.lower().endswith(
             ".wmf"
         ):
+            logger.warning(f"Skip processing EMF or WMF image: {image_filename}")
             return None
         image = Image.open(BytesIO(image_blob))
         return transform_local_to_oss(self._oss_cache, image, doc_name)
