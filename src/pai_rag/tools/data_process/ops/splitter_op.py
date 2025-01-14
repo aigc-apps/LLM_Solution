@@ -26,7 +26,7 @@ class Splitter(BaseOP):
         chunk_overlap: int = 20,
         enable_multimodal: bool = False,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.node_parser_config = NodeParserConfig(
@@ -38,9 +38,19 @@ class Splitter(BaseOP):
         self.node_parser = resolve(
             cls=PaiNodeParser, parser_config=self.node_parser_config
         )
-        logger.info("SplitterActor [PaiNodeParser] init finished.")
+        logger.info(
+            f"""SplitterActor [PaiNodeParser] init finished with following parameters:
+                        type: {type}
+                        chunk_size: {chunk_size}
+                        chunk_overlap: {chunk_overlap}
+                        enable_multimodal: {enable_multimodal}
+            """
+        )
 
     def process(self, documents):
         format_documents = convert_list_to_documents(documents)
+        logger.info(
+            f"self.node_parser._parser_config : {self.node_parser._parser_config}"
+        )
         nodes = self.node_parser.get_nodes_from_documents(format_documents)
         return convert_nodes_to_list(nodes)
