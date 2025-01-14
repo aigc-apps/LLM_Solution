@@ -142,10 +142,11 @@ class PaiPptxReader(BaseReader):
                         image_url = transform_local_to_oss(
                             self._oss_cache, image, ppt_name
                         )
-                        time_tag = int(time.time())
-                        alt_text = f"pai_rag_image_{time_tag}_"
-                        image_content = f"![{alt_text}]({image_url})"
-                        markdown.append(f"{image_content}\n\n")
+                        if image_url:
+                            time_tag = int(time.time())
+                            alt_text = f"pai_rag_image_{time_tag}_"
+                            image_content = f"![{alt_text}]({image_url})"
+                            markdown.append(f"{image_content}\n\n")
 
         return "".join(markdown)
 
