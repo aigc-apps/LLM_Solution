@@ -252,6 +252,7 @@ class PaiPDFReader(BaseReader):
 
             new_title = title_level + title_text
             new_title_list.append(new_title)
+            logger.info(f"transform {title_text} to {new_title}")
 
         return new_title_list
 
