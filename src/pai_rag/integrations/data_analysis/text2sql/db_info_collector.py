@@ -94,6 +94,7 @@ class SchemaCollector(DBInfoCollector):
                 logger.warning(f"Failed to get table comment: {e}")
                 comment_from_db = None
             additional_desc = table_schema_obj.context_str
+            logger.info(f"Additional comment: {additional_desc}")
             # get table description
             table_comment = self._merge_comment_and_desc(
                 comment_from_db, additional_desc
@@ -519,6 +520,103 @@ class ValueCollector(DBInfoCollector):
             db_description_dict = json.load(f)
 
         return db_description_dict
+
+    # def _make_lsh(
+    #     self,
+    #     unique_values: Dict[str, Dict[str, List[str]]],
+    #     signature_size: int,
+    #     n_gram: int,
+    #     threshold: float,
+    #     verbose: bool = True,
+    # ) -> Tuple[MinHashLSH, Dict[str, Tuple[MinHash, str, str, str]]]:
+    #     """
+    #     Creates a MinHash LSH from unique values.
+
+    #     Args:
+    #         unique_values (Dict[str, Dict[str, List[str]]]): The dictionary of unique values.
+    #         signature_size (int): The size of the MinHash signature.
+    #         n_gram (int): The n-gram size for the MinHash.
+    #         threshold (float): The threshold for the MinHash LSH.
+    #         verbose (bool): Whether to display progress information.
+
+    #     Returns:
+    #         Tuple[MinHashLSH, Dict[str, Tuple[MinHash, str, str, str]]]: The MinHash LSH object and the dictionary of MinHashes.
+    #     """
+    #     lsh = MinHashLSH(threshold=threshold, num_perm=signature_size)
+    #     minhashes: Dict[str, Tuple[MinHash, str, str, str]] = {}
+    #     try:
+    #         total_unique_values = sum(
+    #             len(column_values)
+    #             for table_values in unique_values.values()
+    #             for column_values in table_values.values()
+    #         )
+    #         logger.info(f"Total unique values: {total_unique_values}")
+
+    #         progress_bar = (
+    #             tqdm(total=total_unique_values, desc="Creating LSH")
+    #             if verbose
+    #             else None
+    #         )
+
+    #         for table_name, table_values in unique_values.items():
+    #             for column_name, column_values in table_values.items():
+    #                 logger.info(
+    #                     f"Processing {table_name}.{column_name} - {len(column_values)}"
+    #                 )
+
+    #                 for id, value in enumerate(column_values):
+    #                     minhash = create_minhash(signature_size, value, n_gram)
+    #                     minhash_key = f"{table_name}.{column_name}.{id}"
+    #                     minhashes[minhash_key] = (
+    #                         minhash,
+    #                         table_name,
+    #                         column_name,
+    #                         value,
+    #                     )
+    #                     lsh.insert(minhash_key, minhash)
+
+    #                     if verbose:
+    #                         progress_bar.update(1)
+
+    #         if verbose:
+    #             progress_bar.close()
+    #     except Exception as e:
+    #         logger.error(f"Error creating LSH: {e}")
+
+    #     return lsh, minhashes
+
+    # def get_value_lsh(
+    #     self,
+    #     db_description_dict: Optional[Dict] = None,
+    #     signature_size: int = 128,
+    #     n_gram: int = 3,
+    #     threshold: float = 0.2,
+    #     verbose: bool = True,
+    #     file_path: Optional[str] = None,
+    # ) -> None:
+    #     """
+    #     Creates a MinHash LSH for the database and saves the results.
+    #     """
+    #     # get unique_values
+    #     unique_values = self._get_unique_values(db_description_dict)
+    #     # get lsh and minhashes
+    #     lsh, minhashes = self._make_lsh(
+    #         unique_values, signature_size, n_gram, threshold, verbose
+    #     )
+
+    #     if file_path is None:
+    #         file_path = self._value_lsh_path
+    #     try:
+    #         # 检查文件夹是否存在
+    #         if not os.path.exists(file_path):
+    #             os.makedirs(file_path)
+
+    #         with open(os.path.join(file_path, "lsh.pkl"), "wb") as file:
+    #             pickle.dump(lsh, file)
+    #         with open(os.path.join(file_path, "minhashes.pkl"), "wb") as file:
+    #             pickle.dump(minhashes, file)
+    #     except Exception as e:
+    #         logger.error(f"Error saving lsh to file: {e}")
 
 
 def save_to_json(content: Dict, file_path: str) -> None:

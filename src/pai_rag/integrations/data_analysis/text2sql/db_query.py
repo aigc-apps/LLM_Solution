@@ -158,7 +158,7 @@ class DBQuery:
         # schema selector, 可选
         if self._enable_db_selector:
             selected_description_dict = self._db_schema_selector.select(
-                nl_query=nl_query, db_description_dict=retrieved_description_dict
+                query=nl_query, db_info=retrieved_description_dict
             )
         else:
             selected_description_dict = retrieved_description_dict
@@ -221,7 +221,7 @@ class DBQuery:
         # schema selector, 可选
         if self._enable_db_selector:
             selected_description_dict = await self._db_schema_selector.aselect(
-                nl_query=nl_query, db_description_dict=retrieved_description_dict
+                query=nl_query, db_info=retrieved_description_dict
             )
         else:
             selected_description_dict = retrieved_description_dict

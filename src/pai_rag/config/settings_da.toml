@@ -1,22 +1,20 @@
 dynaconf_merge = true
 
-[RAG]
+[rag]
 name = "pai_rag"
 version = "0.1.1"
 
-[RAG.agent]
-system_prompt = "你是一个旅游小助手，可以帮助用户查询指定时间从A地区到B地区的机票信息，火车票信息以及天气信息等。请严格使用输入的工具，不要虚构任何细节。"
-python_scripts = "import requests\nimport os\nfrom loguru import logger\n\n\ndef get_place_weather(city: str) -> str:\n    logger.info(f\"[Agent] Checking realtime weather info for {city}\")\n\n    \"\"\"Get city name and return city weather\"\"\"\n    api_key = os.environ.get(\"weather_api_key\")\n\n    # 可以直接赋值给api_key,原始代码的config只有type类型。\n    base_url = \"http://api.openweathermap.org/data/2.5/forecast?\"\n    complete_url = f\"{base_url}q={city}&appid={api_key}&lang=zh_cn&units=metric\"\n    logger.info(f\"Requesting {complete_url}...\")\n    response = requests.get(complete_url, timeout=5)\n    weather_data = response.json()\n\n    if weather_data[\"cod\"] != \"200\":\n        logger.error(\n            f\"获取天气信息失败，错误代码：{weather_data['cod']} 错误信息：{weather_data['message']}\"\n        )\n        return f\"获取天气信息失败，错误代码：{weather_data['cod']} 错误信息：{weather_data['message']}\"\n\n    element = weather_data[\"list\"][0]\n\n    return f\"\"\"\n        {city}的天气:\n        时间: {element['dt_txt']}\n        温度: {element['main']['temp']} °C\n        天气描述: {element['weather'][0]['description']}\n    \"\"\"\n"
-function_definition = "[\n  {\n    \"function\": {\n      \"description\": \"帮助用户查询实时天气信息，用户需要输入所在的城市英文名称，如hangzhou, beijing, shanghai, hongkong等等。\",\n      \"name\": \"get_place_weather\",\n      \"parameters\": {\n        \"properties\": {\n          \"city\": {\n            \"description\": \"城市名称\",\n            \"type\": \"string\"\n          }\n        },\n        \"type\": \"object\"\n      }\n    },\n    \"type\": \"function\"\n  }\n]"
-api_definition = "[\n  {\n    \"description\": \"帮助用户获取机票信息，用户需要输入出发地、目的地\",\n    \"headers\": {\n      \"Authorization\": \"Bearer YOUR_ACCESS_TOKEN\"\n    },\n    \"method\": \"GET\",\n    \"name\": \"search_flight_ticket_api\",\n    \"parameters\": {\n      \"date\": {\n        \"description\": \"出发时间，YYYY-MM-DD格式，如'2024-03-29'\",\n        \"type\": \"str\"\n      },\n      \"from_city\": {\n        \"description\": \"出发城市，如'北京'、'上海'、'南京''\",\n        \"type\": \"str\"\n      },\n      \"to_city\": {\n        \"description\": \"目的地城市，如'北京'、'上海'、'南京'\",\n        \"type\": \"str\"\n      }\n    },\n    \"required\": [\n      \"from_city\",\n      \"to_city\",\n      \"date\"\n    ],\n    \"url\": \"http://127.0.0.1:8001/demo/api/flights\"\n  },\n  {\n    \"description\": \"帮助用户查询火车票或者高铁票信息\",\n    \"headers\": {\n      \"Authorization\": \"Bearer YOUR_ACCESS_TOKEN\"\n    },\n    \"method\": \"GET\",\n    \"name\": \"search_train_ticket_api\",\n    \"parameters\": {\n      \"date\": {\n        \"description\": \"出发时间，YYYY-MM-DD格式，如'2024-03-29'\",\n        \"type\": \"str\"\n      },\n      \"from_city\": {\n        \"description\": \"出发城市，如'北京'、'上海'、'南京''\",\n        \"type\": \"str\"\n      },\n      \"to_city\": {\n        \"description\": \"目的地城市，如'北京'、'上海'、'南京'\",\n        \"type\": \"str\"\n      }\n    },\n    \"required\": [\n      \"from_city\",\n      \"to_city\",\n      \"date\"\n    ],\n    \"url\": \"http://127.0.0.1:8001/demo/api/trains\"\n  },\n  {\n    \"content_type\": \"application/json\",\n    \"description\": \"帮助用户查询酒店信息\",\n    \"headers\": {\n      \"Authorization\": \"Bearer YOUR_ACCESS_TOKEN\"\n    },\n    \"method\": \"POST\",\n    \"name\": \"search_hotels_api\",\n    \"parameters\": {\n      \"checkin_date\": {\n        \"description\": \"入住时间，YYYY-MM-DD格式，如'2024-03-29'\",\n        \"type\": \"str\"\n      },\n      \"checkout_date\": {\n        \"description\": \"离店时间，YYYY-MM-DD格式，如'2024-03-31'\",\n        \"type\": \"str\"\n      },\n      \"city\": {\n        \"description\": \"查询的城市，如'北京'、'上海'、'南京''\",\n        \"type\": \"str\"\n      }\n    },\n    \"required\": [\n      \"city\",\n      \"checkin_date\",\n      \"checkout_date\"\n    ],\n    \"url\": \"http://127.0.0.1:8001/demo/api/hotels\"\n  }\n]"
+[rag.agent]
+custom_agent_config_file = ""
+agent_tool_type = ""
 
-[RAG.chat_store]
-type = "local"
+[rag.chat_store]
+type = "Local" # [Local, Aliyun-Redis]
 host = "Aliyun-Redis host"
 password = "Aliyun-Redis user:pwd"
 persist_path = "localdata/storage"
 
-[RAG.data_analysis]
+[rag.data_analysis]
 type = "mysql"
 user = "root"
 password = "mysql123456"
@@ -27,99 +25,78 @@ enable_enhanced_description = false
 enable_db_embedding = true
 max_col_num = 100
 max_val_num = 10000
-enable_db_history = true
+enable_db_history = false
 enable_query_preprocessor = true
 enable_db_preretriever = true
 enable_db_selector = false
 nl2sql_prompt = "给定一个输入问题，创建一个语法正确的{dialect}查询语句来执行。要求：\n----------\n1.只根据问题查询几个相关的列。\n2.请注意只使用提供的数据库结构信息db_schema以及可能历史查询db_history中看到的列名，不要查询不存在的列。\n3.请注意哪个列位于哪个表中，必要时请使用表名限定列名。\n4.如果问题中包含了SQL语句，请提取并基于提供的db_schema和db_history校验优化。\n----------\n用户问题: {query_str} \n数据表结构信息和数据样例: {db_schema} \n历史查询: {db_history} \n\n你必须使用以下格式，每项占一行：\nQuestion: Question here \nSQLQuery: SQL Query (end with ;) to run"
 synthesizer_prompt = "给定一个输入问题，根据查询代码指令以及查询结果生成最终回复。要求：\n----------\n1.生成的回复语言需要与输入问题的语言保持一致。\n2.生成的回复需要关注数据表信息描述中可能存在的字段单位或其他补充信息。\n----------\n输入问题: {query_str} \n数据表信息描述: {db_schema} \nSQL 或 Python 查询代码指令（可选）: {query_code_instruction}\n查询结果: {query_output}\n\n最终回复: "
-tables = []
 
-[RAG.data_analysis.descriptions]
+[rag.data_reader]
+type = "SimpleDirectoryReader"
 
-[RAG.data_reader]
-enable_mandatory_ocr = false
-enable_table_summary = false
-
-[RAG.embedding]
-source = "dashscope"
+# embedding configurations, source support API: OpenAI,DashScope; and local model:HuggingFace
+# if use API, need set OPENAI_API_KEY or DASHSCOPE_API_KEY in ENV, If HuggingFace, need set model
+# eg.
+# source = "HuggingFace"
+# model = "bge-m3"
+# embed_batch_size = 10
+[rag.embedding]
+source = "DashScope"
 embed_batch_size = 10
 enable_sparse = false
 
-[RAG.index]
+[rag.index]
 persist_path = "localdata/storage"
 enable_multimodal = true
+vector_store.type = "FAISS"
 
-[RAG.index.vector_store]
-persist_path = "localdata/storage"
-type = "faiss"
+# llm configurations, source support API: OpenAI,DashScope or PAI-EAS's deployment
+# eg.
+# source = "PaiEas"
+# model = ""
+# endpoint = ""
+# token = ""
+[rag.llm]
+source = "DashScope"
 
-[RAG.intent.descriptions]
-rag = "\nThis tool can help you get more specific information from the knowledge base.\n"
-tool = "\nThis tool can help you get travel information about weather, flights, train and hotels.\n"
-
-[RAG.llm]
-source = "dashscope"
-endpoint = "@none "
-token = "@none "
-api_key = "@none "
-temperature = 0.1
-model = "qwen-max"
-
-[RAG.multimodal_embedding]
+[rag.multimodal_embedding]
 source = "cnclip"
 
-[RAG.multimodal_llm]
+[rag.multimodal_llm]
 source = "dashscope"
-endpoint = "@none "
-token = "@none "
-api_key = "@none "
-model = "qwen-vl-max"
 
-[RAG.node_enhancement]
+[rag.node_enhancement]
 tree_depth = 3
 max_clusters = 52
-proba_threshold = 0.1
+proba_threshold = 0.10
 
-[RAG.node_parser]
+[rag.node_parser]
 type = "Sentence"
 chunk_size = 500
 chunk_overlap = 10
+enable_multimodal = true
 
-[RAG.oss_store]
-endpoint = "oss-cn-hangzhou.aliyuncs.com"
+[rag.oss_store]
 bucket = ""
+endpoint = "oss-cn-hangzhou.aliyuncs.com"
 
-[RAG.postprocessor]
-reranker_type = "no-reranker"
-reranker_model = "bge-reranker-base"
+[rag.postprocessor]
+reranker_type = "no-reranker" # [simple-weighted-reranker, model-based-reranker]
+reranker_model = "bge-reranker-base" # [bge-reranker-base, bge-reranker-large]
 similarity_threshold = 0.5
-top_n = 3
+top_n = 2
 
-[RAG.query_transform]
+[rag.query_transform]
 type = ""
 
-[RAG.retriever]
+[rag.retriever]
 similarity_top_k = 3
-image_similarity_top_k = 2
-vector_weight = 0.7
-keyword_weight = 0.3
-search_image = false
-vector_store_query_mode = "default"
+retrieval_mode = "hybrid" # [hybrid, embedding, keyword, router]
+query_rewrite_n = 1 # set to 1 to disable query generation
 
-[RAG.search]
-search_api_key = "@none "
-search_lang = "zh-CN"
-search_count = 10
+[rag.search]
+search_api_key = ""
 
-[RAG.synthesizer]
-use_multimodal_llm = false
-text_qa_template = "参考内容信息如下\n---------------------\n{context_str}\n---------------------根据提供内容而非其他知识回答问题.\n问题: {query_str}\n答案: \n"
-multimodal_qa_template = "结合上面给出的图片和下面给出的参考材料来回答用户的问题。材料中包含一组图片链接，分别对应到前面给出的图片的地址。\n\n材料:---------------------\n\n{context_str}\n---------------------\n\n请根据给定的材料回答给出的问题，回答中需要有文字描述和图片。如果材料中没有找到答案，就说没有找到相关的信息，不要编造答案。\n\n如果上面有图片对你生成答案有帮助，请找到图片链接并用markdown格式给出，如![](image_url)。\n\n---------------------\n\n问题: {query_str}\n请返回文字和展示图片，不需要标明图片顺序答案: "
-citation_text_qa_template = "请完全根据提供的参考内容回答问题。\n参考内容由几段文本内容组成,当你生成的内容引用到了某段文本来源，请在内容中引用对应文本的数字序号来显示相关的信息源，比如[1]，这样可以让你的回复看起来更加可靠。你的答案需要包含至少一个相关的引用标记。只有在你真正引用了文本的时候才会插入引用标记，当你没找到任何值得引用的内容时，请直接回复你不知道。\n注意仅在引用标记中插入数字。你可以用和提问相同的语言回答。\n\n例如:\n参考材料\n-------\nSource 1:\nModel Y 是特斯拉推出的一款电动SUV，具有珍珠白（多涂层）车漆、19英寸双子星轮毂和纯黑色高级内饰（黑色座椅）。\n\nSource 2:\nModel 3拥有星空灰车漆，19英寸新星轮毂，深色高级内饰（后轮驱动版），基础版辅助驾驶功能。\n\n------\n问题：model3的轮毂和内饰是什么配置？\n答案：Model 3配置了19英寸新星轮毂和深色高级内饰[2]。\n\n现在轮到你了：\n\n参考材料\n-------\n{context_str}\n-------\n问题: {query_str}\n答案："
-citation_multimodal_qa_template = "根据上面给出的图片和下面给出的参考材料来回答用户的问题。\n参考材料中包含一组文字描述和一组图片链接，图片链接分别对应到前面给出的图片的地址。\n请根据给定的材料回答给出的问题，如果你当前生成的内容引用到了某一段文字描述，请直接在内容里引用他的数字序号，如[1]。\n如果上面有图片对你生成答案有帮助，请找到图片链接并用markdown格式给出，如![](image_url)。请至少列出一个文本和图片引用。如果材料中没有答案相关的信息，就回复你不知道。\n例如：\n参考材料\n------\nSource 1:\nModel Y 是特斯拉推出的一款电动SUV，具有珍珠白（多涂层）车漆、19英寸双子星轮毂和纯黑色高级内饰（黑色座椅）。\n\nSource 2:\nModel 3拥有星空灰车漆，19英寸新星轮毂，深色高级内饰（后轮驱动版），基础版辅助驾驶功能。\n\nImage 1:\nhttp://www.tesla.cn/model3.jpg\n\n------\n问题：model3的轮毂和内饰是什么配置?\n答案：Model 3配置了19英寸新星轮毂和深色高级内饰[2]。![](http://www.tesla.cn/model3.jpg)\n\n现在轮到你了：\n\n参考材料\n------\n{context_str}\n------\n问题: {query_str}\n答案："
-
-[RAG.trace]
-type = "pai_trace"
-endpoint = "http://tracing-analysis-dc-hz.aliyuncs.com:8090"
-token = ""
+[rag.synthesizer]
+type = "SimpleSummarize"

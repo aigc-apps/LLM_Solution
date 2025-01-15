@@ -1,5 +1,4 @@
 from typing import Any
-import threading
 
 from llama_index.core import Settings
 from llama_index.core.prompts import PromptTemplate
@@ -42,18 +41,6 @@ from pai_rag.integrations.synthesizer.pai_synthesizer import PaiSynthesizer
 from pai_rag.integrations.llms.pai.pai_llm import PaiLlm
 from pai_rag.integrations.llms.pai.pai_multi_modal_llm import PaiMultiModalLlm
 from pai_rag.utils.oss_client import OssClient
-
-
-class DatabaseSession:
-    _local = threading.local()
-
-    @classmethod
-    def set_session(cls, session):
-        cls._local.session = session
-
-    @classmethod
-    def get_session(cls):
-        return getattr(cls._local, "session", None)
 
 
 cls_cache = {}
@@ -147,38 +134,12 @@ def resolve_llm(config: RagConfig) -> PaiLlm:
     return llm
 
 
-# def resolve_data_analysis_connector(config: RagConfig):
-#     db_connector = resolve(
-#         cls=DataAnalysisConnector,
-#         analysis_config=config.data_analysis,
-#     )
-#     return db_connector
-
-
-# def resolve_data_analysis_loader(config: RagConfig) -> DataAnalysisLoader:
-#     llm = resolve_llm(config)
-#     sql_database = DataAnalysisConnector(config.data_analysis).connect_db()
-#     # sql_database = resolve_data_analysis_connector(config).connect_db()
-
-#     return resolve(
-#         cls=DataAnalysisLoader,
-#         analysis_config=config.data_analysis,
-#         sql_database=sql_database,
-#         llm=llm,
-#     )
-
-
-# def resolve_data_analysis_query(config: RagConfig) -> DataAnalysisQuery:
-#     llm = resolve_llm(config)
-#     sql_database = resolve_data_analysis_connector(config).connect_db()
-
-#     return resolve(
-#         cls=DataAnalysisQuery,
-#         analysis_config=config.data_analysis,
-#         sql_database=sql_database,
-#         llm=llm,
-#         callback_manager=None,
-#     )
+def resolve_data_analysis_connector(config: RagConfig):
+    db_connector = resolve(
+        cls=DataAnalysisConnector,
+        analysis_config=config.data_analysis,
+    )
+    return db_connector
 
 
 def resolve_data_analysis_loader(config: RagConfig) -> DataAnalysisLoader:
@@ -186,7 +147,6 @@ def resolve_data_analysis_loader(config: RagConfig) -> DataAnalysisLoader:
     sql_database = DataAnalysisConnector(
         config.data_analysis
     ).connect()  # 每次load都会重连数据库
-    DatabaseSession.set_session(sql_database)
 
     return resolve(
         cls=DataAnalysisLoader,
@@ -198,7 +158,7 @@ def resolve_data_analysis_loader(config: RagConfig) -> DataAnalysisLoader:
 
 def resolve_data_analysis_query(config: RagConfig) -> DataAnalysisQuery:
     llm = resolve_llm(config)
-    sql_database = DatabaseSession.get_session()  # 获取当前线程的数据库连接对象
+    sql_database = resolve_data_analysis_connector(config).connect()
 
     return resolve(
         cls=DataAnalysisQuery,

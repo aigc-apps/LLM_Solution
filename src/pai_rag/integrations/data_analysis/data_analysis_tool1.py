@@ -63,32 +63,38 @@ else:
     embed_model_bge = None
 
 
-def resolve_schema_retriever(analysis_config: SqlAnalysisConfig):
+def resolve_schema_retriever(
+    analysis_config: SqlAnalysisConfig, embed_model: BaseEmbedding
+):
     return resolve(
         cls=SchemaRetriever,
         cls_key="schema_retriever",
         db_name=analysis_config.database,
-        embed_model=embed_model_bge,
+        embed_model=embed_model,
         similarity_top_k=6,
     )
 
 
-def resolve_history_retriever(analysis_config: SqlAnalysisConfig):
+def resolve_history_retriever(
+    analysis_config: SqlAnalysisConfig, embed_model: BaseEmbedding
+):
     return resolve(
         cls=HistoryRetriever,
         cls_key="history_retriever",
         db_name=analysis_config.database,
-        embed_model=embed_model_bge,
+        embed_model=embed_model,
         similarity_top_k=3,
     )
 
 
-def resolve_value_retriever(analysis_config: SqlAnalysisConfig):
+def resolve_value_retriever(
+    analysis_config: SqlAnalysisConfig, embed_model: BaseEmbedding
+):
     return resolve(
         cls=ValueRetriever,
         cls_key="value_retriever",
         db_name=analysis_config.database,
-        embed_model=embed_model_bge,
+        embed_model=embed_model,
         similarity_top_k=3,
     )
 
@@ -118,9 +124,9 @@ def create_query_retriever(
             db_config=analysis_config,
             sql_database=sql_database,
             embed_model=embed_model,
-            schema_retriver=resolve_schema_retriever(analysis_config),
-            history_retriever=resolve_history_retriever(analysis_config),
-            value_retriever=resolve_value_retriever(analysis_config),
+            schema_retriver=resolve_schema_retriever(analysis_config, embed_model),
+            history_retriever=resolve_history_retriever(analysis_config, embed_model),
+            value_retriever=resolve_value_retriever(analysis_config, embed_model),
             llm=llm,
         )
     else:
@@ -171,10 +177,9 @@ class DataAnalysisLoader:
             db_config=analysis_config,
             sql_database=sql_database,
             embed_model=embed_model,
-            context_query_kwargs=analysis_config.descriptions,
-            schema_retriever=resolve_schema_retriever(analysis_config),
-            history_retriever=resolve_history_retriever(analysis_config),
-            value_retriever=resolve_value_retriever(analysis_config),
+            schema_retriever=resolve_schema_retriever(analysis_config, embed_model),
+            history_retriever=resolve_history_retriever(analysis_config, embed_model),
+            value_retriever=resolve_value_retriever(analysis_config, embed_model),
             llm=llm,
         )
 
@@ -194,12 +199,13 @@ class DataAnalysisQuery(BaseQueryEngine):
         self,
         analysis_config: BaseAnalysisConfig,
         sql_database: SQLDatabase,
+        embed_model: BaseEmbedding = embed_model_bge,
         llm: Optional[LLM] = None,
         callback_manager: Optional[CallbackManager] = None,
     ) -> None:
         """Initialize params."""
         self._llm = llm or Settings.llm
-        self._embed_model = embed_model_bge
+        self._embed_model = embed_model
         self._sql_database = sql_database
         self._query_retriever = create_query_retriever(
             analysis_config=analysis_config,

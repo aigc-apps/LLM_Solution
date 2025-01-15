@@ -44,10 +44,13 @@ class KeywordExtractor(QueryProcessor):
             query_str=nl_query.query_str,
             fewshot_examples="",
         )
+
         keywords = json.loads(keyword_list)["Keywords"]
         # later check if parser needed
         # keywords = parse(self, keywords)
-        logger.info(f"keyword_list: {keywords} extracted.")
+        logger.info(
+            f"keyword_list: {keywords} extracted. nl_query: {nl_query.query_str}."
+        )
 
         return keywords
 
@@ -61,7 +64,9 @@ class KeywordExtractor(QueryProcessor):
         keywords = json.loads(keyword_list)["Keywords"]
         # later check if parser needed
         # keywords = parse(self, keywords)
-        logger.info(f"keyword_list: {keywords} extracted.")
+        logger.info(
+            f"keyword_list: {keywords} extracted. nl_query: {nl_query.query_str}."
+        )
 
         return keywords
 

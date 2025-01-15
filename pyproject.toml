@@ -109,6 +109,7 @@ primp = "0.9.1"
 tablestore = "^6.1.0"
 anyio = "4.6.2.post1"
 mistletoe = "^1.4.0"
+sqlparse = "^0.5.3"
 
 [tool.poetry.scripts]
 pai_rag = "pai_rag.main:run"

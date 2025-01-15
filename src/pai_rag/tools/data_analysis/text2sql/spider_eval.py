@@ -1,9 +1,11 @@
 import os
 import asyncio
 from dotenv import load_dotenv
+import pickle
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
+from llama_index.embeddings.dashscope import DashScopeEmbedding
 
 from pai_rag.integrations.data_analysis.text2sql.sql_evaluator import (
     SpiderEvaluator,
@@ -26,42 +28,65 @@ llm = DashScope(
     temperature=0.1,
     max_tokens=2048,
 )
+embed_model_dashscope = DashScopeEmbedding(
+    api_key=dashscope_api_key,
+    embed_batch_size=10,
+)
 
 
 if __name__ == "__main__":
-    database_folder_path = "/Users/chuyu/Documents/datasets/spider_data/test_database"
+    # database_folder_path = "/Users/chuyu/Documents/datasets/spider_data/test_database"
+    database_folder_path = "/Users/chuyu/Documents/datasets/temp_test"
     eval_file_path = "/Users/chuyu/Documents/datasets/spider_data/test.json"
+    analysis_config = {
+        "enable_enhanced_description": False,
+        "enable_db_history": False,
+        "enable_db_embedding": True,
+        "max_col_num": 100,
+        "max_val_num": 10000,
+        "enable_query_preprocessor": True,
+        "enable_db_preretriever": True,
+        "enable_db_selector": False,
+    }
 
     spider_eval = SpiderEvaluator(
         llm=llm,
-        embed_model=embed_model_bge,
+        embed_model=embed_model_dashscope,
         database_folder_path=database_folder_path,
         eval_file_path=eval_file_path,
+        analysis_config=analysis_config,
     )
 
+    # batch_load
     asyncio.run(spider_eval.abatch_loader())
 
+    # batch_predict
     predicted_sql_list, queried_result_list = asyncio.run(
-        spider_eval.abatch_query(nums=100)
+        spider_eval.abatch_query(nums=500)
     )
 
-    # 文件路径
-    file_path = "/Users/chuyu/Documents/predict_qwenmax_100.txt"
+    # 写入二进制文件
+    with open(
+        "/Users/chuyu/Documents/predicted_sql_list_embedding_500.pkl", "wb"
+    ) as file:
+        pickle.dump(predicted_sql_list, file)
 
-    # 写入文件，每行一个元素并使用对象的 __str__ 方法
-    with open(file_path, "w", encoding="utf-8") as file:
+    # # save result
+    predicted_file = "/Users/chuyu/Documents/predict_qwenmax_embedding_500.txt"
+    with open(predicted_file, "w", encoding="utf-8") as file:
         for item in predicted_sql_list:
-            file.write(f"{item}\n")
+            parsed_item = spider_eval.parse_predicted_sql(item)
+            file.write(f"{parsed_item}\n")
+    print(f"predicted_sql_list have been written to {predicted_file}")
 
-    print(f"predicted_sql_list have been written to {file_path}")
-
-    gold_file = "/Users/chuyu/Documents/gold_100.sql"
-    predicted_file = "/Users/chuyu/Documents/predict_qwenmax_100.txt"
+    # batch_evaluate
+    gold_file = "/Users/chuyu/Documents/gold_500.sql"
+    # gold_file = "/Users/chuyu/Documents/datasets/spider_data/test_gold.sql"
     table_file = "/Users/chuyu/Documents/datasets/spider_data/test_tables.json"
 
     spider_eval.batch_evaluate(
         gold_file=gold_file,
         predicted_file=predicted_file,
-        evaluation_type="all",
+        evaluation_type="exec",
         table_file=table_file,
     )

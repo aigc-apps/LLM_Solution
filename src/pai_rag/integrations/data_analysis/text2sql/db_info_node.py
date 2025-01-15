@@ -93,12 +93,11 @@ class SchemaNode(DBInfoNode):
                     if value is not None
                 ]
                 if len(column_desc) > 0:
-                    column_desc = (
-                        f"""{table["table_name"]} {column["column_name"]}: """
-                        + ", ".join(column_desc)
+                    column_desc = f"""{column["column_name"]}: """ + ", ".join(
+                        column_desc
                     )
                 else:
-                    column_desc = f"""{table["table_name"]} {column["column_name"]}"""
+                    column_desc = f"""{column["column_name"]}"""
 
                 metadata = {
                     "table_name": table["table_name"],
@@ -228,7 +227,8 @@ def _get_nodes_with_embeddings(embed_model: BaseEmbedding, nodes: List[TextNode]
     # update nodes embedding
     for node, embedding in zip(nodes, embeddings):
         node.embedding = embedding
-        node.id_ = hashlib.sha256(node.text.encode()).hexdigest()
+        node_info_str = node.get_metadata_str() + node.get_text()
+        node.id_ = hashlib.sha256(node_info_str.encode()).hexdigest()
 
     return nodes
 
@@ -243,6 +243,7 @@ async def _aget_nodes_with_embeddings(
     # update nodes embedding
     for node, embedding in zip(nodes, embeddings):
         node.embedding = embedding
-        node.id_ = hashlib.sha256(node.text.encode()).hexdigest()
+        node_info_str = node.get_metadata_str() + node.get_text()
+        node.id_ = hashlib.sha256(node_info_str.encode()).hexdigest()
 
     return nodes

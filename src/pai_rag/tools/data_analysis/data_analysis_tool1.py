@@ -2,7 +2,6 @@ import click
 import os
 from pathlib import Path
 from typing import Any
-import threading
 
 from llama_index.core.schema import QueryBundle
 
@@ -20,18 +19,6 @@ _BASE_DIR = Path(__file__).parent.parent
 DEFAULT_APPLICATION_CONFIG_FILE = os.path.join(_BASE_DIR, "config/settings_da.toml")
 
 
-class DatabaseSession:
-    _local = threading.local()
-
-    @classmethod
-    def set_session(cls, session):
-        cls._local.session = session
-
-    @classmethod
-    def get_session(cls):
-        return getattr(cls._local, "session", None)
-
-
 cls_cache = {}
 
 
@@ -42,12 +29,19 @@ def resolve(cls: Any, **kwargs):
     return cls_cache[cls_key]
 
 
+def resolve_data_analysis_connector(config: RagConfig):
+    db_connector = resolve(
+        cls=DataAnalysisConnector,
+        analysis_config=config.data_analysis,
+    )
+    return db_connector
+
+
 def resolve_data_analysis_loader(config: RagConfig) -> DataAnalysisLoader:
     llm = resolve_llm(config)
     sql_database = DataAnalysisConnector(
         config.data_analysis
     ).connect()  # 每次load info都会重连数据库
-    DatabaseSession.set_session(sql_database)
 
     return resolve(
         cls=DataAnalysisLoader,
@@ -59,7 +53,7 @@ def resolve_data_analysis_loader(config: RagConfig) -> DataAnalysisLoader:
 
 def resolve_data_analysis_query(config: RagConfig) -> DataAnalysisQuery:
     llm = resolve_llm(config)
-    sql_database = DatabaseSession.get_session()  # 获取当前线程的数据库连接对象
+    sql_database = resolve_data_analysis_connector(config).connect()
 
     return resolve(
         cls=DataAnalysisQuery,
@@ -99,6 +93,7 @@ def run(
     question=None,
     stream=False,
 ):
+    print("config_file:", config_file)
     config = RagConfigManager.from_file(config_file).get_value()
     print("config:", config)
     # rag_config = RagConfig.model_validate(config.rag)
