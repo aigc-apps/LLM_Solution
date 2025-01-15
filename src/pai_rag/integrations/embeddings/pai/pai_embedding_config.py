@@ -43,6 +43,7 @@ class OpenAIEmbeddingConfig(PaiBaseEmbeddingConfig):
     source: Literal[SupportedEmbedType.openai] = SupportedEmbedType.openai
     model: str | None = None  # use default
     api_key: str | None = None  # use default
+    api_base: str | None = None  # use default
 
 
 class HuggingFaceEmbeddingConfig(PaiBaseEmbeddingConfig):

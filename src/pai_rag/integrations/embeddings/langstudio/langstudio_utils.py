@@ -7,6 +7,8 @@ from alibabacloud_pailangstudio20240710.models import (
     ListConnectionsRequest,
 )
 from alibabacloud_tea_openapi import models as open_api_models
+from pai_rag.utils.constants import DEFAULT_DASHSCOPE_EMBEDDING_MODEL
+from pai_rag.integrations.embeddings.pai.pai_embedding_config import parse_embed_config
 from loguru import logger
 
 
@@ -67,3 +69,32 @@ def get_connection_info(region_id: str, connection_name: str, workspace_id: str)
 
     logger.info(f"Configs conn_info:\n {conn_info}")
     return conn_info, configs, secrets
+
+
+def convert_langstudio_embed_config(embed_config):
+    region_id = embed_config.region_id or get_region_id()
+    conn_info, config, secrets = get_connection_info(
+        region_id, embed_config.connection_name, embed_config.workspace_id
+    )
+    if conn_info.custom_type == "OpenEmbeddingConnection":
+        return parse_embed_config(
+            {
+                "source": "openai",
+                "api_key": secrets.get("api_key", None),
+                "api_base": config.get("base_url", None),
+                "model": embed_config.model,
+                "embed_batch_size": embed_config.embed_batch_size,
+            }
+        )
+    elif conn_info.custom_type == "DashScopeConnection":
+        return parse_embed_config(
+            {
+                "source": "dashscope",
+                "api_key": secrets.get("api_key", None)
+                or os.getenv("DASHSCOPE_API_KEY"),
+                "model": embed_config.model or DEFAULT_DASHSCOPE_EMBEDDING_MODEL,
+                "embed_batch_size": embed_config.embed_batch_size,
+            }
+        )
+    else:
+        raise ValueError(f"Unknown connection type: {conn_info.custom_type}")
