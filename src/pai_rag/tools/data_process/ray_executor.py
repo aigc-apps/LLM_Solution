@@ -7,7 +7,6 @@ from pai_rag.tools.data_process.dataset.file_dataset import FileDataset
 from pai_rag.tools.data_process.utils.op_utils import (
     load_op_names,
     load_op,
-    get_previous_operation,
 )
 
 
@@ -54,14 +53,17 @@ class RayExecutor:
         for op_name in op_names:
             if op_name == "rag_parser":
                 dataset = FileDataset(self.cfg.dataset_path, self.cfg)
-                self.cfg.dataset_path = self.cfg.export_path
+                # TODO: support multiple operators
+                # self.cfg.dataset_path = self.cfg.export_path
             else:
-                dataset = RayDataset(
-                    os.path.join(
-                        self.cfg.dataset_path, get_previous_operation(op_name)
-                    ),
-                    self.cfg,
-                )
+                # TODO: support multiple operators
+                # dataset = RayDataset(
+                #     os.path.join(
+                #         self.cfg.dataset_path, get_previous_operation(op_name)
+                #     ),
+                #     self.cfg,
+                # )
+                dataset = RayDataset(self.cfg.dataset_path, self.cfg)
             ops = load_op(op_name, self.cfg.process)
             logger.info(f"Processing op {op_name} ...")
             tstart = time.time()
