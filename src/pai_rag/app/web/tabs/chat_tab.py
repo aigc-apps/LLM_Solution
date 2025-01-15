@@ -29,6 +29,7 @@ def respond(input_elements: List[Any]):
     except RagApiError as api_error:
         raise gr.Error(f"HTTP {api_error.code} Error: {api_error.msg}")
 
+    print("Patch config success.")
     query_type = update_dict["query_type"]
     msg = update_dict["question"]
     chatbot = update_dict["chatbot"]
@@ -68,6 +69,7 @@ def respond(input_elements: List[Any]):
                 index_name=index_name,
             )
         for resp in response_gen:
+            print(resp)
             chatbot[-1] = (msg, resp.result)
             yield chatbot
 

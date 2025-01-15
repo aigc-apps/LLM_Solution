@@ -124,7 +124,7 @@ def upload_knowledge(
 
     result = {"Info": ["StartTime", "EndTime", "Duration(s)", "Status"]}
     error_msg = ""
-    while not all(file.finished is True for file in my_upload_files):
+    while True:
         for file in my_upload_files:
             try:
                 response = asyncio.run(
@@ -144,12 +144,18 @@ def upload_knowledge(
             gr.update(visible=True, value=pd.DataFrame(result)),
             gr.update(visible=False),
         ]
-        if not all(file.finished is True for file in my_upload_files):
-            time.sleep(2)
+        print(result)
+
+        if all(file.finished is True for file in my_upload_files):
+            break
+
+        time.sleep(2)
 
     upload_result = "Upload success."
     if error_msg:
         upload_result = f"Upload failed: {error_msg}"
+
+    print(result)
     yield [
         gr.update(visible=True, value=pd.DataFrame(result)),
         gr.update(

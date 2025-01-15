@@ -113,6 +113,7 @@ class PandasQueryRetriever(BaseRetriever):
         **kwargs: Any,
     ) -> None:
         """Initialize params."""
+        super().__init__(callback_manager or Settings.callback_manager)
 
         self._df = df
         self._head = head
@@ -122,8 +123,6 @@ class PandasQueryRetriever(BaseRetriever):
             self._df, output_kwargs or {}
         )
         self._llm = llm or Settings.llm
-
-        super().__init__(callback_manager)
 
     @classmethod
     def from_config(

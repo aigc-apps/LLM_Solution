@@ -42,14 +42,15 @@ class PaiRetrieverQueryEngine(RetrieverQueryEngine):
         transform_metadata: Optional[dict] = None,
         callback_manager: Optional[CallbackManager] = None,
     ) -> None:
-        self._query_transform = query_transform
-        self._transform_metadata = transform_metadata
         super().__init__(
             retriever=retriever,
             response_synthesizer=response_synthesizer,
             node_postprocessors=node_postprocessors,
             callback_manager=callback_manager,
         )
+
+        self._query_transform = query_transform
+        self._transform_metadata = transform_metadata
 
     def retrieve(self, query_bundle: QueryBundle) -> List[NodeWithScore]:
         if self._query_transform:
