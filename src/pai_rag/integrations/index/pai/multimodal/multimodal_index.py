@@ -82,7 +82,6 @@ class PaiMultiModalVectorStoreIndex(VectorStoreIndex):
             **kwargs,
         )
 
-        print(self._use_async)
         self._enable_multimodal = enable_multimodal
         if self._enable_multimodal:
             image_embed_model = resolve_embed_model(

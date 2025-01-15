@@ -144,7 +144,6 @@ def upload_knowledge(
             gr.update(visible=True, value=pd.DataFrame(result)),
             gr.update(visible=False),
         ]
-        print(result)
 
         if all(file.finished is True for file in my_upload_files):
             break
@@ -155,7 +154,6 @@ def upload_knowledge(
     if error_msg:
         upload_result = f"Upload failed: {error_msg}"
 
-    print(result)
     yield [
         gr.update(visible=True, value=pd.DataFrame(result)),
         gr.update(

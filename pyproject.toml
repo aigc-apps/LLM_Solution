@@ -91,7 +91,7 @@ detectron2 = [
   {markers = "sys_platform == 'win32'", url = "https://pai-rag.oss-cn-hangzhou.aliyuncs.com/packages/python_wheels/detectron2-0.6%2B864913fpt2.3.0cpu-cp311-cp311-win_amd64.whl"},
   {markers = "sys_platform != 'win32' and sys_platform != 'linux' ", url = "https://pai-rag.oss-cn-hangzhou.aliyuncs.com/packages/python_wheels/detectron2-0.6%2B864913fpt2.2.2cpu-cp311-cp311-macosx_10_9_universal2.whl"}
 ]
-magic-pdf = "^0.10.6"
+magic-pdf = "0.10.6"
 peft = "^0.12.0"
 duckduckgo-search = "^6.2.12"
 aliyun-bootstrap = "^1.0.2"
@@ -104,6 +104,15 @@ primp = "^0.9.1"
 tablestore = "^6.1.0"
 anyio = "^4.6.2.post1"
 mistletoe = "^1.4.0"
+llama-index-agent-openai = "^0.4.1"
+paddlepaddle = "^2.6.2"
+doclayout-yolo = "0.0.2"
+unimernet = "0.2.3"
+paddleocr = "2.7.3"
+rapidocr-paddle = "^1.4.4"
+struct-eqtable = "0.3.2"
+html2text = "^2024.2.26"
+llama-index-multi-modal-llms-openai = "^0.4.2"
 
 [tool.poetry.scripts]
 pai_rag = "pai_rag.main:run"

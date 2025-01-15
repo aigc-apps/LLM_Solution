@@ -237,9 +237,7 @@ class RagWebClient:
             with_intent=with_intent,
             index_name=index_name,
         )
-        print("Start query..")
         r = requests.post(self.query_url, json=q, stream=True)
-        print("query finish", r.status_code)
         if r.status_code != HTTPStatus.OK:
             raise RagApiError(code=r.status_code, msg=r.text)
         if not stream:
@@ -249,9 +247,7 @@ class RagWebClient:
             )
         else:
             full_content = ""
-            print("Start streaming...")
             for chunk in r.iter_lines(chunk_size=8192, decode_unicode=True):
-                print(chunk)
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))

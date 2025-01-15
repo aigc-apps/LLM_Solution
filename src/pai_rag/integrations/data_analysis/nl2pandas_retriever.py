@@ -10,12 +10,11 @@ from llama_index.core.prompts.mixin import PromptDictType, PromptMixinType
 from llama_index.core.schema import NodeWithScore, QueryBundle, QueryType, TextNode
 from llama_index.core.settings import Settings
 from llama_index.core.callbacks.base import CallbackManager
-from llama_index.experimental.query_engine.pandas.output_parser import (
-    PandasInstructionParser,
-)
 
 from pai_rag.integrations.data_analysis.data_analysis_config import PandasAnalysisConfig
-
+from pai_rag.integrations.data_analysis.pandas_instruction_parser import (
+    PandasInstructionParser,
+)
 
 DEFAULT_INSTRUCTION_STR = (
     "1. Convert the query to executable Python code using Pandas.\n"
