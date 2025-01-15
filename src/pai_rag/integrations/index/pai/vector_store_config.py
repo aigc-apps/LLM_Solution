@@ -50,7 +50,7 @@ class AnalyticDBVectorStoreConfig(BaseVectorStoreConfig):
     ] = SupportedVectorStoreType.analyticdb
     ak: str
     sk: str
-    region_id: str
+    region_id: str = "cn-hangzhou"
     instance_id: str
     account: str
     account_password: str
