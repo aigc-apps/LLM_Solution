@@ -105,6 +105,8 @@ def process_embedder(args):
             "enable_sparse",
             "enable_multimodal",
             "multimodal_source",
+            "connection_name",
+            "workspace_id",
         ]
     }
     args.process.append("rag_embedder")
@@ -282,6 +284,18 @@ def init_configs():
         type=str,
         default="cnclip",
         help="Multi-modal embedding model source for rag_embedder operator.",
+    )
+    parser.add_argument(
+        "--connection_name",
+        type=str,
+        default=None,
+        help="Langstudio connection for rag_embedder operator.",
+    )
+    parser.add_argument(
+        "--workspace_id",
+        type=str,
+        default=None,
+        help="PAI workspace id for rag_embedder operator.",
     )
 
     args = parser.parse_args()

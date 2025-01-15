@@ -4,6 +4,7 @@ from pai_rag.integrations.embeddings.pai.pai_embedding_config import (
     OpenAIEmbeddingConfig,
     HuggingFaceEmbeddingConfig,
     CnClipEmbeddingConfig,
+    LangStudioEmbeddingConfig,
 )
 
 from llama_index.core import Settings
@@ -11,6 +12,9 @@ from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from pai_rag.integrations.embeddings.clip.cnclip_embedding import CnClipEmbedding
+from pai_rag.integrations.embeddings.langstudio.langstudio_embedding import (
+    LangStudioEmbedding,
+)
 import os
 from loguru import logger
 from pai_rag.utils.download_models import ModelScopeDownloader
@@ -91,7 +95,17 @@ def create_embedding(
         logger.info(
             f"Initialized CnClip embedding model {embed_config.model} with {embed_config.embed_batch_size} batch size."
         )
-
+    elif isinstance(embed_config, LangStudioEmbeddingConfig):
+        embed_model = LangStudioEmbedding(
+            region_id=embed_config.region_id,
+            connection_name=embed_config.connection_name,
+            workspace_id=embed_config.workspace_id,
+            embedding_model=embed_config.model,
+            embed_batch_size=embed_config.embed_batch_size,
+        ).get_embedding_model()
+        logger.info(
+            f"Initialized LangStudio embedding model with {embed_config.embed_batch_size} batch size."
+        )
     else:
         raise ValueError(f"Unknown Embedding source: {embed_config}")
 
