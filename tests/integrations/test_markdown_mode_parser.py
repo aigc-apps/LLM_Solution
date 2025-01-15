@@ -25,7 +25,7 @@ def test_markdown_parser():
         cls=PaiDataReader,
         reader_config=config.data_reader,
     )
-    input_dir = "tests/testdata/data/pdf_data"
+    input_dir = "tests/testdata/data/md_data"
     ModelScopeDownloader().load_rag_models()
     documents = directory_reader.load_data(file_path_or_directory=input_dir)
     md_node_parser = MarkdownNodeParser(enable_multimodal=False)
