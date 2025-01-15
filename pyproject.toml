@@ -96,14 +96,14 @@ detectron2 = [
   {markers = "sys_platform == 'win32'", url = "https://pai-rag.oss-cn-hangzhou.aliyuncs.com/packages/python_wheels/detectron2-0.6%2B864913fpt2.3.0cpu-cp311-cp311-win_amd64.whl"},
   {markers = "sys_platform != 'win32' and sys_platform != 'linux' ", url = "https://pai-rag.oss-cn-hangzhou.aliyuncs.com/packages/python_wheels/detectron2-0.6%2B864913fpt2.2.2cpu-cp311-cp311-macosx_10_9_universal2.whl"}
 ]
-magic-pdf = {version = "0.10.5", extras = ["full"]}
+magic-pdf = {extras = ["full"], version = "^0.10.6"}
 peft = "^0.12.0"
 duckduckgo-search = "6.2.12"
 aliyun-bootstrap = "1.0.2"
 docx = "^0.2.4"
 python-pptx = "^1.0.2"
 aspose-slides = "^24.10.0"
-ultralytics = "8.3.43"
+ultralytics = "^8.3.58"
 datasketch = "^1.6.5"
 primp = "0.9.1"
 tablestore = "^6.1.0"
