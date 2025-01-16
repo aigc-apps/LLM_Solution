@@ -56,7 +56,6 @@ def process_parser(args):
             "accelerator",
             "enable_mandatory_ocr",
             "concat_csv_rows",
-            "enable_table_summary",
             "format_sheet_data_to_json",
             "sheet_column_filters",
             "oss_bucket",
@@ -192,14 +191,6 @@ def init_configs():
         const=True,
         default=False,
         help="Whether to concat csv rows for rag_parser operator.",
-    )
-    parser.add_argument(
-        "--enable_table_summary",
-        type=str2bool,
-        nargs="?",
-        const=True,
-        default=False,
-        help="Whether to enable table summary for rag_parser operator.",
     )
     parser.add_argument(
         "--format_sheet_data_to_json",
