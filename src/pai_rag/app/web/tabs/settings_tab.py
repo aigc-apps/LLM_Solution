@@ -261,7 +261,7 @@ def create_setting_tab() -> Dict[str, Any]:
                     oss_endpoint = gr.Textbox(
                         label="OSS Endpoint",
                         elem_id="oss_endpoint",
-                        default="oss-cn-hangzhou.aliyuncs.com",
+                        placeholder="oss-cn-hangzhou.aliyuncs.com",
                     )
                 use_oss.input(
                     fn=ev_listeners.change_use_oss,

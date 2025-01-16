@@ -60,8 +60,8 @@ class PaiChatStore(BaseChatStore):
     _chat_store: Any = PrivateAttr()
 
     def __init__(self, chat_store_config: BaseChatStoreConfig):
-        self._chat_store = create_chat_store(chat_store_config)
         super().__init__()
+        self._chat_store = create_chat_store(chat_store_config)
 
     @classmethod
     def class_name(cls) -> str:

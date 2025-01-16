@@ -19,15 +19,26 @@ SYN_GENERAL_PROMPTS = "给定一个输入问题，根据查询代码指令以及
 #             """
 
 WELCOME_MESSAGE = """
-            # \N{fire} PAI-RAG Dashboard
-
-            #### \N{rocket} Join the DingTalk Q&A Group: 27370042974
-            """
+        <div class="title"> <span class="head"> \N{fire} PAI-RAG Dashboard</span><span class="subhead"> \N{rocket} Join the DingTalk Q&A Group: 27370042974</span> </div>
+    """
 
 DEFAULT_CSS_STYPE = """
-        h1, h3, h4 {
+        .title {
+            margin-block-start: 0.2em;
+            margin-block-end: 0.2em;
             text-align: center;
             display:block;
+        }
+
+        .head {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .subhead {
+            margin: 1.5em;
+            font-size: 1em;
+            font-weight: bold;
         }
         """
 
