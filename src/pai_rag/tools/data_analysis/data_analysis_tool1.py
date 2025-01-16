@@ -124,11 +124,11 @@ def run(
     # )
 
     if not stream:
-        query_bundle = QueryBundle(query_str=question, stream=False)
+        query_bundle = QueryBundle(query_str=question)
         response = da_query_engine.query(query_bundle)
         print("**Answer**: ", response.response)
     else:
-        query_bundle = QueryBundle(query_str=question, stream=True)
+        query_bundle = QueryBundle(query_str=question)
         response = da_query_engine.query(query_bundle)
         print("**Answer**: ", end="")
         for chunk in response.response_gen:

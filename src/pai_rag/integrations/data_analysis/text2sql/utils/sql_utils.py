@@ -4,6 +4,7 @@ import re
 from typing import Any, Dict, List, Optional, Tuple
 from loguru import logger
 
+from llama_index.core.settings import Settings
 from llama_index.core.base.base_retriever import BaseRetriever
 from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.utilities.sql_wrapper import SQLDatabase
@@ -33,7 +34,7 @@ class DefaultSQLRetriever(BaseRetriever):
         """Initialize params."""
         self._sql_database = sql_database
         self._return_raw = return_raw
-        super().__init__(callback_manager)
+        super().__init__(callback_manager or Settings.callback_manager)
 
     def _format_node_results(
         self, results: List[List[Any]], col_keys: List[str]

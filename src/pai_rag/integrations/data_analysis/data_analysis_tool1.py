@@ -218,7 +218,7 @@ class DataAnalysisQuery(BaseQueryEngine):
             response_synthesis_prompt=PromptTemplate(analysis_config.synthesizer_prompt)
             or DEFAULT_RESPONSE_SYNTHESIS_PROMPT,
         )
-        super().__init__(callback_manager=callback_manager)
+        super().__init__(callback_manager=callback_manager or Settings.callback_manager)
 
     def _get_prompt_modules(self) -> PromptMixinType:
         """Get prompt sub-modules."""

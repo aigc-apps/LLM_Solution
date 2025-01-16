@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from loguru import logger
 import json
-from pydantic.v1 import BaseModel, Field
+from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 
 from llama_index.core import BasePromptTemplate
@@ -49,12 +49,16 @@ class SchemaSelector(DBInfoSelector):
     def select(self, query: QueryType, db_info: Dict):
         column_nums = count_total_columns(db_info)
         schema_description_str = get_schema_desc4llm(db_info)
-        sllm = self._llm.as_structured_llm(output_cls=SchemaSelection)
-        selected_output_str = sllm.predict(
-            prompt=self._db_schema_select_prompt,
-            nl_query=query.query_str,
-            db_schema=schema_description_str,
-        )
+        try:
+            self._llm.pydantic_program_mode = "llm"
+            sllm = self._llm.as_structured_llm(output_cls=SchemaSelection)
+            selected_output_str = sllm.predict(
+                prompt=self._db_schema_select_prompt,
+                nl_query=query.query_str,
+                db_schema=schema_description_str,
+            )
+        finally:
+            self._llm.pydantic_program_mode = "default"
         logger.info(f"selected_output_str: \n{selected_output_str}\n")
         # 解析筛选
         selected_db_description_dict = self._filter_selection(
@@ -70,12 +74,16 @@ class SchemaSelector(DBInfoSelector):
     async def aselect(self, query: QueryType, db_info: Dict):
         column_nums = count_total_columns(db_info)
         schema_description_str = get_schema_desc4llm(db_info)
-        sllm = self._llm.as_structured_llm(output_cls=SchemaSelection)
-        selected_output_str = await sllm.apredict(
-            prompt=self._db_schema_select_prompt,
-            nl_query=query.query_str,
-            db_schema=schema_description_str,
-        )
+        try:
+            self._llm.pydantic_program_mode = "llm"
+            sllm = self._llm.as_structured_llm(output_cls=SchemaSelection)
+            selected_output_str = await sllm.apredict(
+                prompt=self._db_schema_select_prompt,
+                nl_query=query.query_str,
+                db_schema=schema_description_str,
+            )
+        finally:
+            self._llm.pydantic_program_mode = "default"
         logger.info(f"selected_output_str: \n{selected_output_str}\n")
         # 解析筛选
         selected_db_description_dict = self._filter_selection(
