@@ -63,6 +63,15 @@ def process_parser(args):
             "oss_endpoint",
         ]
     }
+    # limit the minimum cpu and mem required for rag_parser
+    if parser_required_args["cpu_required"] < 6:
+        parser_required_args["cpu_required"] = 6
+    if parser_required_args["mem_required"] < 8:
+        parser_required_args["mem_required"] = 8
+    parser_required_args["mem_required"] = f"{parser_required_args['mem_required']}GB"
+    logger.info(
+        f"Setting cpu_required to {parser_required_args['cpu_required']} and mem_required to {parser_required_args['mem_required']} for rag_parser."
+    )
     args.process.append("rag_parser")
     args.process[0] = {"rag_parser": parser_required_args}
     return args
@@ -84,6 +93,17 @@ def process_splitter(args):
             "enable_multimodal",
         ]
     }
+    # limit the minimum cpu and mem required for rag_splitter
+    if splitter_required_args["cpu_required"] < 2:
+        splitter_required_args["cpu_required"] = 2
+    if splitter_required_args["mem_required"] < 2:
+        splitter_required_args["mem_required"] = 2
+    splitter_required_args[
+        "mem_required"
+    ] = f"{splitter_required_args['mem_required']}GB"
+    logger.info(
+        f"Setting cpu_required to {splitter_required_args['cpu_required']} and mem_required to {splitter_required_args['mem_required']} for rag_splitter."
+    )
     args.process.append("rag_splitter")
     args.process[0] = {"rag_splitter": splitter_required_args}
     return args
@@ -109,6 +129,17 @@ def process_embedder(args):
             "workspace_id",
         ]
     }
+    # limit the minimum cpu and mem required for process_embedder
+    if embedder_required_args["cpu_required"] < 8:
+        embedder_required_args["cpu_required"] = 8
+    if embedder_required_args["mem_required"] < 10:
+        embedder_required_args["mem_required"] = 10
+    embedder_required_args[
+        "mem_required"
+    ] = f"{embedder_required_args['mem_required']}GB"
+    logger.info(
+        f"Setting cpu_required to {embedder_required_args['cpu_required']} and mem_required to {embedder_required_args['mem_required']} for process_embedder."
+    )
     args.process.append("rag_embedder")
     args.process[0] = {"rag_embedder": embedder_required_args}
     return args
@@ -150,14 +181,14 @@ def init_configs():
     parser.add_argument(
         "--cpu_required",
         type=int,
-        default=1,
+        default=2,
         help="Cpu required for each rag operator.",
     )
     parser.add_argument(
         "--mem_required",
-        type=str,
-        default="1GB",
-        help="Memory required for each rag operator.",
+        type=int,
+        default=2,
+        help="Memory(GB) required for each rag operator.",
     )
     parser.add_argument(
         "--process", default=[], help="list of operator processes to run"
