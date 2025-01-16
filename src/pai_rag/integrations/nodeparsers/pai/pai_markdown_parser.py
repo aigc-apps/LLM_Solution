@@ -65,7 +65,7 @@ class StructuredNodeParser(BaseModel):
         return self.base_parser.split_text(raw_section)
 
     def _format_section_header(self, section_headers) -> str:
-        return " >> ".join([h.content for h in section_headers])
+        return "\n".join([h.content for h in section_headers])
 
     def _format_tree_nodes(
         self, node, doc_node, ref_doc, nodes_list, chunk_images_list
@@ -92,7 +92,7 @@ class StructuredNodeParser(BaseModel):
             return ""
         if not node.children:
             return node.content
-        return node.content + "\n\n".join(
+        return node.content + "\n".join(
             [
                 self._format_tree_nodes(
                     child, doc_node, ref_doc, nodes_list, chunk_images_list
@@ -202,7 +202,7 @@ class StructuredNodeParser(BaseModel):
             for chunk_text in self._cut(tree_node.content):
                 if title_stack:
                     new_chunk_text = (
-                        f"{self._format_section_header(title_stack)}:{chunk_text}"
+                        f"{self._format_section_header(title_stack)} : {chunk_text}"
                     )
                 else:
                     new_chunk_text = chunk_text
@@ -251,12 +251,12 @@ class StructuredNodeParser(BaseModel):
                         image_info = ImageInfo(image_url=child.content)
                         chunk_images_list.append(json.dumps(image_info.__dict__))
                     else:
-                        chunk_text += self._format_tree_nodes(
+                        chunk_text += "\n" + self._format_tree_nodes(
                             child, doc_node, ref_doc, nodes_list, chunk_images_list
                         )
                 if title_stack:
                     new_chunk_text = (
-                        f"{self._format_section_header(title_stack)}:{chunk_text}"
+                        f"{self._format_section_header(title_stack)} : {chunk_text}"
                     )
                 else:
                     new_chunk_text = chunk_text
