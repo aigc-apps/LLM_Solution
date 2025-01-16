@@ -14,10 +14,8 @@ def upload_oss_knowledge(
     oss_path,
     chunk_size,
     chunk_overlap,
-    enable_raptor,
     enable_multimodal,
     enable_mandatory_ocr,
-    enable_table_summary,
     upload_index,
 ):
     if not oss_path:
@@ -34,10 +32,8 @@ def upload_oss_knowledge(
         oss_path=oss_path,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
-        enable_raptor=enable_raptor,
         enable_multimodal=enable_multimodal,
         enable_mandatory_ocr=enable_mandatory_ocr,
-        enable_table_summary=enable_table_summary,
         index_name=upload_index,
         from_oss=True,
     ):
@@ -48,10 +44,8 @@ def upload_files(
     upload_files,
     chunk_size,
     chunk_overlap,
-    enable_raptor,
     enable_multimodal,
     enable_mandatory_ocr,
-    enable_table_summary,
     upload_index,
 ):
     if not upload_files:
@@ -68,10 +62,8 @@ def upload_files(
         oss_path=None,
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
-        enable_raptor=enable_raptor,
         enable_multimodal=enable_multimodal,
         enable_mandatory_ocr=enable_mandatory_ocr,
-        enable_table_summary=enable_table_summary,
         index_name=upload_index,
     ):
         yield state_info
@@ -82,10 +74,8 @@ def upload_knowledge(
     oss_path,
     chunk_size,
     chunk_overlap,
-    enable_raptor,
     enable_multimodal,
     enable_mandatory_ocr,
-    enable_table_summary,
     index_name,
     from_oss: bool = False,
 ):
@@ -95,7 +85,6 @@ def upload_knowledge(
                 "chunk_size": chunk_size,
                 "chunk_overlap": chunk_overlap,
                 "enable_mandatory_ocr": enable_mandatory_ocr,
-                "enable_table_summary": enable_table_summary,
             }
         )
     except RagApiError as api_error:
@@ -105,7 +94,6 @@ def upload_knowledge(
     if from_oss:
         response = rag_client.add_knowledge(
             oss_path=oss_path,
-            enable_raptor=enable_raptor,
             index_name=index_name,
             enable_multimodal=enable_multimodal,
         )
@@ -113,7 +101,6 @@ def upload_knowledge(
     else:
         response = rag_client.add_knowledge(
             input_files=[file.name for file in upload_files],
-            enable_raptor=enable_raptor,
             index_name=index_name,
             enable_multimodal=enable_multimodal,
         )
@@ -187,11 +174,6 @@ def create_upload_tab() -> Dict[str, Any]:
                 label="\N{fire} Chunk Overlap (The portion of adjacent document chunks that overlap with each other)",
                 elem_id="chunk_overlap",
             )
-            enable_raptor = gr.Checkbox(
-                label="Yes",
-                info="Process with Raptor Node Enhancement",
-                elem_id="enable_raptor",
-            )
             enable_multimodal = gr.Checkbox(
                 label="Yes",
                 info="Process with MultiModal",
@@ -203,11 +185,6 @@ def create_upload_tab() -> Dict[str, Any]:
                 info="Process PDF with OCR",
                 elem_id="enable_mandatory_ocr",
                 visible=True,
-            )
-            enable_table_summary = gr.Checkbox(
-                label="Yes",
-                info="Process with Table Summary ",
-                elem_id="enable_table_summary",
             )
         with gr.Column(scale=8):
             with gr.Tab("Files"):
@@ -246,10 +223,8 @@ def create_upload_tab() -> Dict[str, Any]:
                         oss_path,
                         chunk_size,
                         chunk_overlap,
-                        enable_raptor,
                         enable_multimodal,
                         enable_mandatory_ocr,
-                        enable_table_summary,
                         upload_index,
                     ],
                     outputs=[upload_oss_state_df, upload_oss_state],
@@ -262,10 +237,8 @@ def create_upload_tab() -> Dict[str, Any]:
                     upload_file,
                     chunk_size,
                     chunk_overlap,
-                    enable_raptor,
                     enable_multimodal,
                     enable_mandatory_ocr,
-                    enable_table_summary,
                     upload_index,
                 ],
                 outputs=[upload_file_state_df, upload_file_state],
@@ -285,10 +258,8 @@ def create_upload_tab() -> Dict[str, Any]:
                     dummy_component,
                     chunk_size,
                     chunk_overlap,
-                    enable_raptor,
                     enable_multimodal,
                     enable_mandatory_ocr,
-                    enable_table_summary,
                     upload_index,
                 ],
                 outputs=[upload_dir_state_df, upload_dir_state],
@@ -304,8 +275,6 @@ def create_upload_tab() -> Dict[str, Any]:
                 upload_index.elem_id: upload_index,
                 chunk_size.elem_id: chunk_size,
                 chunk_overlap.elem_id: chunk_overlap,
-                enable_raptor.elem_id: enable_raptor,
                 enable_multimodal.elem_id: enable_multimodal,
                 enable_mandatory_ocr.elem_id: enable_mandatory_ocr,
-                enable_table_summary.elem_id: enable_table_summary,
             }

@@ -25,7 +25,6 @@ COMMON_FILE_PATH_FODER_NAME = "__pairag__knowledgebase__"
 class BaseDataReaderConfig(BaseModel):
     concat_csv_rows: bool = False
     enable_mandatory_ocr: bool = False
-    enable_table_summary: bool = False
     format_sheet_data_to_json: bool = False
     sheet_column_filters: List[str] | None = None
 
@@ -36,28 +35,22 @@ def get_file_readers(reader_config: BaseDataReaderConfig = None, oss_store: Any 
 
     file_readers = {
         ".html": PaiHtmlReader(
-            enable_table_summary=reader_config.enable_table_summary,
             oss_cache=oss_store,  # Storing html images
         ),
         ".htm": PaiHtmlReader(
-            enable_table_summary=reader_config.enable_table_summary,
             oss_cache=oss_store,  # Storing html images
         ),
         ".docx": PaiDocxReader(
-            enable_table_summary=reader_config.enable_table_summary,
             oss_cache=oss_store,  # Storing docx images
         ),
         ".pdf": PaiPDFReader(
             enable_mandatory_ocr=reader_config.enable_mandatory_ocr,
-            enable_table_summary=reader_config.enable_table_summary,
             oss_cache=oss_store,  # Storing pdf images
         ),
         ".pptx": PaiPptxReader(
-            enable_table_summary=reader_config.enable_table_summary,
             oss_cache=oss_store,  # Storing pptx images
         ),
         ".md": PaiMarkdownReader(
-            enable_table_summary=reader_config.enable_table_summary,
             oss_cache=oss_store,  # Storing markdown images
         ),
         ".csv": PaiPandasCSVReader(

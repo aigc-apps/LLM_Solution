@@ -29,21 +29,17 @@ class PaiPDFReader(BaseReader):
     """Read PDF files including texts, tables, images.
 
     Args:
-        enable_table_summary (bool):  whether to use table_summary to process tables
+        enable_mandatory_ocr (bool):  whether to use ocr to files
+        oss_cache: oss_cache
     """
 
     def __init__(
         self,
         enable_mandatory_ocr: bool = False,
-        enable_table_summary: bool = False,
         oss_cache: Any = None,
     ) -> None:
-        self.enable_table_summary = enable_table_summary
         self.enable_mandatory_ocr = enable_mandatory_ocr
         self._oss_cache = oss_cache
-        logger.info(
-            f"PaiPdfReader created with enable_table_summary : {self.enable_table_summary}"
-        )
         logger.info(
             f"PaiPdfReader created with enable_mandatory_ocr : {self.enable_mandatory_ocr}"
         )
