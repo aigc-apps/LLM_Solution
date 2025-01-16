@@ -68,7 +68,6 @@ def respond(input_elements: List[Any]):
                 index_name=index_name,
             )
         for resp in response_gen:
-            print(resp)
             chatbot[-1] = (msg, resp.result)
             yield chatbot
 
