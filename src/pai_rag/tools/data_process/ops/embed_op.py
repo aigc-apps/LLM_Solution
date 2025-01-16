@@ -30,6 +30,8 @@ class Embedder(BaseOP):
         enable_sparse: bool = False,
         enable_multimodal: bool = False,
         multimodal_source: str = None,
+        connection_name: str = None,
+        workspace_id: str = None,
         *args,
         **kwargs,
     ):
@@ -39,6 +41,8 @@ class Embedder(BaseOP):
                 "source": source,
                 "model": model,
                 "enable_sparse": enable_sparse,
+                "connection_name": connection_name,
+                "workspace_id": workspace_id,
             }
         )
         # Init model download list

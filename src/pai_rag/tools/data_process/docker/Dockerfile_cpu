@@ -11,6 +11,7 @@ COPY . .
 
 RUN poetry install && rm -rf $POETRY_CACHE_DIR
 RUN poetry run aliyun-bootstrap -a install
+RUN pip3 install https://sdk-portal-us-prod.oss-accelerate.aliyuncs.com/downloads/u-5fa6e81f-04cd-41d6-86ac-d8bffa4525e7-python-tea.zip
 RUN pip3 install ray[default]
 
 FROM python:3.11-slim AS prod
