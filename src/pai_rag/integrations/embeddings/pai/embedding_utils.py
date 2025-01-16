@@ -13,9 +13,6 @@ from pai_rag.integrations.embeddings.pai.pai_embedding_config import (
     LangStudioEmbeddingConfig,
 )
 from pai_rag.integrations.embeddings.clip.cnclip_embedding import CnClipEmbedding
-from pai_rag.integrations.embeddings.langstudio.langstudio_utils import (
-    convert_langstudio_embed_config,
-)
 from loguru import logger
 
 
@@ -96,6 +93,10 @@ def create_embedding(
             f"Initialized CnClip embedding model {embed_config.model} with {embed_config.embed_batch_size} batch size."
         )
     elif isinstance(embed_config, LangStudioEmbeddingConfig):
+        from pai_rag.integrations.embeddings.pai.langstudio_utils import (
+            convert_langstudio_embed_config,
+        )
+
         converted_embed_config = convert_langstudio_embed_config(embed_config)
         logger.info(
             f"Initialized LangStudio embedding model with {converted_embed_config}."
