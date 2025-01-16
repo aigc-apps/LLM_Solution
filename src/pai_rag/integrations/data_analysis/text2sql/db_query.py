@@ -44,7 +44,7 @@ class DBQuery:
         db_config: SqlAnalysisConfig,
         sql_database: SQLDatabase,
         embed_model: BaseEmbedding,
-        schema_retriver: Optional[SchemaRetriever] = None,
+        schema_retriever: Optional[SchemaRetriever] = None,
         history_retriever: Optional[HistoryRetriever] = None,
         value_retriever: Optional[ValueRetriever] = None,
         llm: Optional[LLM] = None,
@@ -57,7 +57,7 @@ class DBQuery:
         self._sql_database = sql_database
         self._embed_model = embed_model
         self._llm = llm or Settings.llm
-        self._schema_retriever = schema_retriver
+        self._schema_retriever = schema_retriever
         self._history_retriever = history_retriever
         self._value_retriever = value_retriever
 

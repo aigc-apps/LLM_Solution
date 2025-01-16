@@ -124,7 +124,7 @@ def create_query_retriever(
             db_config=analysis_config,
             sql_database=sql_database,
             embed_model=embed_model,
-            schema_retriver=resolve_schema_retriever(analysis_config, embed_model),
+            schema_retriever=resolve_schema_retriever(analysis_config, embed_model),
             history_retriever=resolve_history_retriever(analysis_config, embed_model),
             value_retriever=resolve_value_retriever(analysis_config, embed_model),
             llm=llm,

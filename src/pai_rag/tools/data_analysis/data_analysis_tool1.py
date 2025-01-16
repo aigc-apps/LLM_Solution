@@ -105,23 +105,23 @@ def run(
         da_loader = resolve_data_analysis_loader(config)
         da_loader.load_db_info()
 
-    print(
-        "check instance: ",
-        id(da_loader._sql_database),
-        id(da_loader._db_loader._schema_retriever),
-        id(da_loader._db_loader._history_retriever),
-        id(da_loader._db_loader._value_retriever),
-    )
+    # print(
+    #     "check instance: ",
+    #     id(da_loader._sql_database),
+    #     id(da_loader._db_loader._schema_retriever),
+    #     id(da_loader._db_loader._history_retriever),
+    #     id(da_loader._db_loader._value_retriever),
+    # )
 
     da_query_engine = resolve_data_analysis_query(config)
 
-    print(
-        "check instance: ",
-        id(da_query_engine._sql_database),
-        id(da_query_engine._query_retriever._schema_retriever),
-        id(da_query_engine._query_retriever._history_retriever),
-        id(da_query_engine._query_retriever._value_retriever),
-    )
+    # print(
+    #     "check instance: ",
+    #     id(da_query_engine._sql_database),
+    #     id(da_query_engine._query_retriever._schema_retriever),
+    #     id(da_query_engine._query_retriever._history_retriever),
+    #     id(da_query_engine._query_retriever._value_retriever),
+    # )
 
     if not stream:
         query_bundle = QueryBundle(query_str=question, stream=False)

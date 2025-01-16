@@ -119,7 +119,7 @@ class DBLoader:
             history_nodes = await self._history_node.acreate_nodes_with_embeddings(
                 db_history_list
             )
-            await self._history_retriever.aget_index(history_nodes)
+            self._history_retriever.get_index(history_nodes)
             logger.info("db_history index stored.")
 
         # get db_embedding, including db_description, db_history, db_value
@@ -127,12 +127,12 @@ class DBLoader:
             description_nodes = await self._schema_node.acreate_nodes_with_embeddings(
                 db_description_dict
             )
-            await self._schema_retriever.aget_index(description_nodes)
+            self._schema_retriever.get_index(description_nodes)
             logger.info("db_description index stored.")
 
             db_value_dict = self._value_collector.collect()
             value_nodes = await self._value_node.acreate_nodes_with_embeddings(
                 db_value_dict
             )
-            await self._value_retriever.aget_index(value_nodes)
+            self._value_retriever.get_index(value_nodes)
             logger.info("db_value index stored.")
