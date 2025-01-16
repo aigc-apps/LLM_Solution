@@ -3523,6 +3523,16 @@ typing = "*"
 uuid = "*"
 
 [[package]]
+name = "html2text"
+version = "2024.2.26"
+description = "Turn HTML into equivalent Markdown-structured text."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "html2text-2024.2.26.tar.gz", hash = "sha256:05f8e367d15aaabc96415376776cdd11afd5127a77fce6e36afc60c563ca2c32"},
+]
+
+[[package]]
 name = "httpcore"
 version = "1.0.7"
 description = "A minimal low-level HTTP client."
@@ -10770,4 +10780,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11.0,<3.12"
-content-hash = "44a361183b6ccca38aca18d8310d8dc271a40b6578e34686b92178412a4f65a8"
+content-hash = "ae2f34eeaf6201b0aa7e687a632ab22f09a4a2a727f3ace42ca06357a31a2ad9"
