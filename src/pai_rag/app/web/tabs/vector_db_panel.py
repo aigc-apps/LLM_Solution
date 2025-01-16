@@ -47,6 +47,7 @@ def create_vector_db_panel() -> Dict[str, Any]:
                         "cn-shenzhen",
                         "cn-chengdu",
                     ],
+                    value="cn-hangzhou",
                     label="RegionId",
                     elem_id="adb_region_id",
                 )

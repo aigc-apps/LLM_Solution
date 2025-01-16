@@ -27,7 +27,6 @@ class Parser(BaseOP):
         self,
         concat_csv_rows: bool = False,
         enable_mandatory_ocr: bool = False,
-        enable_table_summary: bool = False,
         format_sheet_data_to_json: bool = False,
         sheet_column_filters: List[str] = None,
         oss_bucket: str = None,
@@ -40,7 +39,6 @@ class Parser(BaseOP):
         self.data_reader_config = BaseDataReaderConfig(
             concat_csv_rows=concat_csv_rows,
             enable_mandatory_ocr=enable_mandatory_ocr,
-            enable_table_summary=enable_table_summary,
             format_sheet_data_to_json=format_sheet_data_to_json,
             sheet_column_filters=sheet_column_filters,
         )
@@ -57,7 +55,16 @@ class Parser(BaseOP):
             reader_config=self.data_reader_config,
             oss_store=self.oss_store,
         )
-        logger.info("ParseActor init finished.")
+        logger.info(
+            f"""ParserActor [PaiDataReader] init finished with following parameters:
+                        concat_csv_rows: {concat_csv_rows}
+                        enable_mandatory_ocr: {enable_mandatory_ocr}
+                        format_sheet_data_to_json: {format_sheet_data_to_json}
+                        sheet_column_filters: {sheet_column_filters}
+                        oss_bucket: {oss_bucket}
+                        oss_endpoint: {oss_endpoint}
+            """
+        )
 
     def process(self, input_file):
         current_thread = threading.current_thread()

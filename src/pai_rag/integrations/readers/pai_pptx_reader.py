@@ -24,14 +24,9 @@ from loguru import logger
 class PaiPptxReader(BaseReader):
     def __init__(
         self,
-        enable_table_summary: bool = False,
         oss_cache: Any = None,
     ) -> None:
-        self.enable_table_summary = enable_table_summary
         self._oss_cache = oss_cache
-        logger.info(
-            f"PaiPptxReader created with enable_table_summary : {self.enable_table_summary}"
-        )
 
     def _extract_shape(self, slide_number, shape):
         image_flag = False
@@ -142,10 +137,11 @@ class PaiPptxReader(BaseReader):
                         image_url = transform_local_to_oss(
                             self._oss_cache, image, ppt_name
                         )
-                        time_tag = int(time.time())
-                        alt_text = f"pai_rag_image_{time_tag}_"
-                        image_content = f"![{alt_text}]({image_url})"
-                        markdown.append(f"{image_content}\n\n")
+                        if image_url:
+                            time_tag = int(time.time())
+                            alt_text = f"pai_rag_image_{time_tag}_"
+                            image_content = f"![{alt_text}]({image_url})"
+                            markdown.append(f"{image_content}\n\n")
 
         return "".join(markdown)
 

@@ -57,7 +57,6 @@ def load_db_info_fn(input_elements: List[Any]):
         else:
             update_dict["enable_query_preprocessor"] = False
             update_dict["enable_db_preretriever"] = False
-        print("update_dict:", update_dict)
         rag_client.patch_config(update_dict)
     except RagApiError as api_error:
         raise gr.Error(f"HTTP {api_error.code} Error: {api_error.msg}")

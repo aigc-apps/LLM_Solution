@@ -208,6 +208,7 @@ class RagWebClient:
             formatted_answer += f"**Reference**:\n {referenced_docs}"
 
         response["result"] = formatted_answer
+
         return response
 
     def check_health(self):

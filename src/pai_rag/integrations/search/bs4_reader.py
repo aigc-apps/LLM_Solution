@@ -174,8 +174,8 @@ class ParallelBeautifulSoupWebReader(BasePydanticReader):
     _website_extractor: Dict[str, Callable] = PrivateAttr()
 
     def __init__(self, website_extractor: Optional[Dict[str, Callable]] = None) -> None:
-        self._website_extractor = website_extractor or DEFAULT_WEBSITE_EXTRACTOR
         super().__init__()
+        self._website_extractor = website_extractor or DEFAULT_WEBSITE_EXTRACTOR
 
     @classmethod
     def class_name(cls) -> str:

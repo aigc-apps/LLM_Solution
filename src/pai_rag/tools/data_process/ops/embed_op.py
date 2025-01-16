@@ -30,8 +30,10 @@ class Embedder(BaseOP):
         enable_sparse: bool = False,
         enable_multimodal: bool = False,
         multimodal_source: str = None,
+        connection_name: str = None,
+        workspace_id: str = None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.embedder_cfg = parse_embed_config(
@@ -39,6 +41,8 @@ class Embedder(BaseOP):
                 "source": source,
                 "model": model,
                 "enable_sparse": enable_sparse,
+                "connection_name": connection_name,
+                "workspace_id": workspace_id,
             }
         )
         # Init model download list
@@ -67,7 +71,15 @@ class Embedder(BaseOP):
                 self.mm_embedder_cfg, pai_rag_model_dir=self.model_dir
             )
             logger.info("Multi-modal embedding model loaded.")
-        logger.info("Embedder init finished.")
+        logger.info(
+            f"""EmbedderActor [PaiEmbedding] init finished with following parameters:
+                        source: {source}
+                        model: {model}
+                        enable_sparse: {enable_sparse}
+                        enable_multimodal: {enable_multimodal}
+                        multimodal_source: {multimodal_source}
+            """
+        )
 
     def process_extra_metadata(self, nodes):
         excluded_embed_metadata_keys = nodes["excluded_embed_metadata_keys"]
