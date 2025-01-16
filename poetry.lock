@@ -5083,12 +5083,12 @@ source = ["Cython (>=3.0.11)"]
 
 [[package]]
 name = "magic-pdf"
-version = "0.10.5"
+version = "0.10.6"
 description = "A practical tool for converting PDF to Markdown"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "magic_pdf-0.10.5-py3-none-any.whl", hash = "sha256:723655c30da3d595da6873894dafa6783f453ac71e871ee7584488e316f3a0fa"},
+    {file = "magic_pdf-0.10.6-py3-none-any.whl", hash = "sha256:d9efb6d99a74d451ffac0118c202318f4e85ef67822a2c6183969034ea31bf9e"},
 ]
 
 [package.dependencies]
@@ -5111,6 +5111,7 @@ paddlepaddle = [
     {version = "3.0.0b1", optional = true, markers = "platform_system == \"Linux\" and extra == \"full\""},
     {version = "2.6.1", optional = true, markers = "(platform_system == \"Windows\" or platform_system == \"Darwin\") and extra == \"full\""},
 ]
+"pdfminer.six" = "20231228"
 pydantic = ">=2.7.2,<2.8.0"
 PyMuPDF = ">=1.24.9"
 PyYAML = {version = "*", optional = true, markers = "extra == \"full\""}
@@ -5118,13 +5119,17 @@ rapid-table = {version = "*", optional = true, markers = "extra == \"full\""}
 rapidocr-paddle = {version = "*", optional = true, markers = "extra == \"full\""}
 scikit-learn = ">=1.0.2"
 struct-eqtable = {version = "0.3.2", optional = true, markers = "extra == \"full\""}
-torch = ">=2.2.2,<=2.3.1"
+torch = [
+    {version = ">=2.2.2"},
+    {version = ">=2.2.2,<=2.3.1", optional = true, markers = "extra == \"full\""},
+]
+torchvision = {version = ">=0.17.2,<=0.18.1", optional = true, markers = "extra == \"full\""}
 transformers = "*"
-ultralytics = {version = "*", optional = true, markers = "extra == \"full\""}
-unimernet = {version = "0.2.1", optional = true, markers = "extra == \"full\""}
+ultralytics = {version = ">=8.3.48", optional = true, markers = "extra == \"full\""}
+unimernet = {version = "0.2.2", optional = true, markers = "extra == \"full\""}
 
 [package.extras]
-full = ["PyYAML", "accelerate", "detectron2", "doclayout-yolo (==0.0.2)", "einops", "matplotlib", "matplotlib (<=3.9.0)", "paddleocr (==2.7.3)", "paddlepaddle (==2.6.1)", "paddlepaddle (==3.0.0b1)", "rapid-table", "rapidocr-paddle", "struct-eqtable (==0.3.2)", "ultralytics", "unimernet (==0.2.1)"]
+full = ["PyYAML", "accelerate", "detectron2", "doclayout-yolo (==0.0.2)", "einops", "matplotlib", "matplotlib (<=3.9.0)", "paddleocr (==2.7.3)", "paddlepaddle (==2.6.1)", "paddlepaddle (==3.0.0b1)", "rapid-table", "rapidocr-paddle", "struct-eqtable (==0.3.2)", "torch (>=2.2.2,<=2.3.1)", "torchvision (>=0.17.2,<=0.18.1)", "ultralytics (>=8.3.48)", "unimernet (==0.2.2)"]
 lite = ["paddleocr (==2.7.3)", "paddlepaddle (==2.6.1)", "paddlepaddle (==3.0.0b1)"]
 old-linux = ["albumentations (<=1.4.20)"]
 
@@ -10281,71 +10286,6 @@ url = "https://download.pytorch.org/whl/cpu"
 reference = "pytorch_cpu"
 
 [[package]]
-name = "torchtext"
-version = "0.17.2"
-description = "Text utilities, models, transforms, and datasets for PyTorch."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "torchtext-0.17.2-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:760ef1464ffe72c5a25f53617b011afeb31641f0ad016479b96d151d2acd8396"},
-    {file = "torchtext-0.17.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:84b8b907f6bfbf637ea80521060c8800d3b9f5a5b4ba2daf88ce0f6e728dafa0"},
-    {file = "torchtext-0.17.2-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:6bbfd762aa804b48bd7bd454997597adaa9cf785dba252a2e03241e48c6dbd35"},
-    {file = "torchtext-0.17.2-cp310-cp310-win_amd64.whl", hash = "sha256:f09b677316bb2c1a2a326a01f3549a8f3096170209d5676a7dd6f47583b58e86"},
-    {file = "torchtext-0.17.2-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:1c0235333af0566f343bcfec7ffab0ef217152d75f3951432d4edd9eeb4185ad"},
-    {file = "torchtext-0.17.2-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:5ea1b44b2ea6792ec0aa1a72527dbd8d92c46e4b5f7180e854082df0e1ae4d60"},
-    {file = "torchtext-0.17.2-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:408b2c07351a6ac4090409860dca9fd8302e189403d77091c30a112824686c83"},
-    {file = "torchtext-0.17.2-cp311-cp311-win_amd64.whl", hash = "sha256:a9f2af1380e9cd7bc55839ffa353c7bfd62eeae9e48383085e3b4494dcdf82c8"},
-    {file = "torchtext-0.17.2-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:1eb3d76abce1f736f369787e089beb4fe6f93665f304fea996fe634e28c13bb9"},
-    {file = "torchtext-0.17.2-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:39d34491ec9921e7f6877ec28558d401807364006ae6035ff980361b1a09e7e1"},
-    {file = "torchtext-0.17.2-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:04fb201d46f68a7f708aac7cb9605f8c4a67927f311849d5f00a8095f6132fe3"},
-    {file = "torchtext-0.17.2-cp312-cp312-win_amd64.whl", hash = "sha256:0664f14781a6b045cb5e6610f3ad6240a8f7c1cb92e9567efaf54836a1a56a38"},
-    {file = "torchtext-0.17.2-cp38-cp38-macosx_10_13_x86_64.whl", hash = "sha256:72318d42a831e93a7ca22b801b8790790aecf8fc70e59d5ef0389ebb2b9f62d7"},
-    {file = "torchtext-0.17.2-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:2f3d707f028b4876d12cb72a4a53c5f1c6fef7987b991cb2bc47662db07e6f92"},
-    {file = "torchtext-0.17.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:8b531ca852280211ea13cfab031d196b9ce010bf4ec6434605c8419e27fc3231"},
-    {file = "torchtext-0.17.2-cp38-cp38-win_amd64.whl", hash = "sha256:6d60cb71195cd75f30ac065ea60f6dd4d0b313b806724b07ae3bf4d93ece568f"},
-    {file = "torchtext-0.17.2-cp39-cp39-macosx_10_13_x86_64.whl", hash = "sha256:41de828f25f918db53145cf38bfeb1ae0f9e9a0d9c66494dbc39779475055036"},
-    {file = "torchtext-0.17.2-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f07201e6cd6d3ffad15cf3a65eb0e8409ad82a2859b880122e1b66aba5a3b2dd"},
-    {file = "torchtext-0.17.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:486b51a83f880700824be05ea0ea60e23cd821d15e0a89300c26d35b6f4eb8da"},
-    {file = "torchtext-0.17.2-cp39-cp39-win_amd64.whl", hash = "sha256:a6268589890779947d8a5d1a589f8c9fcc88b76cbaf93e909005414cc660b536"},
-]
-
-[package.dependencies]
-numpy = "*"
-requests = "*"
-torch = "2.2.2"
-tqdm = "*"
-
-[[package]]
-name = "torchtext"
-version = "0.18.0"
-description = "Text utilities, models, transforms, and datasets for PyTorch."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "torchtext-0.18.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:5826d5bbfe84a3c533e7e97659f72dbff73e1614c00c06709607d17c8446e09c"},
-    {file = "torchtext-0.18.0-cp310-cp310-manylinux1_x86_64.whl", hash = "sha256:3dc446f74aaa9aebab045fbefd102752675258e72ba447982c65e010e1cfd29a"},
-    {file = "torchtext-0.18.0-cp310-cp310-win_amd64.whl", hash = "sha256:d4bfe9cb7b08cf7ff3473309d9f24ed243c3a847bfbb2c932925551bf7a05892"},
-    {file = "torchtext-0.18.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:0f3855b2ada84f02298e72ad19c1a86f940df2f4ce62d89098955f3ae575d174"},
-    {file = "torchtext-0.18.0-cp311-cp311-manylinux1_x86_64.whl", hash = "sha256:7ac7a392ae42d8b7675bdb31f1764bec77d4dec3a44bca5a2644c2cee3484453"},
-    {file = "torchtext-0.18.0-cp311-cp311-win_amd64.whl", hash = "sha256:1e00475dbf629ba529d27903f2dd6b53c4a559f1483539b8c2a821d393bd24cf"},
-    {file = "torchtext-0.18.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:fec43696fb6fa7573e740a8175fd69681106574fd1fc840211182d941b88a2ba"},
-    {file = "torchtext-0.18.0-cp312-cp312-manylinux1_x86_64.whl", hash = "sha256:eeebf2ec950c9f9d3b276faf6948e763836c215747354f0340746b32512d11f6"},
-    {file = "torchtext-0.18.0-cp312-cp312-win_amd64.whl", hash = "sha256:99b5148f77aa5d94adb8d4d5b684181d87673b90ba266d858b1dd8812b418b95"},
-    {file = "torchtext-0.18.0-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:6694b823cb409706a0efe4d6b0ccf6b5be5af695fad29aa062f1f63bd296e77b"},
-    {file = "torchtext-0.18.0-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:0d60cde93217086372e6819806298a327aaa71f1818ff9c54380bbd5995dda78"},
-    {file = "torchtext-0.18.0-cp38-cp38-win_amd64.whl", hash = "sha256:6dd72c5fbca0680cfef14cb620f8edf7b01e4121916f4b45e2d50f1cdba53fe9"},
-    {file = "torchtext-0.18.0-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:b74b0b1e93ff852a0410bdf2b630f4b00a870ec95be6266e01cd5e19acdf3e95"},
-    {file = "torchtext-0.18.0-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:8e8d847a5e359718c1a97cab363de93aef93733c102528231f3b36c9cf580ce2"},
-    {file = "torchtext-0.18.0-cp39-cp39-win_amd64.whl", hash = "sha256:077639a367e1f77b2c7cefd952ec83c9f830a7568fb49f10cbc100eb965da06b"},
-]
-
-[package.dependencies]
-numpy = "*"
-requests = "*"
-torch = ">=2.3.0"
-tqdm = "*"
-
-[[package]]
 name = "torchvision"
 version = "0.17.2"
 description = "image and video datasets and models for torch deep learning"
@@ -10704,13 +10644,13 @@ files = [
 
 [[package]]
 name = "ultralytics"
-version = "8.3.43"
+version = "8.3.58"
 description = "Ultralytics YOLO 🚀 for SOTA object detection, multi-object tracking, instance segmentation, pose estimation and image classification."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "ultralytics-8.3.43-py3-none-any.whl", hash = "sha256:b438a4f11b6a418f4592a72e25dec910539ebc6834b9002e5019e2984ec95081"},
-    {file = "ultralytics-8.3.43.tar.gz", hash = "sha256:ef17ec842e7b10e6e97028ae1d1af70108b59c4511c9799881f00f6ff4b3a93e"},
+    {file = "ultralytics-8.3.58-py3-none-any.whl", hash = "sha256:b6c87e845d6bfcc49c84bb2d7922af2f57fee637631bc6a2e95f409e5f867496"},
+    {file = "ultralytics-8.3.58.tar.gz", hash = "sha256:2d0ca4e5e7612365dc74c4c75e23ef0aecd677887dd7d272dbb77bd93e6ef087"},
 ]
 
 [package.dependencies]
@@ -10737,7 +10677,7 @@ tqdm = ">=4.64.0"
 ultralytics-thop = ">=2.0.0"
 
 [package.extras]
-dev = ["coverage[toml]", "ipython", "mkdocs (>=1.6.0)", "mkdocs-jupyter", "mkdocs-macros-plugin (>=1.0.5)", "mkdocs-material (>=9.5.9)", "mkdocs-redirects", "mkdocs-ultralytics-plugin (>=0.1.8)", "mkdocstrings[python]", "pytest", "pytest-cov"]
+dev = ["coverage[toml]", "ipython", "mkdocs (>=1.6.0)", "mkdocs-macros-plugin (>=1.0.5)", "mkdocs-material (>=9.5.9)", "mkdocs-redirects", "mkdocs-ultralytics-plugin (>=0.1.8)", "mkdocstrings[python]", "pytest", "pytest-cov"]
 export = ["coremltools (>=7.0)", "flatbuffers (>=23.5.26,<100)", "h5py (!=3.11.0)", "keras", "numpy (==1.23.5)", "onnx (>=1.12.0)", "openvino (>=2024.0.0)", "scikit-learn (>=1.3.2)", "tensorflow (>=2.0.0)", "tensorflowjs (>=3.9.0)", "tensorstore (>=0.1.63)"]
 extra = ["albumentations (>=1.4.6)", "hub-sdk (>=0.0.12)", "ipython", "pycocotools (>=2.0.7)"]
 logging = ["comet", "dvclive (>=2.12.0)", "tensorboard (>=2.13.0)"]
@@ -10784,12 +10724,12 @@ tbb = ["tbb (>=2019.0)"]
 
 [[package]]
 name = "unimernet"
-version = "0.2.1"
+version = "0.2.2"
 description = "UniMERNet: A Universal Network for Real-World Mathematical Expression Recognition"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "unimernet-0.2.1-py3-none-any.whl", hash = "sha256:19fdc0dc7d541523cf9ef05549681ddae5e181f5f536259b5af4be3366e3a049"},
+    {file = "unimernet-0.2.2-py3-none-any.whl", hash = "sha256:68a57568138d18f2cc9421de98376c6d220b9de359e6a5a40f29dacd71f38345"},
 ]
 
 [package.dependencies]
@@ -10804,9 +10744,8 @@ omegaconf = ">=2.3.0,<3.0.0"
 opencv-python = ">=4.6.0,<5.0.0"
 rapidfuzz = ">=3.8.1,<4.0.0"
 timm = ">=0.9.16,<0.10.0"
-torch = ">=2.2.2,<=2.3.1"
-torchtext = ">=0.17.2,<=0.18.0"
-torchvision = ">=0.17.2,<=0.18.1"
+torch = ">=2.2.2"
+torchvision = ">=0.17.2"
 transformers = "4.42.4"
 wand = ">=0.6.13,<0.7.0"
 webdataset = ">=0.2.86,<0.3.0"
@@ -11538,4 +11477,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11.0,<3.12"
-content-hash = "14e9121ebcfd5df38ffe64393c48c012dbe068911fb26b3b85f8cf47cffc922c"
+content-hash = "1ece5b6523463aa5b71fb1d4c27e2b9540c490c36355444292ed5adc656cd335"
