@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
-import json
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from loguru import logger
 
 from llama_index.core.llms.llm import LLM
@@ -38,25 +37,30 @@ class KeywordExtractor(QueryProcessor):
         )
 
     def process(self, nl_query: QueryBundle) -> List[str]:
-        try:
-            self._llm.pydantic_program_mode = "llm"
-            sllm = self._llm.as_structured_llm(output_cls=KeywordList)
-            keyword_list = sllm.predict(
-                prompt=self._keyword_extraction_prompt,
-                query_str=nl_query.query_str,
-                fewshot_examples="",
-            )
-            keywords = json.loads(keyword_list)["Keywords"]
-        finally:
-            self._llm.pydantic_program_mode = "default"
+        keywords = self._llm.predict(
+            prompt=self._keyword_extraction_prompt,
+            query_str=nl_query.query_str,
+            fewshot_examples="",
+        )
+        # try:
+        #     self._llm.pydantic_program_mode = "llm"
+        #     # sllm = self._llm.as_structured_llm(output_cls=KeywordList)
+        #     # keyword_list = sllm.predict(
+        #     #     prompt=self._keyword_extraction_prompt,
+        #     #     query_str=nl_query.query_str,
+        #     #     fewshot_examples="",
+        #     # )
+        #     # keywords = json.loads(keyword_list)["Keywords"]
+        #     keyword_list_obj = self._llm.structured_predict(
+        #         output_cls=KeywordList,
+        #         prompt=self._keyword_extraction_prompt,
+        #         query_str=nl_query.query_str,
+        #         fewshot_examples="",
+        #     )
+        #     keywords = keyword_list_obj.Keywords
+        # finally:
+        #     self._llm.pydantic_program_mode = "default"
 
-        # keyword_list_obj = self._llm.structured_predict(
-        #     output_cls=KeywordList,
-        #     prompt=self._keyword_extraction_prompt,
-        #     query_str=nl_query.query_str,
-        #     fewshot_examples="",
-        # )
-        # keywords = keyword_list_obj.Keywords
         # later check if parser needed
         # keywords = parse(self, keywords)
         logger.info(
@@ -66,24 +70,30 @@ class KeywordExtractor(QueryProcessor):
         return keywords
 
     async def aprocess(self, nl_query: QueryBundle) -> List[str]:
-        try:
-            self._llm.pydantic_program_mode = "llm"
-            sllm = self._llm.as_structured_llm(output_cls=KeywordList)
-            keyword_list = await sllm.apredict(
-                prompt=self._keyword_extraction_prompt,
-                query_str=nl_query.query_str,
-                fewshot_examples="",
-            )
-            keywords = json.loads(keyword_list)["Keywords"]
-        finally:
-            self._llm.pydantic_program_mode = "default"
-        # keyword_list_obj = await self._llm.astructured_predict(
-        #     output_cls=KeywordList,
-        #     prompt=self._keyword_extraction_prompt,
-        #     query_str=nl_query.query_str,
-        #     fewshot_examples="",
-        # )
-        # keywords = keyword_list_obj.Keywords
+        keywords = await self._llm.apredict(
+            prompt=self._keyword_extraction_prompt,
+            query_str=nl_query.query_str,
+            fewshot_examples="",
+        )
+        # try:
+        #     self._llm.pydantic_program_mode = "llm"
+        #     # sllm = self._llm.as_structured_llm(output_cls=KeywordList)
+        #     # keyword_list = await sllm.apredict(
+        #     #     prompt=self._keyword_extraction_prompt,
+        #     #     query_str=nl_query.query_str,
+        #     #     fewshot_examples="",
+        #     # )
+        #     # keywords = json.loads(keyword_list)["Keywords"]
+        #     keyword_list_obj = await self._llm.astructured_predict(
+        #         output_cls=KeywordList,
+        #         prompt=self._keyword_extraction_prompt,
+        #         query_str=nl_query.query_str,
+        #         fewshot_examples="",
+        #     )
+        #     keywords = keyword_list_obj.Keywords
+        # finally:
+        #     self._llm.pydantic_program_mode = "default"
+
         # later check if parser needed
         # keywords = parse(self, keywords)
         logger.info(
@@ -96,7 +106,7 @@ class KeywordExtractor(QueryProcessor):
 class KeywordList(BaseModel):
     """Data model for KeywordList."""
 
-    Keywords: List[str] = Field(description="从查询问题中提取的关键词、关键短语和命名实体列表")
+    Keywords: List[str]
 
 
 # TODO

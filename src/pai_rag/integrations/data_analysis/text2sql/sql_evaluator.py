@@ -4,6 +4,7 @@ from typing import List, Dict, Any
 from tqdm import tqdm
 import json
 import asyncio
+from loguru import logger
 
 from llama_index.core.llms.llm import LLM
 from llama_index.core.base.embeddings.base import BaseEmbedding
@@ -144,7 +145,44 @@ class SpiderEvaluator(SQLEvaluator):
     async def abatch_loader(
         self,
     ):
-        tasks = []
+        # tasks = []
+        # for config_item in self._sqlite_config_list:
+        #     schema_retriever = resolve_schema_retriever(config_item, self._embed_model)
+        #     value_retriever = resolve_value_retriever(config_item, self._embed_model)
+        #     db_loader = DBLoader(
+        #         db_config=config_item["sqlite_config"],
+        #         sql_database=config_item["sql_database"],
+        #         embed_model=self._embed_model,
+        #         llm=self._llm,
+        #         schema_retriever=schema_retriever,
+        #         value_retriever=value_retriever,
+        #     )
+        #     # 创建任务列表
+        #     tasks.append(db_loader.aload_db_info())
+
+        # # 并发运行所有任务
+        # await asyncio.gather(*tasks)
+
+        # 控制并发任务数量
+        semaphore = asyncio.Semaphore(20)
+
+        async def limited_load(config_item):
+            async with semaphore:
+                try:
+                    await self._aload_config_item(config_item)
+                    logger.info(
+                        f"""Successfully loaded database {config_item["sql_database"]}"""
+                    )
+                except Exception as e:
+                    logger.error(
+                        f"""Error loaded database {config_item["sql_database"]}: {e}"""
+                    )
+
+        tasks = [limited_load(config_item) for config_item in self._sqlite_config_list]
+
+        await asyncio.gather(*tasks)
+
+    async def _aload_config_item(self, config_item):
         for config_item in self._sqlite_config_list:
             schema_retriever = resolve_schema_retriever(config_item, self._embed_model)
             value_retriever = resolve_value_retriever(config_item, self._embed_model)
@@ -156,34 +194,48 @@ class SpiderEvaluator(SQLEvaluator):
                 schema_retriever=schema_retriever,
                 value_retriever=value_retriever,
             )
-            # 创建任务列表
-            tasks.append(db_loader.aload_db_info())
-
-        # 并发运行所有任务
-        await asyncio.gather(*tasks)
+            await db_loader.aload_db_info()
 
     async def abatch_query(self, nums: int):
         with open(self._eval_file_path, "r") as f:
             eval_list = json.load(f)
-        tasks = []
-        predicted_sql_list = []
-        queried_result_list = []
-        for eval_item in eval_list[0:nums]:
-            # 创建任务列表
-            tasks.append(
-                self._aquery_eval_item(
-                    eval_item, predicted_sql_list, queried_result_list
-                )
-            )
 
-        # 并发运行所有任务
-        await asyncio.gather(*tasks)
+        # 控制并发任务数量
+        semaphore = asyncio.Semaphore(20)
+
+        async def limited_query(index, eval_item):
+            async with semaphore:
+                try:
+                    result = await self._aquery_eval_item(index, eval_item)
+                    logger.info(f"Successfully processed query {index}")
+                    return result
+                except Exception as e:
+                    logger.error(f"Error processing query {index}: {e}")
+                    return (index, None, None)  # 返回默认值或特殊标记
+
+        tasks = [
+            limited_query(i, eval_item) for i, eval_item in enumerate(eval_list[0:nums])
+        ]
+
+        # # 创建带有索引的任务列表
+        # tasks = [
+        #     self._aquery_eval_item(i, eval_item)
+        #     for i, eval_item in enumerate(eval_list[0:nums])
+        # ]
+
+        # 并发运行所有任务并收集带索引的结果
+        results = await asyncio.gather(*tasks)
+
+        # 按索引排序结果
+        sorted_results = sorted(results, key=lambda x: x[0])
+
+        # 分离预测的 SQL 列表和查询结果列表
+        predicted_sql_list = [item[1] for item in sorted_results]
+        queried_result_list = [item[2] for item in sorted_results]
 
         return predicted_sql_list, queried_result_list
 
-    async def _aquery_eval_item(
-        self, eval_item, predicted_sql_list, queried_result_list
-    ):
+    async def _aquery_eval_item(self, idx, eval_item):
         for config_item in self._sqlite_config_list:
             if eval_item["db_id"] == config_item["db_name"]:
                 schema_retriever = resolve_schema_retriever(
@@ -197,17 +249,56 @@ class SpiderEvaluator(SQLEvaluator):
                     sql_database=config_item["sql_database"],
                     embed_model=self._embed_model,
                     llm=self._llm,
-                    schema_retriver=schema_retriever,
+                    schema_retriever=schema_retriever,
                     value_retriever=value_retriever,
                 )
                 query_bundle = QueryBundle(eval_item["question"])
 
                 response_node, metadata = await db_query.aquery_pipeline(query_bundle)
-
-                predicted_sql_list.append(
-                    response_node[0].metadata["query_code_instruction"]
+                # predicted_sql_list.append(
+                #     response_node[0].metadata["query_code_instruction"]
+                # )
+                # queried_result_list.append(response_node[0].metadata["query_output"])
+                return (
+                    idx,
+                    response_node[0].metadata["query_code_instruction"],
+                    response_node[0].metadata["query_output"],
                 )
-                queried_result_list.append(response_node[0].metadata["query_output"])
+
+    def batch_query(self, nums: int):
+        with open(self._eval_file_path, "r") as f:
+            eval_list = json.load(f)
+
+        predicted_sql_list = []
+        queried_result_list = []
+        for eval_item in eval_list[0:nums]:
+            for config_item in self._sqlite_config_list:
+                if eval_item["db_id"] == config_item["db_name"]:
+                    schema_retriever = resolve_schema_retriever(
+                        config_item, self._embed_model
+                    )
+                    value_retriever = resolve_value_retriever(
+                        config_item, self._embed_model
+                    )
+                    db_query = DBQuery(
+                        db_config=config_item["sqlite_config"],
+                        sql_database=config_item["sql_database"],
+                        embed_model=self._embed_model,
+                        llm=self._llm,
+                        schema_retriever=schema_retriever,
+                        value_retriever=value_retriever,
+                    )
+                    query_bundle = QueryBundle(eval_item["question"])
+
+                    response_node, metadata = db_query.query_pipeline(query_bundle)
+                    predicted_sql_list.append(
+                        response_node[0].metadata["query_code_instruction"]
+                    )
+                    queried_result_list.append(
+                        response_node[0].metadata["query_output"]
+                    )
+
+        return predicted_sql_list, queried_result_list
 
     def parse_predicted_sql(self, predicted_sql_str: str):
         return predicted_sql_str.replace("\n", "")

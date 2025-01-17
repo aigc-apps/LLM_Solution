@@ -1,7 +1,6 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-import pickle
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
@@ -58,21 +57,21 @@ if __name__ == "__main__":
     )
 
     # batch_load
-    asyncio.run(spider_eval.abatch_loader())
+    # asyncio.run(spider_eval.abatch_loader())
 
     # batch_predict
     predicted_sql_list, queried_result_list = asyncio.run(
-        spider_eval.abatch_query(nums=500)
+        spider_eval.abatch_query(nums=100)
     )
 
-    # 写入二进制文件
-    with open(
-        "/Users/chuyu/Documents/predicted_sql_list_embedding_500.pkl", "wb"
-    ) as file:
-        pickle.dump(predicted_sql_list, file)
+    # # 写入二进制文件
+    # with open(
+    #     "/Users/chuyu/Documents/predicted_sql_list_embedding_100.pkl", "wb"
+    # ) as file:
+    #     pickle.dump(predicted_sql_list, file)
 
     # # save result
-    predicted_file = "/Users/chuyu/Documents/predict_qwenmax_embedding_500.txt"
+    predicted_file = "/Users/chuyu/Documents/predict_qwenmax_100.txt"
     with open(predicted_file, "w", encoding="utf-8") as file:
         for item in predicted_sql_list:
             parsed_item = spider_eval.parse_predicted_sql(item)
@@ -80,7 +79,7 @@ if __name__ == "__main__":
     print(f"predicted_sql_list have been written to {predicted_file}")
 
     # batch_evaluate
-    gold_file = "/Users/chuyu/Documents/gold_500.sql"
+    gold_file = "/Users/chuyu/Documents/gold_100.sql"
     # gold_file = "/Users/chuyu/Documents/datasets/spider_data/test_gold.sql"
     table_file = "/Users/chuyu/Documents/datasets/spider_data/test_tables.json"
 
