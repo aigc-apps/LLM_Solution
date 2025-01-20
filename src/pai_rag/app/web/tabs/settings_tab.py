@@ -317,7 +317,9 @@ def create_setting_tab() -> Dict[str, Any]:
             )
 
             save_btn = gr.Button("Save Llm Setting", variant="primary")
-            save_state = gr.Textbox(label="Connection Info: ", container=False)
+            save_state = gr.Textbox(
+                label="Connection Info: ", container=False, visible=False
+            )
             save_btn.click(
                 fn=ev_listeners.save_config,
                 inputs=set(llm_components),
