@@ -1,7 +1,6 @@
 """Markdown node parser."""
 from llama_index.core.bridge.pydantic import Field, BaseModel
 from typing import Any, Iterator, List, Optional, Sequence
-import json
 
 from llama_index.core.node_parser.interface import NodeParser
 from llama_index.core.node_parser import SentenceSplitter
@@ -88,7 +87,7 @@ class StructuredNodeParser(BaseModel):
             )
             nodes_list.append(image_node)
             image_info = ImageInfo(image_url=node.content)
-            chunk_images_list.append(json.dumps(image_info.__dict__))
+            chunk_images_list.append(image_info.__dict__)
             return ""
         if not node.children:
             return node.content
@@ -249,7 +248,7 @@ class StructuredNodeParser(BaseModel):
                         )
                         nodes_list.append(image_node)
                         image_info = ImageInfo(image_url=child.content)
-                        chunk_images_list.append(json.dumps(image_info.__dict__))
+                        chunk_images_list.append(image_info.__dict__)
                     else:
                         chunk_text += "\n" + self._format_tree_nodes(
                             child, doc_node, ref_doc, nodes_list, chunk_images_list
