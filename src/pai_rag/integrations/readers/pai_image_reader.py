@@ -46,11 +46,15 @@ class PaiImageReader(BaseReader):
                 },  # set public read to make image accessible
                 path_prefix="pairag/images/",
             )
+            extension = file_path.suffix.replace(".", "")
+            mimetypes = f"image/{extension}"
 
             extra_info["file_path"] = str(file_path)
             extra_info["file_name"] = os.path.basename(file_path)
             extra_info["image_url"] = image_url
-            image_doc = ImageDocument(image_url=image_url, extra_info=extra_info)
+            image_doc = ImageDocument(
+                image_url=image_url, image_mimetype=mimetypes, extra_info=extra_info
+            )
             docs = [image_doc]
             # docs = self.load_image_urls([image_url], extra_info=extra_info)
         return docs

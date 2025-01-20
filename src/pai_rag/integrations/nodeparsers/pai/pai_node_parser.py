@@ -158,7 +158,6 @@ class PaiNodeParser(TransformComponent):
                         text=doc_node.text,
                         metadata=doc_node.metadata,
                         image_url=doc_node.image_url,
-                        image_path=doc_node.image_path,
                         image_mimetype=doc_node.image_mimetype,
                     )
                 )

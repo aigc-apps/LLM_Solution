@@ -34,6 +34,7 @@ from llama_index.core.vector_stores.types import (
 from pai_rag.integrations.index.pai.local.local_bm25_index import LocalBm25IndexStore
 from loguru import logger
 import llama_index.core.instrumentation as instrument
+from pai_rag.utils.constants import DEFAULT_IMAGE_MIMETYPE
 
 dispatcher = instrument.get_dispatcher(__name__)
 
@@ -200,7 +201,10 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
                     if image_url and image_url not in seen_image_urls:
                         integrated_image_nodes.append(
                             NodeWithScore(
-                                node=ImageNode(image_url=image_url),
+                                node=ImageNode(
+                                    image_url=image_url,
+                                    image_mimetype=DEFAULT_IMAGE_MIMETYPE,
+                                ),
                                 score=node.score,
                             )
                         )
@@ -447,6 +451,7 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
                     node = ImageNode(
                         id_=node.id_,
                         image_url=node.metadata.get("image_url"),
+                        image_mimetype=DEFAULT_IMAGE_MIMETYPE,
                         metadata=node.metadata,
                     )
                 query_result.nodes[i] = node
@@ -513,7 +518,10 @@ class PaiMultiModalVectorIndexRetriever(MultiModalRetriever):
                     if image_url and image_url not in seen_image_urls:
                         integrated_image_nodes.append(
                             NodeWithScore(
-                                node=ImageNode(image_url=image_url),
+                                node=ImageNode(
+                                    image_url=image_url,
+                                    image_mimetype=DEFAULT_IMAGE_MIMETYPE,
+                                ),
                                 score=node.score,
                             )
                         )

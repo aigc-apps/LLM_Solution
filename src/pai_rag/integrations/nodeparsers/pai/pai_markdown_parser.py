@@ -16,6 +16,7 @@ from pai_rag.integrations.nodeparsers.utils.pai_markdown_tree import (
     build_markdown_tree,
     TreeNode,
 )
+from pai_rag.utils.constants import DEFAULT_IMAGE_MIMETYPE
 
 
 class ImageInfo(BaseModel):
@@ -74,6 +75,7 @@ class StructuredNodeParser(BaseModel):
             image_node = ImageNode(
                 embedding=doc_node.embedding,
                 image_url=node.content,
+                image_mimetype=DEFAULT_IMAGE_MIMETYPE,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
                 metadata_separator=doc_node.metadata_separator,
@@ -235,6 +237,7 @@ class StructuredNodeParser(BaseModel):
                         image_node = ImageNode(
                             embedding=doc_node.embedding,
                             image_url=child.content,
+                            image_mimetype=DEFAULT_IMAGE_MIMETYPE,
                             excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                             excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
                             metadata_separator=doc_node.metadata_separator,
