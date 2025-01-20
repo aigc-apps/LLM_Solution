@@ -23,3 +23,5 @@ OSS_URL = (
 DEFAULT_DATAFILE_DIR = "./data"
 
 DEFAULT_DASHSCOPE_EMBEDDING_MODEL = "text-embedding-v2"
+
+DEFAULT_IMAGE_MIMETYPE = "image/jpeg"
