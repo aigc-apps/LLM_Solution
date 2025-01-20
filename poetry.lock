@@ -4243,21 +4243,6 @@ llama-index-core = ">=0.12.0,<0.13.0"
 redis = ">=4.1.0"
 
 [[package]]
-name = "llama-index-tools-duckduckgo"
-version = "0.3.0"
-description = "llama-index tools integrating DuckDuckGo search"
-optional = false
-python-versions = "<4.0,>=3.9"
-files = [
-    {file = "llama_index_tools_duckduckgo-0.3.0-py3-none-any.whl", hash = "sha256:09ca66b7f8288992c022d4f0e719e6b80bcd6374069b03b093ba994c4914915a"},
-    {file = "llama_index_tools_duckduckgo-0.3.0.tar.gz", hash = "sha256:e4996a75c3b1d7d7991e70acef8b0ea390771fd2db3bc47dbd2a23b9f7fa9880"},
-]
-
-[package.dependencies]
-duckduckgo-search = ">=6.1.0,<7.0.0"
-llama-index-core = ">=0.12.0,<0.13.0"
-
-[[package]]
 name = "llama-index-tools-google"
 version = "0.3.0"
 description = "llama-index tools google integration"
@@ -7366,20 +7351,6 @@ pytest = ">=4.6"
 
 [package.extras]
 testing = ["fields", "hunter", "process-tests", "pytest-xdist", "virtualenv"]
-
-[[package]]
-name = "python-bidi"
-version = "0.4.2"
-description = "Pure python implementation of the BiDi layout algorithm"
-optional = false
-python-versions = "*"
-files = [
-    {file = "python-bidi-0.4.2.tar.gz", hash = "sha256:5347f71e82b3e9976dc657f09ded2bfe39ba8d6777ca81a5b2c56c30121c496e"},
-    {file = "python_bidi-0.4.2-py2.py3-none-any.whl", hash = "sha256:50eef6f6a0bbdd685f9e8c207f3c9050f5b578d0a46e37c76a9c4baea2cc2e13"},
-]
-
-[package.dependencies]
-six = "*"
 
 [[package]]
 name = "python-dateutil"
@@ -10593,4 +10564,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11.0,<3.12"
-content-hash = "6ec1ee6c6f98d86982a247043494f806526477f458bfed4e14bd33122ef5b5a1"
+content-hash = "67daf40cf054d8f4ed68673d1a9f790fbc86ae1264202abbb597490a8410dc1d"
