@@ -76,7 +76,7 @@ class StructuredNodeParser(BaseModel):
                 image_url=node.content,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
+                metadata_separator=doc_node.metadata_separator,
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 metadata={
@@ -110,7 +110,7 @@ class StructuredNodeParser(BaseModel):
                 embedding=doc_node.embedding,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
+                metadata_separator=doc_node.metadata_separator,
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 metadata={
@@ -125,7 +125,7 @@ class StructuredNodeParser(BaseModel):
                 embedding=doc_node.embedding,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
+                metadata_separator=doc_node.metadata_separator,
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 meta_data=doc_node.extra_info,
@@ -237,7 +237,7 @@ class StructuredNodeParser(BaseModel):
                             image_url=child.content,
                             excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                             excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                            metadata_seperator=doc_node.metadata_seperator,
+                            metadata_separator=doc_node.metadata_separator,
                             metadata_template=doc_node.metadata_template,
                             text_template=doc_node.text_template,
                             metadata={
