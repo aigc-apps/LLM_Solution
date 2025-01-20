@@ -13,7 +13,7 @@ readme = "README.md"
 python = ">=3.11.0,<3.12"
 fastapi = "0.115.2"
 uvicorn = "^0.29.0"
-llama-index-core = "^0.12.2"
+llama-index-core = "0.12.11"
 llama-index-embeddings-openai = "^0.3.0"
 llama-index-embeddings-azure-openai = "^0.3.0"
 llama-index-embeddings-dashscope = "^0.3.0"
@@ -59,14 +59,9 @@ torchvision = [
 ]
 transformers = "^4.42.4"
 openpyxl = "^3.1.2"
-pdf2image = "^1.17.0"
 python-bidi = "0.4.2"
-easyocr = "^1.7.1"
 opencv-python = "^4.6.0.66"
 llama-parse = "0.4.2"
-pypdf2 = "^3.0.1"
-pdfplumber = "^0.11.0"
-pdfminer-six = "^20231228"
 openinference-semantic-conventions = "^0.1.9"
 openinference-instrumentation = "^0.1.12"
 pytest-asyncio = "^0.23.7"
@@ -85,8 +80,6 @@ pre-commit = "^3.8.0"
 cn-clip = "^1.5.1"
 pymysql = "^1.1.1"
 milvus-lite = "^2.4.9"
-rapidocr-onnxruntime = "^1.3.24"
-rapid-table = "^0.1.3"
 bs4 = "^0.0.2"
 httpx = "^0.27.0"
 detectron2 = [
@@ -94,7 +87,7 @@ detectron2 = [
   {markers = "sys_platform == 'win32'", url = "https://pai-rag.oss-cn-hangzhou.aliyuncs.com/packages/python_wheels/detectron2-0.6%2B864913fpt2.3.0cpu-cp311-cp311-win_amd64.whl"},
   {markers = "sys_platform != 'win32' and sys_platform != 'linux' ", url = "https://pai-rag.oss-cn-hangzhou.aliyuncs.com/packages/python_wheels/detectron2-0.6%2B864913fpt2.2.2cpu-cp311-cp311-macosx_10_9_universal2.whl"}
 ]
-magic-pdf = {version = "0.10.6", extras = ["full"]}
+magic-pdf = {version = "1.0.1", extras = ["full"]}
 peft = "^0.12.0"
 duckduckgo-search = "^6.2.12"
 aliyun-bootstrap = "^1.0.2"
