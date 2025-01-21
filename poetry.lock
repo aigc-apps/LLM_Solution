@@ -3990,13 +3990,13 @@ openai = ">=1.14.0"
 
 [[package]]
 name = "llama-index-core"
-version = "0.12.11"
+version = "0.12.12"
 description = "Interface between LLMs and your data"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "llama_index_core-0.12.11-py3-none-any.whl", hash = "sha256:3b1e019c899e9e011dfa01c96b7e3f666e0c161035fbca6cb787b4c61e0c94db"},
-    {file = "llama_index_core-0.12.11.tar.gz", hash = "sha256:9a41ca91167ea5eec9ebaac7f5e958b7feddbd8af3bfbf7c393a5edfb994d566"},
+    {file = "llama_index_core-0.12.12-py3-none-any.whl", hash = "sha256:cea491e87f65e6b775b5aef95720de302b85af1bdc67d779c4b09170a30e5b98"},
+    {file = "llama_index_core-0.12.12.tar.gz", hash = "sha256:068b755bbc681731336e822f5977d7608585e8f759c6293ebd812e2659316a37"},
 ]
 
 [package.dependencies]
@@ -10564,4 +10564,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11.0,<3.12"
-content-hash = "67daf40cf054d8f4ed68673d1a9f790fbc86ae1264202abbb597490a8410dc1d"
+content-hash = "aba41ab55b4b9bc3287ceba30c825282733b2b86e00c73baa7748a858d67cc76"
