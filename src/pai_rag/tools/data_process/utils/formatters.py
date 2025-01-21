@@ -42,17 +42,22 @@ def convert_node_to_dict(node):
     }
 
 
-def convert_document_to_dict(doc):
-    return {
-        "id": doc.id_,
-        "embedding": doc.embedding,
-        "metadata": doc.metadata,
-        "excluded_embed_metadata_keys": doc.excluded_embed_metadata_keys,
-        "excluded_llm_metadata_keys": doc.excluded_llm_metadata_keys,
-        "relationships": doc.relationships,
-        "text": doc.text,
-        "mimetype": doc.mimetype,
-    }
+def convert_document_to_dict(documents):
+    docs_dict = []
+    for document in documents:
+        docs_dict.append(
+            {
+                "id": document.id_,
+                "embedding": document.embedding,
+                "metadata": document.metadata,
+                "excluded_embed_metadata_keys": document.excluded_embed_metadata_keys,
+                "excluded_llm_metadata_keys": document.excluded_llm_metadata_keys,
+                "relationships": document.relationships,
+                "text": document.text,
+                "mimetype": document.mimetype,
+            }
+        )
+    return docs_dict
 
 
 def convert_list_to_documents(doc_list):
