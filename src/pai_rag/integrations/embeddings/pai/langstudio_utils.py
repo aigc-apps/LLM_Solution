@@ -72,6 +72,7 @@ def get_connection_info(region_id: str, connection_name: str, workspace_id: str)
 
 
 def convert_langstudio_embed_config(embed_config):
+    load_and_setup_env()
     region_id = embed_config.region_id or get_region_id()
     conn_info, config, secrets = get_connection_info(
         region_id, embed_config.connection_name, embed_config.workspace_id
@@ -98,3 +99,19 @@ def convert_langstudio_embed_config(embed_config):
         )
     else:
         raise ValueError(f"Unknown connection type: {conn_info.custom_type}")
+
+
+def load_and_setup_env():
+    # hack: setup pre env service hosts
+    # TODO: remove this hack after production service is ready
+    if not os.getenv("PAI_ENVIRONMENT", "").lower() == "pre":
+        return
+    logger.warning("Try to setup environment for pre env...")
+    with open("/etc/hosts", "a") as f:
+        f.write("\n")
+        f.write(
+            "100.103.108.19 pailangstudio.cn-hangzhou.aliyuncs.com pailangstudio-vpc.cn-hangzhou.aliyuncs.com\n"
+        )
+        f.write(
+            "100.103.108.19 aiworkspace.cn-hangzhou.aliyuncs.com aiworkspace-vpc.cn-hangzhou.aliyuncs.com\n"
+        )
