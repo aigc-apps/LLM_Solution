@@ -1,5 +1,5 @@
 import os
-import logging
+from loguru import logger
 from pai_rag.tools.data_process.utils.registry import Registry
 from pai_rag.tools.data_process.utils.mm_utils import size_to_bytes
 from pai_rag.tools.data_process.utils.cuda_utils import is_cuda_available
@@ -7,10 +7,14 @@ from pai_rag.tools.data_process.utils.cuda_utils import is_cuda_available
 OPERATORS = Registry("Operators")
 
 
-class BaseOP:
+class LoggerMixin:
+    @property
+    def logger(self):
+        return logger.bind(module=type(self).__module__, name=type(self).__name__)
+
+
+class BaseOP(LoggerMixin):
     def __init__(self, *args, **kwargs):
-        self.logger = logging.getLogger(__name__)
-        logging.basicConfig(level=logging.INFO)
         self.op_name = kwargs.get("op_name", "default")
         self.batch_size = kwargs.get("batch_size", 10)
         self.accelerator = kwargs.get("accelerator", "cpu")
