@@ -2,8 +2,14 @@ import os
 from pathlib import Path
 from argparse import Namespace
 import pickle
+import pytest
 
 BASE_DIR = Path(__file__).parent.parent.parent
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("SKIP_GPU_TESTS", "false") == "true",
+    reason="Need to execute in a CUDA environment.",
+)
 
 operator = "rag_splitter"
 working_dir = BASE_DIR
