@@ -1,5 +1,4 @@
 import ray
-from loguru import logger
 from pai_rag.core.rag_module import resolve
 from pai_rag.tools.data_process.ops.base_op import BaseOP, OPERATORS
 from pai_rag.integrations.nodeparsers.pai.pai_node_parser import NodeParserConfig
@@ -15,9 +14,6 @@ OP_NAME = "rag_splitter"
 class Splitter(BaseOP):
     """Mapper to generate samples whose captions are generated based on
     another model and the figure."""
-
-    _accelerator = "cpu"
-    _batched_op = True
 
     def __init__(
         self,
@@ -38,7 +34,7 @@ class Splitter(BaseOP):
         self.node_parser = resolve(
             cls=PaiNodeParser, parser_config=self.node_parser_config
         )
-        logger.info(
+        self.logger.info(
             f"""SplitterActor [PaiNodeParser] init finished with following parameters:
                         type: {type}
                         chunk_size: {chunk_size}
