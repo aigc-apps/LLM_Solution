@@ -53,10 +53,11 @@ class Parser(BaseOP):
             reader_config=self.data_reader_config,
             oss_store=self.oss_store,
         )
-        self.mount_path = os.environ.get("INPUT_MOUNT_PATH", None).strip("/")
-        self.real_path = os.environ.get("OSS_SOURCE_PATH", None).strip("/")
+        self.mount_path = os.environ.get("INPUT_MOUNT_PATH", None)
+        self.real_path = os.environ.get("OSS_SOURCE_PATH", None)
         if self.mount_path and self.real_path:
-            self.mount_path = Path(self.mount_path).resolve()
+            self.mount_path = Path(self.mount_path.strip("/")).resolve()
+            self.real_path = self.real_path.strip("/")
             real_uri = urlparse(self.real_path)
             if not real_uri.scheme:
                 self.logger.error(
