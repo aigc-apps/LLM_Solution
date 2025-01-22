@@ -2,7 +2,6 @@ import os
 import ray
 import threading
 from typing import List
-from pathlib import Path
 from urllib.parse import urlparse
 from pai_rag.core.rag_module import resolve
 from pai_rag.utils.oss_client import OssClient
@@ -56,7 +55,7 @@ class Parser(BaseOP):
         self.mount_path = os.environ.get("INPUT_MOUNT_PATH", None)
         self.real_path = os.environ.get("OSS_SOURCE_PATH", None)
         if self.mount_path and self.real_path:
-            self.mount_path = Path(self.mount_path.strip("/")).resolve()
+            self.mount_path = self.mount_path.strip("/")
             self.real_path = self.real_path.strip("/")
             real_uri = urlparse(self.real_path)
             if not real_uri.scheme:
@@ -89,24 +88,19 @@ class Parser(BaseOP):
     def replace_mount_with_real_path(self, documents):
         if self.should_replace:
             for document in documents:
-                self.logger.info(f"Document with metadata: {document.metadata}")
                 if "file_path" not in document.metadata:
                     continue
                 file_path = document.metadata["file_path"]
-                file_path_obj = Path(file_path).resolve()
                 try:
-                    relative_path_str = (
-                        file_path_obj.relative_to(self.mount_path).as_posix().strip("/")
-                    )
-                    self.logger.info(
-                        f"Document with relative_path_str: {relative_path_str}"
+                    relative_path_str = file_path.replace(self.mount_path, "", 1).strip(
+                        "/"
                     )
                     document.metadata[
                         "file_path"
                     ] = f"{self.real_path}/{relative_path_str}"
                     document.metadata["mount_path"] = file_path
                     self.logger.info(
-                        f"Replacing original file_path: {file_path} --> {document.metadata['file_path']}"
+                        f"Replacing original mounted file_path: {file_path} --> relative_path_str: {relative_path_str} --> final_path {document.metadata['file_path']}"
                     )
                 except ValueError:
                     # file_path 不以 mount_path 开头
