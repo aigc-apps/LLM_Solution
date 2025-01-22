@@ -80,12 +80,16 @@ class Parser(BaseOP):
                         oss_bucket: {oss_bucket}
                         oss_endpoint: {oss_endpoint}
                         path_should_replace: {self.should_replace}
+                        mount_path: {self.mount_path}
+                        real_path: {self.real_path}
+
             """
         )
 
     def replace_mount_with_real_path(self, documents):
         if self.should_replace:
             for document in documents:
+                self.logger.info(f"Document with metadata: {document.metadata}")
                 if "file_path" not in document.metadata:
                     continue
                 file_path = document.metadata["file_path"]
@@ -94,16 +98,19 @@ class Parser(BaseOP):
                     relative_path_str = (
                         file_path_obj.relative_to(self.mount_path).as_posix().strip("/")
                     )
+                    self.logger.info(
+                        f"Document with relative_path_str: {relative_path_str}"
+                    )
                     document.metadata[
                         "file_path"
                     ] = f"{self.real_path}/{relative_path_str}"
                     document.metadata["mount_path"] = file_path
-                    self.logger.debug(
+                    self.logger.info(
                         f"Replacing original file_path: {file_path} --> {document.metadata['file_path']}"
                     )
                 except ValueError:
                     # file_path 不以 mount_path 开头
-                    self.logger.debug(
+                    self.logger.info(
                         f"Path {file_path} does not start with mount path {self.mount_path}. No replacement done."
                     )
                 except Exception as e:
