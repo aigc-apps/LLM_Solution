@@ -26,12 +26,13 @@ def test_rag_embedder_op():
         "--export_path",
         export_path,
         "--source",
-        "huggingface",
+        "dashscope",
         "--enable_sparse",
         "True",
     ]
-    # 执行命令并捕获输出
-    subprocess.run(command, capture_output=True, text=True)
+    # add the correct value for the PYTHONPATH when invoking the subprocess call when using the subprocess module in the context of GitHub's CI
+    current_env = os.environ.copy()
+    subprocess.run(command, capture_output=True, text=True, env=current_env)
 
     embedder_export_path = Path(os.path.join(export_path, "rag_embedder"))
 
