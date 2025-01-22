@@ -2,7 +2,6 @@ import os
 import ray
 import threading
 from typing import List
-from loguru import logger
 from pathlib import Path
 from urllib.parse import urlparse
 from pai_rag.core.rag_module import resolve
@@ -21,9 +20,6 @@ OP_NAME = "rag_parser"
 class Parser(BaseOP):
     """Mapper to generate samples whose captions are generated based on
     another model and the figure."""
-
-    _accelerator = "cpu"
-    _batched_op = False
 
     def __init__(
         self,
@@ -63,7 +59,7 @@ class Parser(BaseOP):
             self.mount_path = Path(self.mount_path).resolve()
             real_uri = urlparse(self.real_path)
             if not real_uri.scheme:
-                logger.error(
+                self.logger.error(
                     f"Real path '{self.real_path}' must include a URI scheme (e.g., 'oss://')."
                 )
                 self.should_replace = False
@@ -71,10 +67,10 @@ class Parser(BaseOP):
                 self.should_replace = True
         else:
             self.should_replace = False
-            logger.warning(
+            self.logger.warning(
                 "File path won't be replaced to data source URI since either INPUT_MOUNT_PATH or OSS_SOURCE_PATH is not provided."
             )
-        logger.info(
+        self.logger.info(
             f"""ParserActor [PaiDataReader] init finished with following parameters:
                         concat_csv_rows: {concat_csv_rows}
                         enable_mandatory_ocr: {enable_mandatory_ocr}
@@ -101,23 +97,23 @@ class Parser(BaseOP):
                         "file_path"
                     ] = f"{self.real_path}/{relative_path_str}"
                     document.metadata["mount_path"] = file_path
-                    logger.debug(
+                    self.logger.debug(
                         f"Replacing original file_path: {file_path} --> {document.metadata['file_path']}"
                     )
                 except ValueError:
                     # file_path 不以 mount_path 开头
-                    logger.debug(
+                    self.logger.debug(
                         f"Path {file_path} does not start with mount path {self.mount_path}. No replacement done."
                     )
                 except Exception as e:
-                    logger.error(f"Error replacing path {file_path}: {e}")
+                    self.logger.error(f"Error replacing path {file_path}: {e}")
 
     def process(self, input_file):
         current_thread = threading.current_thread()
-        logger.info(f"当前线程的 ID: {current_thread.ident} 进程ID: {os.getpid()}")
+        self.logger.info(f"当前线程的 ID: {current_thread.ident} 进程ID: {os.getpid()}")
         documents = self.data_reader.load_data(file_path_or_directory=input_file)
         if len(documents) == 0:
-            logger.info(f"No data found in the input file: {input_file}")
+            self.logger.info(f"No data found in the input file: {input_file}")
             return None
         self.replace_mount_with_real_path(documents)
         return convert_document_to_dict(documents)

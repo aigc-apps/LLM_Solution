@@ -1,35 +1,38 @@
 import os
 from pathlib import Path
-import subprocess
-import sys
+from argparse import Namespace
+import pickle
 
 BASE_DIR = Path(__file__).parent.parent.parent
 
+operator = "rag_parser"
+working_dir = BASE_DIR
+dataset_path = os.path.join(BASE_DIR, "tests/data_process/input")
+export_path = os.path.join(BASE_DIR, "tests/data_process/output")
 
-def test_rag_parser_op():
-    # 配置测试用的参数
-    operator = "rag_parser"
-    working_dir = BASE_DIR
-    dataset_path = os.path.join(BASE_DIR, "tests/data_process/input")
-    export_path = os.path.join(BASE_DIR, "tests/data_process/output")
 
-    # 执行命令行程序
-    command = [
-        sys.executable,
-        "src/pai_rag/tools/data_process/run.py",
-        "--operator",
-        operator,
-        "--working_dir",
-        working_dir,
-        "--dataset_path",
-        dataset_path,
-        "--export_path",
-        export_path,
-    ]
-    # add the correct value for the PYTHONPATH when invoking the subprocess call when using the subprocess module in the context of GitHub's CI
-    current_env = os.environ.copy()
-    subprocess.run(command, capture_output=True, text=True, env=current_env)
+def test_run_single_parser_op():
+    from pai_rag.tools.data_process.ops.parser_op import Parser
+    from pai_rag.tools.data_process.dataset.file_dataset import FileDataset
 
+    parser = Parser.remote(
+        op_name=operator,
+        working_dir=str(working_dir),
+        cpu_required=4,
+        mem_required="8GB",
+    )
+    # 检查能否序列化
+    try:
+        pickle.dumps(parser)  # 对 parser 进行序列化测试
+    except Exception as e:
+        print(f"Serialization Error: {e}")
+    dataset = FileDataset(
+        str(dataset_path), cfg=Namespace(export_path=str(export_path))
+    )
+    dataset.process(
+        operators=[parser],
+        op_name=operator,
+    )
     parser_export_path = Path(os.path.join(export_path, "rag_parser"))
 
     # 遍历导出目录下的所有文件
