@@ -150,9 +150,9 @@ def delete_nodes_index(vector_index: PaiVectorStoreIndex, nodes: List[TextNode])
     ]
     new_node_ids = [node.id_ for node in nodes]
     remaining_node_ids = list(set(existing_node_ids) - set(new_node_ids))
-    # logger.info(f"existing_node_ids: {existing_node_ids}")
-    # logger.info(f"new_node_ids: {new_node_ids}")
-    logger.info(f"remaining_node_ids: {remaining_node_ids}")
+    logger.debug(f"existing_node_ids: {existing_node_ids}")
+    logger.debug(f"new_node_ids: {new_node_ids}")
+    logger.debug(f"remaining_node_ids: {remaining_node_ids}")
 
     if remaining_node_ids:
         # 删除docstore中的doc并更新引用

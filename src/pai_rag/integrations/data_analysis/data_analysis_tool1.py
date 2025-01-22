@@ -47,13 +47,13 @@ cls_cache = {}
 
 def resolve(cls: Any, cls_key: str, **kwargs):
     cls_key = kwargs.__repr__() + cls_key
-    print(f"resolve called with kwargs: {kwargs}, cls_key: {cls_key}")
+    # print(f"resolve called with kwargs: {kwargs}, cls_key: {cls_key}")
     if cls_key not in cls_cache:
         cls_cache[cls_key] = cls(**kwargs)
-        instance = cls(**kwargs)
-        print(f"Created new instance with id: {id(instance)}")
-    else:
-        print(f"Returning cached instance with id: {id(cls_cache[cls_key])}")
+        # instance = cls(**kwargs)
+        # print(f"Created new instance with id: {id(instance)}")
+    # else:
+    #     print(f"Returning cached instance with id: {id(cls_cache[cls_key])}")
     return cls_cache[cls_key]
 
 

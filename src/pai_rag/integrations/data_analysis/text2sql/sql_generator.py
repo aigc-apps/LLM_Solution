@@ -38,11 +38,11 @@ class SQLGenerator(ABC):
         self._llm = llm or Settings.llm
 
     @abstractmethod
-    def generate_sql_node(self, query: QueryType):
+    def generate_sql_node(self, query: QueryType, hint: str = None):
         pass
 
     @abstractmethod
-    def agenerate_sql_node(self, query: QueryType):
+    def agenerate_sql_node(self, query: QueryType, hint: str = None):
         pass
 
 
@@ -114,17 +114,18 @@ class SQLNodeGenerator(SQLGenerator):
         selected_db_description_dict: Dict,
         selected_db_history_list: List,
         max_retry: int = 2,
+        hint: str = None,
     ) -> Tuple[List[NodeWithScore], Dict]:
         # step1: 获得description_str & history_str 作为llm prompt参数
         schema_description_str = get_schema_desc4llm(selected_db_description_dict)
         selected_db_history_str = str(selected_db_history_list)
-        logger.info(f"schema_description_str for llm: {schema_description_str}")
+        logger.debug(f"schema_description_str for llm: {schema_description_str}")
+        logger.debug(f"selected_db_history_str for llm: {selected_db_history_str}")
 
         # step2: llm生成sql
         sql_query_str = self._generate_sql(
-            query_bundle, schema_description_str, selected_db_history_str
+            query_bundle, schema_description_str, selected_db_history_str, hint
         )
-        logger.info(f"> Predicted SQL query: {sql_query_str}")
 
         ## 如果只需要返回sql语句，无需执行查询
         if self._sql_only:
@@ -143,6 +144,7 @@ class SQLNodeGenerator(SQLGenerator):
                 query_bundle,
                 schema_description_str,
                 selected_db_history_str,
+                hint,
             )
 
             if len(execute_revise_result.retrieved_nodes) != 0:
@@ -166,18 +168,18 @@ class SQLNodeGenerator(SQLGenerator):
         selected_db_description_dict: Dict,
         selected_db_history_list: List,
         max_retry: int = 2,
+        hint: str = None,
     ) -> Tuple[List[NodeWithScore], Dict]:
         # step1: 获得description_str & history_str 作为llm prompt参数
         schema_description_str = get_schema_desc4llm(selected_db_description_dict)
         selected_db_history_str = str(selected_db_history_list)
-        logger.info(f"schema_description_str for llm: {schema_description_str}")
-        logger.info(f"selected_db_history_str for llm: {selected_db_history_str}")
+        logger.debug(f"schema_description_str for llm: {schema_description_str}")
+        logger.debug(f"selected_db_history_str for llm: {selected_db_history_str}")
 
         # step2: llm生成sql
         sql_query_str = await self._agenerate_sql(
-            query_bundle, schema_description_str, selected_db_history_str
+            query_bundle, schema_description_str, selected_db_history_str, hint
         )
-        logger.info(f"> Predicted SQL query: {sql_query_str}")
 
         ## 如果只需要返回sql语句，无需执行查询
         if self._sql_only:
@@ -196,6 +198,7 @@ class SQLNodeGenerator(SQLGenerator):
                 query_bundle,
                 schema_description_str,
                 selected_db_history_str,
+                hint,
             )
 
             if len(execute_revise_result.retrieved_nodes) != 0:
@@ -218,21 +221,24 @@ class SQLNodeGenerator(SQLGenerator):
         query_bundle: QueryBundle,
         schema_description_str: str,
         query_history_str: str,
+        hint: str = None,
     ) -> str:
         # llm生成response
         response_str = self._llm.predict(
             prompt=self._text_to_sql_prompt,
             dialect=self._dialect,
             query_str=query_bundle.query_str,
+            hint=hint,
             db_schema=schema_description_str,
             db_history=query_history_str,
         )
-        logger.info(f"> LLM response: {response_str}")
+        logger.info(f"> LLM response: \n{response_str}")
 
         # 解析response中的sql
         sql_query_str = self._sql_parser.parse_response_to_sql(
             response_str, query_bundle
         )
+        logger.info(f"> Parsed SQL query: {sql_query_str}")
 
         return sql_query_str
 
@@ -241,21 +247,24 @@ class SQLNodeGenerator(SQLGenerator):
         query_bundle: QueryBundle,
         schema_description_str: str,
         query_history_str: str,
+        hint: str = None,
     ) -> str:
         # llm生成response
         response_str = await self._llm.apredict(
             prompt=self._text_to_sql_prompt,
             dialect=self._dialect,
             query_str=query_bundle.query_str,
+            hint=hint,
             db_schema=schema_description_str,
             db_history=query_history_str,
         )
-        logger.info(f"> LLM response: {response_str}")
+        logger.info(f"> LLM response: \n{response_str}")
 
         # 解析response中的sql
         sql_query_str = self._sql_parser.parse_response_to_sql(
             response_str, query_bundle
         )
+        logger.info(f"> Parsed SQL query: {sql_query_str}")
 
         return sql_query_str
 
@@ -266,6 +275,7 @@ class SQLNodeGenerator(SQLGenerator):
         query_bundle: QueryBundle,
         schema_description_str: str,
         db_history_str: str,
+        hint: str = None,
     ) -> ExecutionResult:
         attempt = 0
         last_exception = None
@@ -274,14 +284,14 @@ class SQLNodeGenerator(SQLGenerator):
 
             try:
                 execution_result = self._execute_sql_query(sql_query_str)
-                logger.info(
+                logger.debug(
                     f"> Attempt: {attempt}, SQL query result: {execution_result.retrieved_nodes[0]}"
                 )
                 return execution_result
 
             except NotImplementedError as error:
                 last_exception = error
-                logger.info(
+                logger.debug(
                     f"> Attempt: {attempt}, SQL execution error: {error}, SQL query: {sql_query_str}\n"
                 )
                 sql_query_str = self._revise_sql(
@@ -290,6 +300,7 @@ class SQLNodeGenerator(SQLGenerator):
                     query_bundle,
                     schema_description_str,
                     db_history_str,
+                    hint,
                 )
                 logger.info(
                     f"> Attempt: {attempt}, Revised Predicted SQL query: {sql_query_str}\n"
@@ -297,7 +308,7 @@ class SQLNodeGenerator(SQLGenerator):
 
             except Exception as error:
                 last_exception = error
-                logger.exception(f"> Attempt: {attempt}, Unexpected error: {error}")
+                logger.warning(f"> Attempt: {attempt}, Unexpected error: {error}")
                 raise
 
         logger.info(
@@ -313,6 +324,7 @@ class SQLNodeGenerator(SQLGenerator):
         query_bundle: QueryBundle,
         schema_description_str: str,
         db_history_str: str,
+        hint: str = None,
     ) -> ExecutionResult:
         attempt = 0
         last_exception = None
@@ -321,14 +333,14 @@ class SQLNodeGenerator(SQLGenerator):
 
             try:
                 execution_result = self._execute_sql_query(sql_query_str)
-                logger.info(
+                logger.debug(
                     f"> Attempt: {attempt}, SQL query result: {execution_result.retrieved_nodes[0]}"
                 )
                 return execution_result
 
             except NotImplementedError as error:
                 last_exception = error
-                logger.info(
+                logger.debug(
                     f"> Attempt: {attempt}, SQL execution error: {error}, SQL query: {sql_query_str}\n"
                 )
                 sql_query_str = await self._arevise_sql(
@@ -337,6 +349,7 @@ class SQLNodeGenerator(SQLGenerator):
                     query_bundle,
                     schema_description_str,
                     db_history_str,
+                    hint,
                 )
                 logger.info(
                     f"> Attempt: {attempt}, Revised Predicted SQL query: {sql_query_str}\n"
@@ -344,7 +357,7 @@ class SQLNodeGenerator(SQLGenerator):
 
             except Exception as error:
                 last_exception = error
-                logger.exception(f"> Attempt: {attempt}, Unexpected error: {error}")
+                logger.warning(f"> Attempt: {attempt}, Unexpected error: {error}")
                 raise
 
         logger.info(
@@ -360,12 +373,14 @@ class SQLNodeGenerator(SQLGenerator):
         nl_query_bundle: QueryBundle,
         db_schema_str: str,
         db_history_str: str,
+        hint: str = None,
     ) -> str:
         # 修正执行错误的SQL，同步
         response_str = self._llm.predict(
             prompt=self._sql_revision_prompt,
             dialect=self._dialect,
             query_str=nl_query_bundle.query_str,
+            hint=hint,
             db_schema=db_schema_str,
             db_history=db_history_str,
             predicted_sql=sql_query_str,
@@ -386,12 +401,14 @@ class SQLNodeGenerator(SQLGenerator):
         nl_query_bundle: QueryBundle,
         db_schema_str: str,
         db_history_str: str,
+        hint: str = None,
     ):
         # 修正执行错误的SQL，异步
         response_str = await self._llm.apredict(
             prompt=self._sql_revision_prompt,
             dialect=self._dialect,
             query_str=nl_query_bundle.query_str,
+            hint=hint,
             db_schema=db_schema_str,
             db_history=db_history_str,
             predicted_sql=sql_query_str,
@@ -430,8 +447,8 @@ class SQLNodeGenerator(SQLGenerator):
         """Generate naive SQL query from the first table."""
         if len(query_tables) != 0:
             first_table = query_tables[0]
-            naive_sql_query_str = f"SELECT * FROM {first_table}"
-            logger.info(f"Use the whole table: {first_table} instead if possible")
+            naive_sql_query_str = f"SELECT * FROM {first_table} LIMIT 500"
+            logger.warning(f"Use the whole table: {first_table} instead if possible")
         else:
             naive_sql_query_str = sql_query_str
             logger.info("No table is matched")
@@ -456,7 +473,7 @@ class SQLNodeGenerator(SQLGenerator):
                 "generated_query_code_instruction"
             ] = sql_query_str
             retrieved_nodes[0].metadata["query_tables"] = query_tables
-            logger.info(
+            logger.debug(
                 f"> Whole SQL query result: {retrieved_nodes[0].metadata['query_output']}\n"
             )
         # 没有找到table，新旧sql_query一样，不再通过_sql_retriever执行，直接retrieved_nodes

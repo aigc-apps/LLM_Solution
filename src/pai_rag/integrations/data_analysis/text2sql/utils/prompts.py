@@ -14,25 +14,52 @@ DEFAULT_DB_SUMMARY_PROMPT = PromptTemplate(
 )
 
 
+# DEFAULT_KEYWORD_EXTRACTION_PROMPT = PromptTemplate(
+#     "给定一个用户问题和提示，请仅基于该问题和提示，提取其中的关键词、关键短语和命名实体。这些元素对于理解问题的核心组成部分以及提供的指导至关重要。\n"
+#     "要求: \n"
+#     "1. **仔细阅读问题**：理解问题的主要焦点和具体细节。结合提示寻找任何命名实体（如组织、地点等）、技术术语和其他能概括问题重要方面的短语。\n"
+#     "2. **关键词**：捕捉问题和提示本质方面的单个词语。**关键短语**：代表特定概念、地点、组织或其他重要细节的简短短语或命名实体。确保使用问题或提示中的原始措辞或术语。\n"
+#     "3. **排除无关信息**：不要引入与用户问题和提示无关的外部信息或示例数据。\n"
+#     "4. **将从问题中提取的关键词、关键短语和命名实体合并到一个列表中作为回答输出**，无需解释，回答样例：[关键词1, 关键词2,...]。\n"
+#     "5. 提取的关键词、关键短语和命名实体的语言和用户问题保持一致。\n\n"
+#     "参考示例: {fewshot_examples}\n"
+#     "用户问题: {query_str}\n"
+#     "提示: {hint}\n"
+#     "回答: "
+# )
+
 DEFAULT_KEYWORD_EXTRACTION_PROMPT = PromptTemplate(
-    "给定一个用户问题，请仅基于该问题提取其中的关键词、关键短语和命名实体。这些元素对于理解问题的核心组成部分以及提供的指导至关重要。\n"
-    "要求: \n"
-    "1. **仔细阅读问题**：理解问题的主要焦点和具体细节。寻找任何命名实体（如组织、地点等）、技术术语和其他能概括问题重要方面的短语。\n"
-    "2. **关键词**：捕捉问题或提示本质方面的单个词语。**关键短语**：代表特定概念、地点、组织或其他重要细节的简短短语或命名实体。确保使用问题中的原始措辞或术语。\n"
-    "3. **排除无关信息**：不要引入与用户问题无关的外部信息或示例数据。\n"
-    "4. **将从问题中提取的关键词、关键短语和命名实体合并到一个列表中作为回答输出**，无需解释，回答样例：[关键词1, 关键词2,...]。\n"
-    "参考示例: {fewshot_examples}\n"
-    "用户问题: {query_str}\n"
-    "回答: "
+    """
+Objective: Analyze the given question and hint to identify and extract keywords, keyphrases, and named entities.
+These elements are crucial for understanding the core components of the inquiry and the guidance provided.
+This process involves recognizing and isolating significant terms and phrases that could be instrumental in formulating searches or queries related to the posed question.\n\n
+Instructions:\n
+1. Read the Question Carefully: Understand the primary focus and specific details of the question. Look for any named entities (such as organizations, locations, etc.), technical terms, and other phrases that encapsulate important aspects of the inquiry.\n
+2. Analyze the Hint: The hint is designed to direct attention toward certain elements relevant to answering the question. Extract any keywords, phrases, or named entities that could provide further clarity or direction in formulating an answer.\n
+3. List Keyphrases and Entities: Combine your findings from both the question and the hint into a single Python list. This list should contain:
+- Keywords: Single words that capture essential aspects of the question or hint.
+- Keyphrases: Short phrases or named entities that represent specific concepts, locations, organizations, or other significant details.
+Ensure to maintain the original phrasing or terminology used in the
+question and hint.
+4. The language of the listed Keywords, Keyphrases and Entities should be consistent with the question.\n\n
+{fewshot_examples}\n\n
+Task:\n
+Given the following question and hint, identify and list all relevant keywords, keyphrases, and named entities.\n\n
+Question: {query_str}\n
+Hint: {hint}\n\n
+Please provide your findings as a Python list, capturing the essence of both the question and hint through the identified terms and phrases.
+Only output the Python list, no explanations needed.
+"""
 )
 
 
 DEFAULT_DB_SCHEMA_SELECT_PROMPT = PromptTemplate(
     "以下是用户数据库信息描述: \n"
     "数据表结构信息和数据样例: {db_schema} \n"
-    "请学习理解该数据的结构和内容, 根据用户问题, 筛选出有用的表和列信息。\n"
-    "如有必要, 请将用户问题拆解, 一步步思考, 返回可能有用的数据表名和相关列名。\n"
+    "请学习理解该数据的结构和内容, 根据用户问题和提示, 筛选出有用的表和列信息。\n"
+    "如有必要, 请将用户问题拆解, 一步步思考, 返回可能有用的数据表名和相关列名。\n\n"
     "用户问题: {nl_query}\n"
+    "提示: {hint}\n"
     "回答: \n"
 )
 
@@ -40,10 +67,13 @@ DEFAULT_DB_SCHEMA_SELECT_PROMPT = PromptTemplate(
 DEFAULT_TEXT_TO_SQL_PROMPT = PromptTemplate(
     "给定一个用户问题，请按照以下要求创建一个语法正确的{dialect}查询语句来执行。\n"
     "要求: \n"
-    "1. 只根据用户问题查询特定表中的相关列。\n"
-    "2. 请注意只使用提供数据库信息以及可能历史查询中看到的列名，不要查询不存在的列。\n"
+    "1. 请结合提示充分理解用户问题和具体细节。\n"
+    "1. 只根据用户问题和提示查询特定表中的相关列。\n"
+    "2. 请注意只使用提供数据库信息以及历史查询中看到的列名，不要查询不存在的列。\n"
     "3. 请注意哪个列位于哪个表中。必要时，请使用表名限定列名。\n\n"
+    "4. 如生成SQL语句中有表名或列名与SQL保留字相同，如order，将该表名或列名加上双引号或反引号\n\n"
     "用户问题: {query_str} \n"
+    "提示: {hint}\n"
     "数据表结构信息和数据样例: {db_schema} \n"
     "历史查询: {db_history} \n"
     "You are required to use the following format, each taking one line:\n\n"
@@ -53,7 +83,7 @@ DEFAULT_TEXT_TO_SQL_PROMPT = PromptTemplate(
 
 
 DEFAULT_SQL_REVISION_PROMPT = PromptTemplate(
-    "Given an input question, database schema, sql execution result and query history, revise the predicted sql query following the correct {dialect} based on the instructions below.\n"
+    "Given an input question, hint, database schema, sql execution result and query history, revise the predicted sql query following the correct {dialect} based on the instructions below.\n"
     "Instructions:\n"
     "1. When you need to find the highest or lowest values based on a certain condition, using ORDER BY + LIMIT 1 is preferred over using MAX/MIN within sub queries.\n"
     "2. If predicted query includes an ORDER BY clause to sort the results, you should only include the column(s) used for sorting in the SELECT clause if the question specifically ask for them. Otherwise, omit these columns from the SELECT.\n"
@@ -62,8 +92,9 @@ DEFAULT_SQL_REVISION_PROMPT = PromptTemplate(
     "5. Predicted query should return all of the information asked in the question without any missing or extra information.\n"
     "6. No matter of how many things the question asks, you should only return one SQL query as the answer having all the information asked in the question, separated by a comma.\n"
     "7. When ORDER BY is used, just include the column name in the ORDER BY in the SELECT clause when explicitly asked in the question. Otherwise, do not include the column name in the SELECT clause.\n\n"
-    "Question: {query_str} \n"
-    "Database schema description: {db_schema} \n"
+    "Question: {query_str}\n"
+    "Hint: {hint}\n"
+    "Database schema description: {db_schema}\n"
     "Query history: {db_history}\n"
     "Predicted sql query: {predicted_sql}\n"
     "SQL execution result: {sql_execution_result}\n"

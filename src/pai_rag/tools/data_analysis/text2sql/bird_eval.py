@@ -1,17 +1,19 @@
 import os
 import asyncio
 from dotenv import load_dotenv
+import pickle
+import json
 from loguru import logger
 import sys
-import pickle
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
 from llama_index.embeddings.dashscope import DashScopeEmbedding
 
 from pai_rag.integrations.data_analysis.text2sql.sql_evaluator import (
-    SpiderEvaluator,
+    BirdEvaluator,
 )
+
 
 # 移除默认的日志处理器
 logger.remove()
@@ -26,7 +28,9 @@ load_dotenv()
 dashscope_api_key = os.getenv("DASHSCOPE_API_KEY")
 
 if os.path.exists("./model_repository/bge-m3"):
-    embed_model_bge = HuggingFaceEmbedding(model_name="./model_repository/bge-m3")
+    embed_model_bge = HuggingFaceEmbedding(
+        model_name="./model_repository/bge-m3", embed_batch_size=20
+    )
 else:
     embed_model_bge = None
 
@@ -38,14 +42,15 @@ llm = DashScope(
 )
 embed_model_dashscope = DashScopeEmbedding(
     api_key=dashscope_api_key,
-    embed_batch_size=10,
+    embed_batch_size=20,
 )
 
 
 if __name__ == "__main__":
-    database_folder_path = "/Users/chuyu/Documents/datasets/spider_data/test_database"
-    # database_folder_path = "/Users/chuyu/Documents/datasets/temp_test"
-    eval_file_path = "/Users/chuyu/Documents/datasets/spider_data/test.json"
+    database_folder_path = (
+        "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev_databases/"
+    )
+    eval_file_path = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev.json"
     analysis_config = {
         "enable_enhanced_description": False,
         "enable_db_history": False,
@@ -57,7 +62,7 @@ if __name__ == "__main__":
         "enable_db_selector": False,
     }
 
-    spider_eval = SpiderEvaluator(
+    bird_eval = BirdEvaluator(
         llm=llm,
         embed_model=embed_model_bge,
         database_folder_path=database_folder_path,
@@ -66,38 +71,43 @@ if __name__ == "__main__":
     )
 
     # batch_load
-    asyncio.run(spider_eval.abatch_loader())
+    asyncio.run(bird_eval.abatch_loader())
 
     # batch_predict
-    predicted_sql_list, queried_result_list = asyncio.run(
-        spider_eval.abatch_query(nums=3000)
+    predicted_sql_list, queried_result_list, db_id_list = asyncio.run(
+        bird_eval.abatch_query(nums=2000)
     )
 
     # 写入二进制文件
     with open(
-        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/predicted_sql_list.pkl",
+        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/predicted_sql_list.pkl",
         "wb",
     ) as file:
         pickle.dump(predicted_sql_list, file)
 
     # save result
     predicted_file = (
-        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/predict_qwenmax.txt"
+        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/predict_dev.json"
     )
+    directory = os.path.dirname(predicted_file)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     with open(predicted_file, "w", encoding="utf-8") as file:
-        for item in predicted_sql_list:
+        content = {}
+        for idx, item in enumerate(predicted_sql_list):
             if item:
-                parsed_item = spider_eval.parse_predicted_sql(item)
-            file.write(f"{parsed_item}\n")
+                parsed_item = bird_eval.parse_predicted_sql(item)
+            content.update({idx: f"{parsed_item}\t----- bird -----\t{db_id_list[idx]}"})
+        json.dump(content, file, ensure_ascii=False, indent=4)
     print(f"predicted_sql_list have been written to {predicted_file}")
 
     # batch_evaluate
-    gold_file = "/Users/chuyu/Documents/datasets/spider_data/test_gold.sql"
-    table_file = "/Users/chuyu/Documents/datasets/spider_data/test_tables.json"
-
-    spider_eval.batch_evaluate(
-        gold_file=gold_file,
-        predicted_file=predicted_file,
-        evaluation_type="exec",
-        table_file=table_file,
+    gold_file = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/"
+    # table_file = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev_tables.json"
+    # predicted_file = "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/predict_dev.json"
+    bird_eval.batch_evaluate(
+        predicted_sql_path=predicted_file,
+        ground_truth_path=gold_file,
+        db_root_path=database_folder_path,
+        diff_json_path=eval_file_path,
     )

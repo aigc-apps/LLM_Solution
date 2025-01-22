@@ -22,13 +22,15 @@ class SchemaValueFilter(DBRetrieverFilter):
     def filter(
         self,
         db_description_dict: Dict,
-        retrieved_description_nodes: List[NodeWithScore],
+        retrieved_description_nodes_from_query: List[NodeWithScore],
+        retrieved_description_nodes_from_hint: List[NodeWithScore],
         retrieved_value_nodes: List[NodeWithScore],
     ):
         column_nums = count_total_columns(db_description_dict)
         retrieved_description_dict = self._filter_description(
             db_description_dict,
-            retrieved_description_nodes,
+            retrieved_description_nodes_from_query,
+            retrieved_description_nodes_from_hint,
             retrieved_value_nodes,
         )
         retrieved_column_nums = count_total_columns(retrieved_description_dict)
@@ -40,7 +42,8 @@ class SchemaValueFilter(DBRetrieverFilter):
     def _filter_description(
         self,
         db_description_dict: Dict,
-        retrieved_description_nodes: List[NodeWithScore],
+        retrieved_description_nodes_from_query: List[NodeWithScore],
+        retrieved_description_nodes_from_hint: List[NodeWithScore],
         retrieved_value_nodes: List[NodeWithScore],
         similar_entities_via_LSH: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict:
@@ -57,21 +60,32 @@ class SchemaValueFilter(DBRetrieverFilter):
                 else:
                     retrieved_nodes_dict[key].append(str(value))
             logger.info(
-                f"retrieved_nodes_dict from value_nodes: {len(retrieved_nodes_dict)},\n {retrieved_nodes_dict}"
+                f"After retrieved_nodes_dict from value_nodes: {len(retrieved_nodes_dict)}"
             )
         else:
             logger.info("Empty retrieved_value_nodes")
 
-        if len(retrieved_description_nodes) > 0:
-            for node in retrieved_description_nodes:
+        if len(retrieved_description_nodes_from_query) > 0:
+            for node in retrieved_description_nodes_from_query:
                 key = (node.metadata["table_name"], node.metadata["column_name"])
                 if key not in retrieved_nodes_dict:
                     retrieved_nodes_dict[key] = []
             logger.info(
-                f"retrieved_nodes_dict: {len(retrieved_nodes_dict)},\n {retrieved_nodes_dict}"
+                f"After retrieved_description_nodes_from_query: {len(retrieved_nodes_dict)}"
             )
         else:
-            logger.info("Empty retrieved_description_nodes")
+            logger.info("Empty retrieved_description_nodes_from_query")
+
+        if len(retrieved_description_nodes_from_hint) > 0:
+            for node in retrieved_description_nodes_from_hint:
+                key = (node.metadata["table_name"], node.metadata["column_name"])
+                if key not in retrieved_nodes_dict:
+                    retrieved_nodes_dict[key] = []
+            logger.info(
+                f"After retrieved_description_nodes_from_hint: {len(retrieved_nodes_dict)}"
+            )
+        else:
+            logger.info("Empty retrieved_description_nodes_from_hint")
 
         # if similar_entities_via_LSH:
         #     for item in similar_entities_via_LSH:

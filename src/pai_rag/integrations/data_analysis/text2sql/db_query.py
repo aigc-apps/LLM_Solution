@@ -113,14 +113,13 @@ class DBQuery:
             sql_revision_prompt=self._sql_revision_prompt,
         )
 
-    def query_pipeline(self, nl_query: QueryBundle):
+    def query_pipeline(self, nl_query: QueryBundle, hint: str = None):
         if isinstance(nl_query, str):
             nl_query = QueryBundle(nl_query)
 
         # 查询问题预处理, 可选
         if self._enable_query_preprocessor:
-            keywords = self._keyword_extractor.process(nl_query)
-            logger.info(f"Extracted keywords: {keywords}")
+            keywords = self._keyword_extractor.process(nl_query, hint)
         else:
             keywords = []
 
@@ -138,18 +137,25 @@ class DBQuery:
         # pre_retrieval, 可选
         if self._enable_db_preretriever:
             # schema info retrieval
-            retrieved_description_nodes = self._schema_retriever.retrieve_nodes(
-                nl_query
+            retrieved_description_nodes_from_query = (
+                self._schema_retriever.retrieve_nodes(nl_query)
             )
+            if hint:
+                retrieved_description_nodes_from_hint = (
+                    self._schema_retriever.retrieve_nodes(hint)
+                )
+            else:
+                retrieved_description_nodes_from_hint = []
             # value info retrieval
-            if not keywords:
+            if keywords:
                 retrieved_value_nodes = self._value_retriever.retrieve_nodes(keywords)
             else:
                 retrieved_value_nodes = []
             # schema+value filter
             retrieved_description_dict = self._schema_value_filter.filter(
                 self._db_description_dict,
-                retrieved_description_nodes,
+                retrieved_description_nodes_from_query,
+                retrieved_description_nodes_from_hint,
                 retrieved_value_nodes,
             )
         else:
@@ -158,7 +164,7 @@ class DBQuery:
         # schema selector, 可选
         if self._enable_db_selector:
             selected_description_dict = self._db_schema_selector.select(
-                query=nl_query, db_info=retrieved_description_dict
+                query=nl_query, db_info=retrieved_description_dict, hint=hint
             )
         else:
             selected_description_dict = retrieved_description_dict
@@ -169,17 +175,17 @@ class DBQuery:
             selected_description_dict,
             retrieved_history_list,
             max_retry=1,
+            hint=hint,
         )
         return response_node, metadata["schema_description"]
 
-    async def aquery_pipeline(self, nl_query: QueryBundle):
+    async def aquery_pipeline(self, nl_query: QueryBundle, hint: str = None):
         if isinstance(nl_query, str):
             nl_query = QueryBundle(nl_query)
 
         # 查询问题预处理, 可选
         if self._enable_query_preprocessor:
-            keywords = await self._keyword_extractor.aprocess(nl_query)
-            logger.info(f"Extracted keywords: {keywords}")
+            keywords = await self._keyword_extractor.aprocess(nl_query, hint)
         else:
             keywords = []
 
@@ -199,11 +205,17 @@ class DBQuery:
         # pre_retrieval, 可选
         if self._enable_db_preretriever:
             # schema info retrieval
-            retrieved_description_nodes = await self._schema_retriever.aretrieve_nodes(
-                nl_query
+            retrieved_description_nodes_from_query = (
+                await self._schema_retriever.aretrieve_nodes(nl_query)
             )
+            if hint:
+                retrieved_description_nodes_from_hint = (
+                    await self._schema_retriever.aretrieve_nodes(hint)
+                )
+            else:
+                retrieved_description_nodes_from_hint = []
             # value info retrieval
-            if not keywords:
+            if keywords:
                 retrieved_value_nodes = await self._value_retriever.aretrieve_nodes(
                     keywords
                 )
@@ -212,7 +224,8 @@ class DBQuery:
             # schema+value filter
             retrieved_description_dict = self._schema_value_filter.filter(
                 self._db_description_dict,
-                retrieved_description_nodes,
+                retrieved_description_nodes_from_query,
+                retrieved_description_nodes_from_hint,
                 retrieved_value_nodes,
             )
         else:
@@ -221,7 +234,7 @@ class DBQuery:
         # schema selector, 可选
         if self._enable_db_selector:
             selected_description_dict = await self._db_schema_selector.aselect(
-                query=nl_query, db_info=retrieved_description_dict
+                query=nl_query, db_info=retrieved_description_dict, hint=hint
             )
         else:
             selected_description_dict = retrieved_description_dict
@@ -232,6 +245,7 @@ class DBQuery:
             selected_description_dict,
             retrieved_history_list,
             max_retry=1,
+            hint=hint,
         )
         return response_node, metadata["schema_description"]
 

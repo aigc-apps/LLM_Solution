@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import os
 from typing import List
+from loguru import logger
 
 from llama_index.core.schema import TextNode
 from llama_index.core.base.embeddings.base import BaseEmbedding
@@ -47,6 +48,7 @@ class SchemaIndex(DBInfoIndex):
         )
 
     def insert_nodes(self, nodes: List[TextNode]):
+        logger.info(f"start inserting schema for {self._db_name}")
         return self._description_index.insert_nodes(nodes)
 
     def as_retriever(self):
@@ -67,6 +69,7 @@ class HistoryIndex(DBInfoIndex):
         )
 
     def insert_nodes(self, nodes: List[TextNode]):
+        logger.info("start inserting history...")
         return self._history_index.insert_nodes(nodes)
 
     def as_retriever(self):
@@ -87,6 +90,7 @@ class ValueIndex(DBInfoIndex):
         )
 
     def insert_nodes(self, nodes: List[TextNode]):
+        logger.info(f"start inserting value for {self._db_name}")
         return self._value_index.insert_nodes(nodes)
 
     def as_retriever(self):

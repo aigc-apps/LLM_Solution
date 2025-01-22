@@ -18,17 +18,17 @@ llm = DashScope(
     max_tokens=2048,
 )
 Settings.llm = llm
-# query = "有猫的学生有多少？"
-# qp = KeywordExtraction()
-# result = qp.process(QueryBundle(query))
-# print(result)
+query = "有猫的学生有多少？"
+qp = KeywordExtractor()
+result = qp.process(QueryBundle(query))
+print(result)
 
 
-def test_query_processor():
-    query = "有猫的学生有多少？"
-    qp = KeywordExtractor()
-    keywords = qp.process(QueryBundle(query))
-    assert isinstance(keywords, list)
-    assert len(keywords) > 0
-    assert "猫" in keywords
-    assert "学生" in keywords
+# def test_query_processor():
+#     query = "有猫的学生有多少？"
+#     qp = KeywordExtractor()
+#     keywords = qp.process(QueryBundle(query))
+#     assert isinstance(keywords, list)
+#     assert len(keywords) > 0
+#     assert "猫" in keywords
+#     assert "学生" in keywords

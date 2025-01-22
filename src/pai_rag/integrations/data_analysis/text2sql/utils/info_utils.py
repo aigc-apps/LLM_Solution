@@ -143,7 +143,7 @@ def extract_subset_from_description(
                         "column_info": filter_columns,
                     }
                 )
-        logger.info(f"sub_db_description_dict: {sub_db_description_dict}")
+        logger.debug(f"sub_db_description_dict: {sub_db_description_dict}")
         return sub_db_description_dict
     else:
         return db_description_dict
