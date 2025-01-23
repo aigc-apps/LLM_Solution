@@ -1,4 +1,4 @@
-from typing import List, Optional, Type
+from typing import List, Optional
 from llama_index.core.bridge.pydantic import Field
 from llama_index.core.llama_dataset.base import BaseLlamaDataExample
 from llama_index.core.llama_dataset import CreatedBy
@@ -13,25 +13,23 @@ class RagQcaSample(BaseLlamaDataExample):
     to evaluate the prediction.
     """
 
-    query: str = Field(
-        default_factory=str, description="The user query for the example."
-    )
+    query: str = Field(default=str, description="The user query for the example.")
     query_by: Optional[CreatedBy] = Field(
         default=None, description="What generated the query."
     )
     reference_contexts: Optional[List[str]] = Field(
-        default_factory=None,
+        default=None,
         description="The contexts used to generate the reference answer.",
     )
     reference_node_ids: Optional[List[str]] = Field(
-        default_factory=None, description="The node id corresponding to the contexts"
+        default=None, description="The node id corresponding to the contexts"
     )
     reference_image_url_list: Optional[List[str]] = Field(
-        default_factory=None,
+        default=None,
         description="The image urls used to generate the reference answer.",
     )
     reference_answer: str = Field(
-        default_factory=str,
+        default=str,
         description="The reference (ground-truth) answer to the example.",
     )
     reference_answer_by: Optional[CreatedBy] = Field(
@@ -39,23 +37,23 @@ class RagQcaSample(BaseLlamaDataExample):
     )
 
     predicted_contexts: Optional[List[str]] = Field(
-        default_factory=None,
+        default=None,
         description="The contexts used to generate the predicted answer.",
     )
     predicted_node_ids: Optional[List[str]] = Field(
-        default_factory=None,
+        default=None,
         description="The node id corresponding to the predicted contexts",
     )
     predicted_node_scores: Optional[List[float]] = Field(
-        default_factory=None,
+        default=None,
         description="The node score corresponding to the predicted contexts",
     )
     predicted_image_url_list: Optional[List[str]] = Field(
-        default_factory=None,
+        default=None,
         description="The image urls used to generate the reference answer.",
     )
     predicted_answer: str = Field(
-        default_factory=str,
+        default="",
         description="The predicted answer to the example.",
     )
     predicted_answer_by: Optional[CreatedBy] = Field(
@@ -69,9 +67,8 @@ class RagQcaSample(BaseLlamaDataExample):
 
 
 class PaiRagQcaDataset(BaseModel):
-    _example_type: Type[RagQcaSample] = RagQcaSample  # type: ignore[misc]
     examples: List[RagQcaSample] = Field(
-        default=[], description="Data examples of this dataset."
+        default_factory=list, description="Data examples of this dataset."
     )
     labelled: bool = Field(
         default=False, description="Whether the dataset is labelled or not."
@@ -88,7 +85,7 @@ class PaiRagQcaDataset(BaseModel):
     def save_json(self, path: str) -> None:
         """Save json."""
         with open(path, "w", encoding="utf-8") as f:
-            examples = [self._example_type.dict(el) for el in self.examples]
+            examples = [el.model_dump() for el in self.examples]
             data = {
                 "examples": examples,
                 "labelled": self.labelled,
@@ -105,7 +102,7 @@ class PaiRagQcaDataset(BaseModel):
             data = json.load(f)
 
         if len(data["examples"]) > 0:
-            examples = [cls._example_type.parse_obj(el) for el in data["examples"]]
+            examples = [RagQcaSample.model_validate(el) for el in data["examples"]]
             labelled = data["labelled"]
             predicted = data["predicted"]
 

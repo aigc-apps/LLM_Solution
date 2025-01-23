@@ -1,4 +1,4 @@
-from typing import List, Optional, Type, Dict
+from typing import List, Optional, Dict
 from llama_index.core.bridge.pydantic import Field
 import json
 from llama_index.core.bridge.pydantic import BaseModel
@@ -11,31 +11,31 @@ class EvaluationSample(RagQcaSample):
     """Response Evaluation RAG example class."""
 
     hitrate: Optional[float] = Field(
-        default_factory=None,
+        default=None,
         description="The hitrate value for retrieval evaluation.",
     )
     mrr: Optional[float] = Field(
-        default_factory=None,
+        default=None,
         description="The mrr value for retrieval evaluation.",
     )
 
     faithfulness_score: Optional[float] = Field(
-        default_factory=None,
+        default=None,
         description="The faithfulness score for response evaluation.",
     )
 
     faithfulness_reason: Optional[str] = Field(
-        default_factory=None,
+        default=None,
         description="The faithfulness reason for response evaluation.",
     )
 
     correctness_score: Optional[float] = Field(
-        default_factory=None,
+        default=None,
         description="The correctness score for response evaluation.",
     )
 
     correctness_reason: Optional[str] = Field(
-        default_factory=None,
+        default=None,
         description="The correctness reason for response evaluation.",
     )
     evaluated_by: Optional[CreatedBy] = Field(
@@ -49,7 +49,6 @@ class EvaluationSample(RagQcaSample):
 
 
 class PaiRagEvalDataset(BaseModel):
-    _example_type: Type[EvaluationSample] = EvaluationSample  # type: ignore[misc]
     examples: List[EvaluationSample] = Field(
         default=[], description="Data examples of this dataset."
     )
@@ -93,7 +92,7 @@ class PaiRagEvalDataset(BaseModel):
         self.cal_mean_metric_score()
 
         with open(path, "w", encoding="utf-8") as f:
-            examples = [self._example_type.dict(el) for el in self.examples]
+            examples = [el.model_dump() for el in self.examples]
             data = {
                 "examples": examples,
                 "results": self.results,
@@ -109,7 +108,7 @@ class PaiRagEvalDataset(BaseModel):
         with open(path) as f:
             data = json.load(f)
 
-        examples = [cls._example_type.parse_obj(el) for el in data["examples"]]
+        examples = [EvaluationSample.model_validate(el) for el in data["examples"]]
         results = data["results"]
         status = data["status"]
 
