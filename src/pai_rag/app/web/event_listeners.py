@@ -209,7 +209,8 @@ def save_config(input_elements: List[Any]):
                 value=input_oss_ak_sk(value_sk), type="text" if value_sk else "password"
             ),
             gr.update(
-                value=f"[{datetime.datetime.now()}] Snapshot configuration saved successfully!"
+                value=f"[{datetime.datetime.now()}] Snapshot configuration saved successfully!",
+                visible=True,
             ),
         ]
     except RagApiError as api_error:

@@ -12,6 +12,7 @@ from operator import itemgetter
 import tempfile
 from PIL import Image
 import os
+import traceback
 from loguru import logger
 from magic_pdf.data.dataset import PymuDocDataset
 from magic_pdf.model.doc_analyze_by_custom_model import doc_analyze
@@ -294,9 +295,9 @@ class PaiPDFReader(BaseReader):
 
             return md_content
 
-        except Exception as e:
-            logger.error(e)
-            return None
+        except Exception:
+            logger.error(traceback.format_exc())
+            raise
 
     def load_data(
         self,

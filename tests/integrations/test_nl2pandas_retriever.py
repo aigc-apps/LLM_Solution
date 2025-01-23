@@ -62,7 +62,7 @@ def test_data_analysis_synthesizer():
                 end_char_idx=None,
                 text_template="{metadata_str}\n\n{content}",
                 metadata_template="{key}: {value}",
-                metadata_seperator="\n",
+                metadata_separator="\n",
             ),
             score=1.0,
         )

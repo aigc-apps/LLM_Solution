@@ -26,6 +26,7 @@ from pai_rag.utils.prompt_template import (
     DEFAULT_TEXT_QA_PROMPT_TMPL,
     DEFAULT_MULTI_MODAL_IMAGE_QA_PROMPT_TMPL,
 )
+import asyncio
 
 
 class RagQcaGenerator:
@@ -213,7 +214,7 @@ class RagQcaGenerator:
     async def agenerate_predicted_multimodal_qca_sample(self, qca_sample):
         query_bundle = PaiQueryBundle(query_str=qca_sample.query)
         response = await self._query_engine.aquery(query_bundle)
-
+        await asyncio.sleep(3)
         qca_sample.predicted_answer = response.response
         predicted_contexts = []
         predicted_node_ids = []
@@ -247,7 +248,7 @@ class RagQcaGenerator:
     async def agenerate_predicted_qca_sample(self, qca_sample):
         query_bundle = PaiQueryBundle(query_str=qca_sample.query)
         response = await self._query_engine.aquery(query_bundle)
-
+        await asyncio.sleep(3)
         qca_sample.predicted_answer = response.response
         qca_sample.predicted_contexts = [
             node.node.text for node in response.source_nodes

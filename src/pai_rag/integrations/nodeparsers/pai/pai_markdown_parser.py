@@ -1,7 +1,6 @@
 """Markdown node parser."""
 from llama_index.core.bridge.pydantic import Field, BaseModel
 from typing import Any, Iterator, List, Optional, Sequence
-import json
 
 from llama_index.core.node_parser.interface import NodeParser
 from llama_index.core.node_parser import SentenceSplitter
@@ -77,7 +76,7 @@ class StructuredNodeParser(BaseModel):
                 image_url=node.content,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
+                metadata_separator=doc_node.metadata_separator,
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 metadata={
@@ -88,7 +87,7 @@ class StructuredNodeParser(BaseModel):
             )
             nodes_list.append(image_node)
             image_info = ImageInfo(image_url=node.content)
-            chunk_images_list.append(json.dumps(image_info.__dict__))
+            chunk_images_list.append(image_info.__dict__)
             return ""
         if not node.children:
             return node.content
@@ -111,7 +110,7 @@ class StructuredNodeParser(BaseModel):
                 embedding=doc_node.embedding,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
+                metadata_separator=doc_node.metadata_separator,
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 metadata={
@@ -126,7 +125,7 @@ class StructuredNodeParser(BaseModel):
                 embedding=doc_node.embedding,
                 excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                 excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                metadata_seperator=doc_node.metadata_seperator,
+                metadata_separator=doc_node.metadata_separator,
                 metadata_template=doc_node.metadata_template,
                 text_template=doc_node.text_template,
                 meta_data=doc_node.extra_info,
@@ -238,7 +237,7 @@ class StructuredNodeParser(BaseModel):
                             image_url=child.content,
                             excluded_embed_metadata_keys=doc_node.excluded_embed_metadata_keys,
                             excluded_llm_metadata_keys=doc_node.excluded_llm_metadata_keys,
-                            metadata_seperator=doc_node.metadata_seperator,
+                            metadata_separator=doc_node.metadata_separator,
                             metadata_template=doc_node.metadata_template,
                             text_template=doc_node.text_template,
                             metadata={
@@ -249,7 +248,7 @@ class StructuredNodeParser(BaseModel):
                         )
                         nodes_list.append(image_node)
                         image_info = ImageInfo(image_url=child.content)
-                        chunk_images_list.append(json.dumps(image_info.__dict__))
+                        chunk_images_list.append(image_info.__dict__)
                     else:
                         chunk_text += "\n" + self._format_tree_nodes(
                             child, doc_node, ref_doc, nodes_list, chunk_images_list
