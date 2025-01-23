@@ -327,19 +327,22 @@ class HistoryCollector(DBInfoCollector):
             query_history_file_path, f"{db_name}_{DEFAULT_DB_HISTORY_NAME}"
         )
 
-    def collect(self):
-        try:
-            with open(self._query_history_file_path, "r") as f:
-                query_history_list = json.load(f)
-                logger.info(f"Q-SQL pair obtained for {self._db_name}")
-            if not self._valid_check(query_history_list):
-                logger.warning("Invalid query history format")
+    def collect(self, history_list: Optional[List] = None):
+        if history_list:
+            return history_list
+        else:
+            try:
+                with open(self._query_history_file_path, "r") as f:
+                    query_history_list = json.load(f)
+                    logger.info(f"Q-SQL pair obtained for {self._db_name}")
+                if not self._valid_check(query_history_list):
+                    logger.warning("Invalid query history format")
+                    query_history_list = []
+            except Exception as e:
+                logger.warning(
+                    f"Error loading query history from {self._query_history_file_path}: {e}"
+                )
                 query_history_list = []
-        except Exception as e:
-            logger.warning(
-                f"Error loading query history from {self._query_history_file_path}: {e}"
-            )
-            query_history_list = []
 
         return query_history_list
 

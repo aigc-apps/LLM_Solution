@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from tqdm import tqdm
 import json
 import asyncio
@@ -14,6 +14,7 @@ from pai_rag.integrations.data_analysis.data_analysis_config import SqliteAnalys
 from pai_rag.integrations.data_analysis.text2sql.db_connector import SqliteConnector
 from pai_rag.integrations.data_analysis.text2sql.db_info_retriever import (
     SchemaRetriever,
+    HistoryRetriever,
     ValueRetriever,
 )
 from pai_rag.integrations.data_analysis.text2sql.db_loader import DBLoader
@@ -53,6 +54,18 @@ def resolve_schema_retriever(
     return resolve(
         cls=SchemaRetriever,
         cls_key="schema_retriever",
+        db_name=analysis_config["db_name"],
+        embed_model=embed_model,
+        similarity_top_k=5,
+    )
+
+
+def resolve_history_retriever(
+    analysis_config: SqlAnalysisConfig, embed_model: BaseEmbedding
+):
+    return resolve(
+        cls=HistoryRetriever,
+        cls_key="history_retriever",
         db_name=analysis_config["db_name"],
         embed_model=embed_model,
         similarity_top_k=5,
@@ -101,6 +114,8 @@ class SpiderEvaluator(SQLEvaluator):
         database_folder_path: str,
         eval_file_path: str,
         analysis_config: Dict,
+        history_file_path: Optional[str] = None,
+        using_all_history: bool = True,
     ):
         self._llm = llm
         self._embed_model = embed_model
@@ -108,6 +123,18 @@ class SpiderEvaluator(SQLEvaluator):
         self._sqlite_config_list: List[Dict[str, SqliteAnalysisConfig]] = []
         self._eval_file_path = eval_file_path
 
+        if history_file_path:
+            try:
+                with open(history_file_path, "r") as f:
+                    history_list = json.load(f)
+                logger.info("History_file successfully loaded.")
+            except FileNotFoundError:
+                logger.warning(f"File not found: {history_file_path}.")
+                raise
+        else:
+            history_list = []
+
+        # process sqlite_config and q-sql history
         database_folder = Path(database_folder_path)
         for db_file_path in tqdm(database_folder.rglob("*")):
             if db_file_path.is_file():
@@ -139,6 +166,22 @@ class SpiderEvaluator(SQLEvaluator):
                             "enable_db_selector", False
                         ),
                     )
+                    if using_all_history:
+                        db_history_list = [
+                            {"query": item["question"], "SQL": item["query"]}
+                            for item in history_list
+                        ]
+                    else:
+                        db_history_list = []
+                        for history_item in history_list:
+                            if db_name == history_item["db_id"]:
+                                db_history_list.append(
+                                    {
+                                        "query": history_item["question"],
+                                        "SQL": history_item["query"],
+                                    }
+                                )
+
                     # connect each database and load its info
                     db_connector = SqliteConnector(sqlite_config)
                     sql_databse = db_connector.connect()
@@ -147,6 +190,7 @@ class SpiderEvaluator(SQLEvaluator):
                             "db_name": db_name,
                             "sqlite_config": sqlite_config,
                             "sql_database": sql_databse,
+                            "query_history": db_history_list,
                         }
                     )
 
@@ -156,6 +200,9 @@ class SpiderEvaluator(SQLEvaluator):
         tasks = []
         for config_item in self._sqlite_config_list:
             schema_retriever = resolve_schema_retriever(config_item, self._embed_model)
+            history_retriever = resolve_history_retriever(
+                config_item, self._embed_model
+            )
             value_retriever = resolve_value_retriever(config_item, self._embed_model)
             db_loader = DBLoader(
                 db_config=config_item["sqlite_config"],
@@ -163,10 +210,11 @@ class SpiderEvaluator(SQLEvaluator):
                 embed_model=self._embed_model,
                 llm=self._llm,
                 schema_retriever=schema_retriever,
+                history_retriever=history_retriever,
                 value_retriever=value_retriever,
             )
             # 创建任务列表
-            tasks.append(db_loader.aload_db_info())
+            tasks.append(db_loader.aload_db_info(config_item["query_history"]))
 
         # 并发运行所有任务
         await asyncio.gather(*tasks)
@@ -249,6 +297,9 @@ class SpiderEvaluator(SQLEvaluator):
                 schema_retriever = resolve_schema_retriever(
                     config_item, self._embed_model
                 )
+                history_retriever = resolve_history_retriever(
+                    config_item, self._embed_model
+                )
                 value_retriever = resolve_value_retriever(
                     config_item, self._embed_model
                 )
@@ -258,15 +309,13 @@ class SpiderEvaluator(SQLEvaluator):
                     embed_model=self._embed_model,
                     llm=self._llm,
                     schema_retriever=schema_retriever,
+                    history_retriever=history_retriever,
                     value_retriever=value_retriever,
                 )
                 query_bundle = QueryBundle(eval_item["question"])
 
                 response_node, metadata = await db_query.aquery_pipeline(query_bundle)
-                # predicted_sql_list.append(
-                #     response_node[0].metadata["query_code_instruction"]
-                # )
-                # queried_result_list.append(response_node[0].metadata["query_output"])
+
                 return (
                     idx,
                     response_node[0].metadata["query_code_instruction"],
@@ -285,6 +334,9 @@ class SpiderEvaluator(SQLEvaluator):
                     schema_retriever = resolve_schema_retriever(
                         config_item, self._embed_model
                     )
+                    history_retriever = resolve_history_retriever(
+                        config_item, self._embed_model
+                    )
                     value_retriever = resolve_value_retriever(
                         config_item, self._embed_model
                     )
@@ -294,6 +346,7 @@ class SpiderEvaluator(SQLEvaluator):
                         embed_model=self._embed_model,
                         llm=self._llm,
                         schema_retriever=schema_retriever,
+                        history_retriever=history_retriever,
                         value_retriever=value_retriever,
                     )
                     query_bundle = QueryBundle(eval_item["question"])
@@ -310,7 +363,7 @@ class SpiderEvaluator(SQLEvaluator):
 
     def parse_predicted_sql(self, predicted_sql_str: str):
         if "\n" in predicted_sql_str:
-            return predicted_sql_str.replace("\n", "")
+            return predicted_sql_str.replace("\n", " ")
         else:
             return predicted_sql_str
 
@@ -341,6 +394,8 @@ class BirdEvaluator(SQLEvaluator):
         database_folder_path: str,
         eval_file_path: str,
         analysis_config: Dict,
+        history_file_path: Optional[str] = None,
+        using_all_history: bool = True,
     ):
         self._llm = llm
         self._embed_model = embed_model
@@ -348,6 +403,18 @@ class BirdEvaluator(SQLEvaluator):
         self._sqlite_config_list: List[Dict[str, SqliteAnalysisConfig]] = []
         self._eval_file_path = eval_file_path
 
+        if history_file_path:
+            try:
+                with open(history_file_path, "r") as f:
+                    history_list = json.load(f)
+                logger.info("History_file successfully loaded.")
+            except FileNotFoundError:
+                logger.warning(f"File not found: {history_file_path}.")
+                raise
+        else:
+            history_list = []
+
+        # process sqlite_config and q-sql history
         database_folder = Path(database_folder_path)
         for db_file_path in tqdm(database_folder.rglob("*")):
             if db_file_path.is_file():
@@ -379,6 +446,22 @@ class BirdEvaluator(SQLEvaluator):
                             "enable_db_selector", False
                         ),
                     )
+                    if using_all_history:
+                        db_history_list = [
+                            {"query": item["question"], "SQL": item["SQL"]}
+                            for item in history_list
+                        ]
+                    else:
+                        db_history_list = []
+                        for history_item in history_list:
+                            if db_name == history_item["db_id"]:
+                                db_history_list.append(
+                                    {
+                                        "query": history_item["question"],
+                                        "SQL": history_item["SQL"],
+                                    }
+                                )
+
                     # connect each database and load its info
                     db_connector = SqliteConnector(sqlite_config)
                     sql_databse = db_connector.connect()
@@ -387,6 +470,7 @@ class BirdEvaluator(SQLEvaluator):
                             "db_name": db_name,
                             "sqlite_config": sqlite_config,
                             "sql_database": sql_databse,
+                            "query_history": db_history_list,
                         }
                     )
 
@@ -415,6 +499,9 @@ class BirdEvaluator(SQLEvaluator):
         tasks = []
         for config_item in self._sqlite_config_list:
             schema_retriever = resolve_schema_retriever(config_item, self._embed_model)
+            history_retriever = resolve_history_retriever(
+                config_item, self._embed_model
+            )
             value_retriever = resolve_value_retriever(config_item, self._embed_model)
             db_loader = DBLoader(
                 db_config=config_item["sqlite_config"],
@@ -422,30 +509,31 @@ class BirdEvaluator(SQLEvaluator):
                 embed_model=self._embed_model,
                 llm=self._llm,
                 schema_retriever=schema_retriever,
+                history_retriever=history_retriever,
                 value_retriever=value_retriever,
                 database_file_path=self._database_folder_path,
             )
             # 创建任务列表
-            tasks.append(db_loader.aload_db_info())
+            tasks.append(db_loader.aload_db_info(config_item["query_history"]))
 
         # 并发运行所有任务
         await asyncio.gather(*tasks)
 
-    async def _aload_config_item(self, config_item):
-        for config_item in self._sqlite_config_list:
-            # print("aload_config_item:", config_item["db_name"])
-            schema_retriever = resolve_schema_retriever(config_item, self._embed_model)
-            value_retriever = resolve_value_retriever(config_item, self._embed_model)
-            db_loader = DBLoader(
-                db_config=config_item["sqlite_config"],
-                sql_database=config_item["sql_database"],
-                embed_model=self._embed_model,
-                llm=self._llm,
-                schema_retriever=schema_retriever,
-                value_retriever=value_retriever,
-                database_file_path=self._database_folder_path,
-            )
-            await db_loader.aload_db_info()
+    # async def _aload_config_item(self, config_item):
+    #     for config_item in self._sqlite_config_list:
+    #         # print("aload_config_item:", config_item["db_name"])
+    #         schema_retriever = resolve_schema_retriever(config_item, self._embed_model)
+    #         value_retriever = resolve_value_retriever(config_item, self._embed_model)
+    #         db_loader = DBLoader(
+    #             db_config=config_item["sqlite_config"],
+    #             sql_database=config_item["sql_database"],
+    #             embed_model=self._embed_model,
+    #             llm=self._llm,
+    #             schema_retriever=schema_retriever,
+    #             value_retriever=value_retriever,
+    #             database_file_path=self._database_folder_path,
+    #         )
+    #         await db_loader.aload_db_info()
 
     async def abatch_query(self, nums: int):
         with open(self._eval_file_path, "r") as f:
@@ -486,6 +574,9 @@ class BirdEvaluator(SQLEvaluator):
                 schema_retriever = resolve_schema_retriever(
                     config_item, self._embed_model
                 )
+                history_retriever = resolve_history_retriever(
+                    config_item, self._embed_model
+                )
                 value_retriever = resolve_value_retriever(
                     config_item, self._embed_model
                 )
@@ -495,6 +586,7 @@ class BirdEvaluator(SQLEvaluator):
                     embed_model=self._embed_model,
                     llm=self._llm,
                     schema_retriever=schema_retriever,
+                    history_retriever=history_retriever,
                     value_retriever=value_retriever,
                 )
                 query_bundle = QueryBundle(eval_item["question"])

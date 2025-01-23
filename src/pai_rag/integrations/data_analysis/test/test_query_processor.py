@@ -12,7 +12,7 @@ load_dotenv()
 dashscope_api_key = os.getenv("DASHSCOPE_API_KEY")
 
 llm = DashScope(
-    model_name=DashScopeGenerationModels.QWEN_TURBO,
+    model_name=DashScopeGenerationModels.QWEN_MAX,
     api_key=dashscope_api_key,
     temperature=0.1,
     max_tokens=2048,

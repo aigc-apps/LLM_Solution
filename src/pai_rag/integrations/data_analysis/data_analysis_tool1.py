@@ -1,5 +1,7 @@
 import os
 from typing import Optional, List, Tuple, Any
+from loguru import logger
+
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.core.base.response.schema import RESPONSE_TYPE
@@ -47,13 +49,12 @@ cls_cache = {}
 
 def resolve(cls: Any, cls_key: str, **kwargs):
     cls_key = kwargs.__repr__() + cls_key
-    # print(f"resolve called with kwargs: {kwargs}, cls_key: {cls_key}")
     if cls_key not in cls_cache:
         cls_cache[cls_key] = cls(**kwargs)
-        # instance = cls(**kwargs)
-        # print(f"Created new instance with id: {id(instance)}")
-    # else:
-    #     print(f"Returning cached instance with id: {id(cls_cache[cls_key])}")
+        instance = cls(**kwargs)
+        logger.debug(f"Created new instance with id: {id(instance)}")
+    else:
+        logger.debug(f"Returning cached instance with id: {id(cls_cache[cls_key])}")
     return cls_cache[cls_key]
 
 

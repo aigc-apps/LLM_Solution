@@ -173,8 +173,8 @@ class SQLNodeGenerator(SQLGenerator):
         # step1: 获得description_str & history_str 作为llm prompt参数
         schema_description_str = get_schema_desc4llm(selected_db_description_dict)
         selected_db_history_str = str(selected_db_history_list)
-        logger.debug(f"schema_description_str for llm: {schema_description_str}")
-        logger.debug(f"selected_db_history_str for llm: {selected_db_history_str}")
+        logger.debug(f"Schema_description_str for llm: {schema_description_str}.")
+        logger.debug(f"Selected_db_history_str for llm: {selected_db_history_str}.")
 
         # step2: llm生成sql
         sql_query_str = await self._agenerate_sql(
@@ -390,7 +390,7 @@ class SQLNodeGenerator(SQLGenerator):
         revised_sql_query = self._sql_parser.parse_response_to_sql(
             response_str, nl_query_bundle
         )
-        # logger.info(f"> Revised SQL query: {revised_sql_query}\n")
+        # logger.debug(f"> Revised SQL query: {revised_sql_query}\n")
 
         return revised_sql_query
 
@@ -418,7 +418,7 @@ class SQLNodeGenerator(SQLGenerator):
         revised_sql_query = self._sql_parser.parse_response_to_sql(
             response_str, nl_query_bundle
         )
-        # logger.info(f"> Async Revised SQL query: {revised_sql_query}\n")
+        # logger.debug(f"> Async Revised SQL query: {revised_sql_query}\n")
 
         return revised_sql_query
 

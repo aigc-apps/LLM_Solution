@@ -15,9 +15,14 @@ from pai_rag.integrations.data_analysis.text2sql.sql_evaluator import (
 
 # 移除默认的日志处理器
 logger.remove()
-
-# 添加一个新的日志处理器，指定最低日志级别为 INFO
+# 添加一个新的日志处理器，指定最低日志级别为 INFO，并输出到指定文件
+log_file_path = "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/spider_eval.log"  # 指定日志文件路径
+logger.add(
+    log_file_path, level="DEBUG", rotation="50 MB", retention="10 days", enqueue=True
+)
+# 添加一个可选的日志处理器，输出到标准错误（如果你仍然希望在控制台看到日志）
 logger.add(sys.stderr, level="INFO")
+
 
 # 加载 .env 文件中的环境变量
 load_dotenv()
@@ -43,12 +48,13 @@ embed_model_dashscope = DashScopeEmbedding(
 
 
 if __name__ == "__main__":
-    database_folder_path = "/Users/chuyu/Documents/datasets/spider_data/test_database"
-    # database_folder_path = "/Users/chuyu/Documents/datasets/temp_test"
+    # database_folder_path = "/Users/chuyu/Documents/datasets/spider_data/test_database"
+    database_folder_path = "/Users/chuyu/Documents/datasets/temp_test"
     eval_file_path = "/Users/chuyu/Documents/datasets/spider_data/test.json"
+    history_file_path = "/Users/chuyu/Documents/datasets/spider_data/train_spider.json"
     analysis_config = {
         "enable_enhanced_description": False,
-        "enable_db_history": False,
+        "enable_db_history": True,
         "enable_db_embedding": True,
         "max_col_num": 100,
         "max_val_num": 10000,
@@ -63,6 +69,7 @@ if __name__ == "__main__":
         database_folder_path=database_folder_path,
         eval_file_path=eval_file_path,
         analysis_config=analysis_config,
+        history_file_path=history_file_path,
     )
 
     # batch_load
@@ -70,7 +77,7 @@ if __name__ == "__main__":
 
     # batch_predict
     predicted_sql_list, queried_result_list = asyncio.run(
-        spider_eval.abatch_query(nums=3000)
+        spider_eval.abatch_query(nums=100)
     )
 
     # 写入二进制文件

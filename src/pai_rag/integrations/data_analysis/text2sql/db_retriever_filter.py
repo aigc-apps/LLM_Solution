@@ -111,40 +111,46 @@ class SchemaValueFilter(DBRetrieverFilter):
 
 
 class HistoryFilter(DBRetrieverFilter):
-    def filter(
-        self, db_history_list: List, retrieved_history_nodes: List[NodeWithScore]
-    ):
-        history_pair_nums = len(db_history_list)
-        retrieved_history_list = self._filter_history(
-            db_history_list, retrieved_history_nodes
-        )
-        logger.info(
-            f"History list filtered, number from {history_pair_nums} to {len(retrieved_history_list)}"
-        )
+    def filter(self, retrieved_history_nodes: List[NodeWithScore]):
+        # history_pair_nums = len(db_history_list)
+        retrieved_history_list = self._filter_history(retrieved_history_nodes)
 
         return retrieved_history_list
 
-    def _filter_history(
-        self, db_history_list: List, retrieved_history_nodes: List[NodeWithScore]
-    ) -> List:
+    def _filter_history(self, retrieved_history_nodes: List[NodeWithScore]) -> List:
         """根据retrieve结果缩小db_history"""
-
         if len(retrieved_history_nodes) == 0:
-            logger.info("Empty retrieved_history_nodes, use original history instead.")
-            return db_history_list
-
+            logger.info("Empty retrieved_history_nodes.")
+            return []
         else:
-            retrieved_nodes_list = []
-            for node in retrieved_history_nodes:
-                retrieved_nodes_list.append({"query": node.metadata["query"]})
-
             retrieved_db_history_list = []
-            for item in db_history_list:
-                # 检查 item['query'] 是否在 retrieved_nodes_list 中
-                if any(
-                    item["query"] == filter_item["query"]
-                    for filter_item in retrieved_nodes_list
-                ):
-                    retrieved_db_history_list.append(item)
-
+            for node in retrieved_history_nodes:
+                retrieved_db_history_list.append(
+                    {"query": node.metadata["query"], "SQL": node.metadata["SQL"]}
+                )
             return retrieved_db_history_list
+
+    # def _filter_history(
+    #     self, db_history_list: List, retrieved_history_nodes: List[NodeWithScore]
+    # ) -> List:
+    #     """根据retrieve结果缩小db_history"""
+
+    #     if len(retrieved_history_nodes) == 0:
+    #         logger.info("Empty retrieved_history_nodes, use original history instead.")
+    #         return db_history_list
+
+    #     else:
+    #         retrieved_nodes_list = []
+    #         for node in retrieved_history_nodes:
+    #             retrieved_nodes_list.append({"query": node.metadata["query"]})
+
+    #         retrieved_db_history_list = []
+    #         for item in db_history_list:
+    #             # 检查 item['query'] 是否在 retrieved_nodes_list 中
+    #             if any(
+    #                 item["query"] == filter_item["query"]
+    #                 for filter_item in retrieved_nodes_list
+    #             ):
+    #                 retrieved_db_history_list.append(item)
+
+    #         return retrieved_db_history_list

@@ -33,8 +33,6 @@ from pai_rag.integrations.data_analysis.text2sql.sql_generator import SQLNodeGen
 from pai_rag.integrations.data_analysis.text2sql.utils.constants import (
     DEFAULT_DB_DESCRIPTION_PATH,
     DEFAULT_DB_DESCRIPTION_NAME,
-    DEFAULT_DB_HISTORY_PATH,
-    DEFAULT_DB_HISTORY_NAME,
 )
 
 
@@ -73,15 +71,15 @@ class DBQuery:
                 f"Please load your db info first, {db_structured_description_path} does not exist. "
             )
         self._enable_db_history = db_config.enable_db_history
-        db_query_history_path = os.path.join(
-            DEFAULT_DB_HISTORY_PATH, f"{self._db_name}_{DEFAULT_DB_HISTORY_NAME}"
-        )
-        if self._enable_db_history and os.path.exists(db_query_history_path):
-            with open(db_query_history_path, "r") as f:
-                self._db_history_list = json.load(f)
-        else:
-            self._db_history_list = []
-            logger.info("db_query_history is not enabled and will not be used.")
+        # db_query_history_path = os.path.join(
+        #     DEFAULT_DB_HISTORY_PATH, f"{self._db_name}_{DEFAULT_DB_HISTORY_NAME}"
+        # )
+        # # if self._enable_db_history and os.path.exists(db_query_history_path):
+        # #     with open(db_query_history_path, "r") as f:
+        # #         self._db_history_list = json.load(f)
+        # # else:
+        # #     self._db_history_list = []
+        # #     logger.info("db_query_history is not enabled and will not be used.")
 
         self._keyword_extraction_prompt = (
             keyword_extraction_prompt or DEFAULT_KEYWORD_EXTRACTION_PROMPT
@@ -124,15 +122,18 @@ class DBQuery:
             keywords = []
 
         # 筛选q-sql pair, 可选
-        if (self._enable_db_history) and len(self._db_history_list) != 0:
+        if self._enable_db_history:
             # history info retrieval
             retrieved_history_nodes = self._history_retriever.retrieve_nodes(nl_query)
+            logger.info(
+                f"History nodes retrieved with number {len(retrieved_history_nodes)}"
+            )
             # history filter
             retrieved_history_list = self._history_filter.filter(
-                self._db_history_list, retrieved_history_nodes
+                retrieved_history_nodes
             )
         else:
-            retrieved_history_list = self._db_history_list
+            retrieved_history_list = []
 
         # pre_retrieval, 可选
         if self._enable_db_preretriever:
@@ -190,17 +191,22 @@ class DBQuery:
             keywords = []
 
         # 筛选q-sql pair, 可选
-        if (self._enable_db_history) and len(self._db_history_list) != 0:
+        # if (self._enable_db_history) and len(self._db_history_list) != 0:
+        if self._enable_db_history:
             # history info retrieval
             retrieved_history_nodes = await self._history_retriever.aretrieve_nodes(
                 nl_query
             )
+            logger.info(
+                f"History nodes retrieved with number {len(retrieved_history_nodes)}"
+            )
             # history filter
             retrieved_history_list = self._history_filter.filter(
-                self._db_history_list, retrieved_history_nodes
+                retrieved_history_nodes
             )
         else:
-            retrieved_history_list = self._db_history_list
+            # retrieved_history_list = self._db_history_list
+            retrieved_history_list = []
 
         # pre_retrieval, 可选
         if self._enable_db_preretriever:

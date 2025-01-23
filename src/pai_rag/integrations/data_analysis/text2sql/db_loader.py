@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from loguru import logger
 
 from llama_index.core.llms.llm import LLM
@@ -80,7 +80,7 @@ class DBLoader:
 
         logger.info("db_loader init successfully")
 
-    def load_db_info(self):
+    def load_db_info(self, history_list: Optional[List] = None):
         """
         处理数据库结构描述信息、历史查询和具体值信息, 存储json和索引
         """
@@ -90,28 +90,34 @@ class DBLoader:
 
         # get db_history
         if self._enable_db_history:
-            db_history_list = self._history_collector.collect()
-            logger.info("db_history obtained.")
+            db_history_list = self._history_collector.collect(history_list)
+            logger.info(f"[DBLoader] db_history obtained for {self._db_name}.")
             history_nodes = self._history_node.create_nodes_with_embeddings(
                 db_history_list
             )
+            logger.info(f"[DBLoader] db_history nodes obtained for {self._db_name}.")
             self._history_retriever.get_index(history_nodes)
-            logger.info("db_history index stored.")
+            logger.info(f"[DBLoader] db_history index stored for {self._db_name}.")
 
         # get db_embedding, including db_description, db_history, db_value
         if self._enable_db_embedding:
             description_nodes = self._schema_node.create_nodes_with_embeddings(
                 db_description_dict
             )
+            logger.info(
+                f"[DBLoader] db_description nodes obtained for {self._db_name}."
+            )
             self._schema_retriever.get_index(description_nodes)
-            logger.info("db_description index stored.")
+            logger.info(f"[DBLoader] db_description index stored for {self._db_name}.")
 
             db_value_dict = self._value_collector.collect()
+            logger.info(f"[DBLoader] db_value obtained for {self._db_name}.")
             value_nodes = self._value_node.create_nodes_with_embeddings(db_value_dict)
+            logger.info(f"[DBLoader] db_value nodes obtained for {self._db_name}.")
             self._value_retriever.get_index(value_nodes)
-            logger.info("db_value index stored.")
+            logger.info(f"[DBLoader] db_value index stored for {self._db_name}.")
 
-    async def aload_db_info(self):
+    async def aload_db_info(self, history_list: Optional[List] = None):
         """
         处理数据库结构描述信息、历史查询和具体值信息, 存储json和索引
         """
@@ -121,7 +127,7 @@ class DBLoader:
 
         # get db_history
         if self._enable_db_history:
-            db_history_list = self._history_collector.collect()
+            db_history_list = self._history_collector.collect(history_list)
             logger.info(f"[DBLoader] db_history obtained for {self._db_name}.")
             history_nodes = await self._history_node.acreate_nodes_with_embeddings(
                 db_history_list
@@ -140,6 +146,7 @@ class DBLoader:
             logger.info(f"[DBLoader] db_description index stored for {self._db_name}.")
 
             db_value_dict = self._value_collector.collect()
+            logger.info(f"[DBLoader] db_value obtained for {self._db_name}.")
             value_nodes = await self._value_node.acreate_nodes_with_embeddings(
                 db_value_dict
             )
