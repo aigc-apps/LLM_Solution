@@ -51,12 +51,12 @@ embed_model_dashscope = DashScopeEmbedding(
 
 
 if __name__ == "__main__":
-    database_folder_path = (
-        "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/temp_databases/"
-    )
     # database_folder_path = (
-    #     "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev_databases/"
+    #     "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/temp_databases/"
     # )
+    database_folder_path = (
+        "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev_databases/"
+    )
     eval_file_path = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev.json"
     history_file_path = "/Users/chuyu/Documents/datasets/BIRD/train/train.json"
     analysis_config = {
@@ -84,7 +84,7 @@ if __name__ == "__main__":
 
     # batch_predict
     predicted_sql_list, queried_result_list, db_id_list = asyncio.run(
-        bird_eval.abatch_query(nums=100)
+        bird_eval.abatch_query(nums=500)
     )
 
     # 写入二进制文件
