@@ -2075,13 +2075,13 @@ files = [
 
 [[package]]
 name = "doclayout-yolo"
-version = "0.0.2"
+version = "0.0.2b1"
 description = "DocLayout-YOLO: an effecient and robust document layout analysis method."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "doclayout_yolo-0.0.2-py3-none-any.whl", hash = "sha256:9155d74be92c3a2441ac3dcd7263760637045480b8a4b71bde807976f9e47671"},
-    {file = "doclayout_yolo-0.0.2.tar.gz", hash = "sha256:c7ab629a8fd45eff6fb6c361cce65362b8326203fae891e17a95d731ce5c94c1"},
+    {file = "doclayout_yolo-0.0.2b1-py3-none-any.whl", hash = "sha256:45a15b33847911f48292ffc739694314e4c09b184d2921731c63af6066da2959"},
+    {file = "doclayout_yolo-0.0.2b1.tar.gz", hash = "sha256:ec6d5e124133f69b064013284985ebb61a1e753c12bc63c70a46d6e0ba66e9d9"},
 ]
 
 [package.dependencies]
@@ -4619,12 +4619,13 @@ source = ["Cython (>=3.0.11)"]
 
 [[package]]
 name = "magic-pdf"
-version = "1.0.1"
+version = "1.1.0"
 description = "A practical tool for converting PDF to Markdown"
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "magic_pdf-1.0.1-py3-none-any.whl", hash = "sha256:e817618927d451c310d51f057d36a26dd0407d8bf11a8eecb61dfee18d41642c"},
+    {file = "magic_pdf-1.1.0-py3-none-any.whl", hash = "sha256:b40012d88dc625b230f37eb60fb57ba1d77f7e587ebd533daf49698f1357a2e9"},
+    {file = "magic_pdf-1.1.0.tar.gz", hash = "sha256:c0b3bae7927c7e7223785641ceb1e19bb2eefc2a464627f0676f54872c163a81"},
 ]
 
 [package.dependencies]
@@ -4633,7 +4634,7 @@ boto3 = ">=1.28.43"
 Brotli = ">=1.1.0"
 click = ">=8.1.7"
 detectron2 = {version = "*", optional = true, markers = "extra == \"full\""}
-doclayout-yolo = {version = "0.0.2", optional = true, markers = "extra == \"full\""}
+doclayout-yolo = {version = "0.0.2b1", optional = true, markers = "extra == \"full\""}
 einops = {version = "*", optional = true, markers = "extra == \"full\""}
 fast-langdetect = ">=0.2.3"
 loguru = ">=0.6.0"
@@ -4650,9 +4651,9 @@ paddlepaddle = [
 ]
 "pdfminer.six" = "20231228"
 pydantic = ">=2.7.2"
-PyMuPDF = ">=1.24.9"
+PyMuPDF = ">=1.24.9,<=1.24.14"
 PyYAML = {version = "*", optional = true, markers = "extra == \"full\""}
-rapid-table = {version = "0.3.0", optional = true, markers = "extra == \"full\""}
+rapid-table = {version = ">=1.0.3,<2.0.0", optional = true, markers = "extra == \"full\""}
 rapidocr-onnxruntime = {version = "*", optional = true, markers = "extra == \"full\""}
 rapidocr-paddle = {version = "*", optional = true, markers = "extra == \"full\""}
 scikit-learn = ">=1.0.2"
@@ -4667,7 +4668,7 @@ ultralytics = {version = ">=8.3.48", optional = true, markers = "extra == \"full
 unimernet = {version = "0.2.3", optional = true, markers = "extra == \"full\""}
 
 [package.extras]
-full = ["PyYAML", "accelerate", "detectron2", "doclayout-yolo (==0.0.2)", "einops", "matplotlib", "matplotlib (<=3.9.0)", "openai", "paddleocr (==2.7.3)", "paddlepaddle (==2.6.1)", "paddlepaddle (==3.0.0b1)", "rapid-table (==0.3.0)", "rapidocr-onnxruntime", "rapidocr-paddle", "struct-eqtable (==0.3.2)", "torch (>=2.2.2,<=2.3.1)", "torchvision (>=0.17.2,<=0.18.1)", "ultralytics (>=8.3.48)", "unimernet (==0.2.3)"]
+full = ["PyYAML", "accelerate", "detectron2", "doclayout-yolo (==0.0.2b1)", "einops", "matplotlib", "matplotlib (<=3.9.0)", "openai", "paddleocr (==2.7.3)", "paddlepaddle (==2.6.1)", "paddlepaddle (==3.0.0b1)", "rapid-table (>=1.0.3,<2.0.0)", "rapidocr-onnxruntime", "rapidocr-paddle", "struct-eqtable (==0.3.2)", "torch (>=2.2.2,<=2.3.1)", "torchvision (>=0.17.2,<=0.18.1)", "ultralytics (>=8.3.48)", "unimernet (==0.2.3)"]
 lite = ["paddleocr (==2.7.3)", "paddlepaddle (==2.6.1)", "paddlepaddle (==3.0.0b1)"]
 old-linux = ["albumentations (<=1.4.20)"]
 
@@ -7201,19 +7202,19 @@ model = ["milvus-model (>=0.1.0)"]
 
 [[package]]
 name = "pymupdf"
-version = "1.25.1"
+version = "1.24.14"
 description = "A high performance Python library for data extraction, analysis, conversion & manipulation of PDF (and other) documents."
 optional = false
 python-versions = ">=3.9"
 files = [
-    {file = "pymupdf-1.25.1-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:793f9f6d51029e97851c711b3f6d9fe912313d95a306fbe8b1866f301d0e2bd3"},
-    {file = "pymupdf-1.25.1-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:15e6f4013ad0a029a2221920f9d2081f56dc43259dabfdf5cad7fbf1cee4b5a7"},
-    {file = "pymupdf-1.25.1-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:a39afbd80381f43e30d6eb2ec4613f465f507ac2b76070abdd2da8724f32ef36"},
-    {file = "pymupdf-1.25.1-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:b63f8e9e65b0bda48f9217efd4d2a8c6d7a739dd28baf460c1ae78439b9af489"},
-    {file = "pymupdf-1.25.1-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:a687bd387589e30abd810a78a23341f57f43fa16a4d8d8c0b870bb6d89607343"},
-    {file = "pymupdf-1.25.1-cp39-abi3-win32.whl", hash = "sha256:fc7dbc1aa9e298a4c81084e389c9623c26fcaa232c71efaa073af150069e2221"},
-    {file = "pymupdf-1.25.1-cp39-abi3-win_amd64.whl", hash = "sha256:e2b0b73c0aab0f863e5132c93cfa4607e8129feb1afa3d544b2cf7f172c50b5a"},
-    {file = "pymupdf-1.25.1.tar.gz", hash = "sha256:6725bec0f37c2380d926f792c262693c926af7cc1aa5aa2b8207e771867f015a"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-macosx_10_9_x86_64.whl", hash = "sha256:b3ad7a4f4b607ff97f2e1b8111823dd3797dbb381ec851c3ae4695fea6f68478"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-macosx_11_0_arm64.whl", hash = "sha256:755906af4b4d693552ae5469ba682075853f4dc8a70639affd1bd6c049c5d900"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:37f24108e2e18150fb8d512dcccdfa1e3d9b9dd203ffaa7ffb959bb20aea40b4"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:0de4f5ed903c2be6d0abcccdc796368939b51ce03916eb53292916e3b6ea65d6"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-musllinux_1_2_x86_64.whl", hash = "sha256:2d1b5c47df2f8055de5dedfbd3189c742188261a8c257f406378382adac94cff"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-win32.whl", hash = "sha256:60a7ee7db3e0d3a4dcbe6df2781ba4487acb7e515c64ea9c857504f44effcb25"},
+    {file = "PyMuPDF-1.24.14-cp39-abi3-win_amd64.whl", hash = "sha256:3d1f1ec2fe0249484afde7a0fc02589f19aaeb47c42939d23ae1d012aa1bc59b"},
+    {file = "PyMuPDF-1.24.14.tar.gz", hash = "sha256:0eed9f998525eaf39706dbf2d0cf3162150f0f526e4a36b1748ffa50bde581ae"},
 ]
 
 [[package]]
@@ -7646,20 +7647,23 @@ cffi = {version = "*", markers = "implementation_name == \"pypy\""}
 
 [[package]]
 name = "rapid-table"
-version = "0.3.0"
-description = "Tools for parsing table structures based ONNXRuntime."
+version = "1.0.3"
+description = "Table Recognition"
 optional = false
 python-versions = "<3.13,>=3.6"
 files = [
-    {file = "rapid_table-0.3.0-py3-none-any.whl", hash = "sha256:35aa6fbfd3aa3627312f5471c0f8a5f809d42ca7d204e4974080607012b4be55"},
+    {file = "rapid_table-1.0.3-py3-none-any.whl", hash = "sha256:4ed75cd8592d1985bc9fb5c48b126f213e416661aa154f370fbd4940efd2b87d"},
 ]
 
 [package.dependencies]
-numpy = ">=1.21.6"
+numpy = ">=1.21.6,<2"
 onnxruntime = ">=1.7.0"
 opencv-python = ">=4.5.1.48"
 Pillow = "*"
-PyYAML = ">=6.0"
+requests = "*"
+
+[package.extras]
+torch = ["tokenizers", "torch", "torchvision"]
 
 [[package]]
 name = "rapidfuzz"
@@ -10564,4 +10568,4 @@ testing = ["coverage[toml]", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11.0,<3.12"
-content-hash = "a8eabfde4e156c7099c502143b018f31d65620d7992e7ce9eb2e7f476229cf47"
+content-hash = "99f9cc5b538e26f39f277b370e44722e8c68b486eeb2c28aacfb8878b92455e6"
