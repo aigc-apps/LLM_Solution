@@ -37,28 +37,23 @@ class KeywordExtractor(QueryProcessor):
         )
 
     def process(self, nl_query: QueryBundle, hint: str = None) -> List[str]:
-        # keywords = self._llm.predict(
-        #     prompt=self._keyword_extraction_prompt,
-        #     query_str=nl_query.query_str,
-        #     hint=hint,
-        #     fewshot_examples="",
-        # )
-
-        # sllm = self._llm.as_structured_llm(output_cls=KeywordList)
-        # keyword_list = sllm.predict(
-        #     prompt=self._keyword_extraction_prompt,
-        #     query_str=nl_query.query_str,
-        #     fewshot_examples="",
-        # )
-        # keywords = json.loads(keyword_list)["Keywords"]
         keyword_list_obj = self._llm.structured_predict(
             output_cls=KeywordList,
             prompt=self._keyword_extraction_prompt,
+            llm_kwargs={
+                "tool_choice": {"type": "function", "function": {"name": "KeywordList"}}
+            },
             query_str=nl_query.query_str,
             fewshot_examples="",
+            hint=hint,
         )
-        keywords = keyword_list_obj.Keywords
+        # text_complection = LLMTextCompletionProgram.from_defaults(
+        #         output_cls=KeywordList,
+        #         prompt=self._keyword_extraction_prompt,
+        # )
+        # keyword_list_obj = text_complection(query_str=nl_query.query_str, fewshot_examples="")
 
+        keywords = keyword_list_obj.Keywords
         # later check if parser needed
         # keywords = parse(self, keywords)
         logger.info(
@@ -68,27 +63,17 @@ class KeywordExtractor(QueryProcessor):
         return keywords
 
     async def aprocess(self, nl_query: QueryBundle, hint: str = None) -> List[str]:
-        # keywords = await self._llm.apredict(
-        #     prompt=self._keyword_extraction_prompt,
-        #     query_str=nl_query.query_str,
-        #     hint=hint,
-        #     fewshot_examples="",
-        # )
-        # sllm = self._llm.as_structured_llm(output_cls=KeywordList)
-        # keyword_list = await sllm.apredict(
-        #     prompt=self._keyword_extraction_prompt,
-        #     query_str=nl_query.query_str,
-        #     fewshot_examples="",
-        # )
-        # keywords = json.loads(keyword_list)["Keywords"]
         keyword_list_obj = await self._llm.astructured_predict(
             output_cls=KeywordList,
             prompt=self._keyword_extraction_prompt,
+            llm_kwargs={
+                "tool_choice": {"type": "function", "function": {"name": "KeywordList"}}
+            },
             query_str=nl_query.query_str,
             fewshot_examples="",
+            hint=hint,
         )
         keywords = keyword_list_obj.Keywords
-
         # later check if parser needed
         # keywords = parse(self, keywords)
         logger.info(

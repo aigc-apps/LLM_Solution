@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from loguru import logger
-import json
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
 
@@ -50,17 +49,23 @@ class SchemaSelector(DBInfoSelector):
         column_nums = count_total_columns(db_info)
         schema_description_str = get_schema_desc4llm(db_info)
 
-        sllm = self._llm.as_structured_llm(output_cls=SchemaSelection)
-        selected_output_str = sllm.predict(
+        selected_output_obj = self._llm.structured_predict(
+            output_cls=SchemaSelection,
             prompt=self._db_schema_select_prompt,
+            llm_kwargs={
+                "tool_choice": {
+                    "type": "function",
+                    "function": {"name": "SchemaSelection"},
+                }
+            },
             nl_query=query.query_str,
             hint=hint,
             db_schema=schema_description_str,
         )
-        logger.info(f"selected_output_str: \n{selected_output_str}\n")
+        logger.info(f"selected_output_obj: \n{selected_output_obj}\n")
         # 解析筛选
         selected_db_description_dict = self._filter_selection(
-            selected_output_str, db_info
+            selected_output_obj, db_info
         )
         selected_column_nums = count_total_columns(selected_db_description_dict)
         logger.info(
@@ -73,17 +78,23 @@ class SchemaSelector(DBInfoSelector):
         column_nums = count_total_columns(db_info)
         schema_description_str = get_schema_desc4llm(db_info)
 
-        sllm = self._llm.as_structured_llm(output_cls=SchemaSelection)
-        selected_output_str = await sllm.apredict(
+        selected_output_obj = await self._llm.astructured_predict(
+            output_cls=SchemaSelection,
             prompt=self._db_schema_select_prompt,
+            llm_kwargs={
+                "tool_choice": {
+                    "type": "function",
+                    "function": {"name": "SchemaSelection"},
+                }
+            },
             nl_query=query.query_str,
             hint=hint,
             db_schema=schema_description_str,
         )
-        logger.info(f"selected_output_str: \n{selected_output_str}\n")
+        logger.info(f"selected_output_str: \n{selected_output_obj}\n")
         # 解析筛选
         selected_db_description_dict = self._filter_selection(
-            selected_output_str, db_info
+            selected_output_obj, db_info
         )
         selected_column_nums = count_total_columns(selected_db_description_dict)
         logger.info(
@@ -93,14 +104,14 @@ class SchemaSelector(DBInfoSelector):
         return selected_db_description_dict
 
     def _filter_selection(
-        self, selected_output_str: str, db_description_dict: Dict
+        self, selected_output_obj: str, db_description_dict: Dict
     ) -> Dict:
         """从schema selection的结果筛选db_description"""
-        selected_output_dict = json.loads(selected_output_str)
+        selected_output_list = selected_output_obj.selected_info
         selected_table_col_dict = {}
-        if len(selected_output_dict) > 0:
-            for item in selected_output_dict["selected_info"]:
-                key = (item["table"], item["column"])
+        if len(selected_output_list) > 0:
+            for item in selected_output_list:
+                key = (item.table, item.column)
                 if key not in selected_table_col_dict:
                     selected_table_col_dict[key] = []
             logger.info(

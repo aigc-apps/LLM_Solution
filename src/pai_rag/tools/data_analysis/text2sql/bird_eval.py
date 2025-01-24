@@ -18,7 +18,9 @@ from pai_rag.integrations.data_analysis.text2sql.sql_evaluator import (
 # 移除默认的日志处理器
 logger.remove()
 # 添加一个新的日志处理器，指定最低日志级别为 INFO，并输出到指定文件
-log_file_path = "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/bird_eval.log"  # 指定日志文件路径
+log_file_path = (
+    "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/bird_eval.log"  # 指定日志文件路径
+)
 logger.add(
     log_file_path, level="DEBUG", rotation="50 MB", retention="10 days", enqueue=True
 )
@@ -67,7 +69,7 @@ if __name__ == "__main__":
         "max_val_num": 2000,
         "enable_query_preprocessor": True,
         "enable_db_preretriever": True,
-        "enable_db_selector": False,
+        "enable_db_selector": True,
     }
 
     bird_eval = BirdEvaluator(
