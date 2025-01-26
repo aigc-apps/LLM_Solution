@@ -9,14 +9,14 @@ from pai_rag.core.rag_config_manager import RagConfigManager
 from pai_rag.core.rag_config import RagConfig
 from pai_rag.core.rag_module import resolve_llm
 from pai_rag.integrations.data_analysis.data_analysis_config import SqlAnalysisConfig
-from pai_rag.integrations.data_analysis.data_analysis_tool1 import (
+from pai_rag.integrations.data_analysis.data_analysis_tool import (
     DataAnalysisConnector,
     DataAnalysisLoader,
     DataAnalysisQuery,
 )
 
 _BASE_DIR = Path(__file__).parent.parent
-DEFAULT_APPLICATION_CONFIG_FILE = os.path.join(_BASE_DIR, "config/settings_da.toml")
+DEFAULT_APPLICATION_CONFIG_FILE = os.path.join(_BASE_DIR, "config/settings.toml")
 
 
 cls_cache = {}
@@ -93,7 +93,7 @@ def run(
     question=None,
     stream=False,
 ):
-    print("config_file:", config_file)
+    # print("config_file:", config_file)
     config = RagConfigManager.from_file(config_file).get_value()
     print("config:", config)
     # rag_config = RagConfig.model_validate(config.rag)
@@ -105,23 +105,7 @@ def run(
         da_loader = resolve_data_analysis_loader(config)
         da_loader.load_db_info()
 
-    # print(
-    #     "check instance: ",
-    #     id(da_loader._sql_database),
-    #     id(da_loader._db_loader._schema_retriever),
-    #     id(da_loader._db_loader._history_retriever),
-    #     id(da_loader._db_loader._value_retriever),
-    # )
-
     da_query_engine = resolve_data_analysis_query(config)
-
-    # print(
-    #     "check instance: ",
-    #     id(da_query_engine._sql_database),
-    #     id(da_query_engine._query_retriever._schema_retriever),
-    #     id(da_query_engine._query_retriever._history_retriever),
-    #     id(da_query_engine._query_retriever._value_retriever),
-    # )
 
     if not stream:
         query_bundle = QueryBundle(query_str=question)

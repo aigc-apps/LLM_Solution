@@ -94,7 +94,9 @@ class DefaultSQLRetriever(BaseRetriever):
         # 检查每个模式是否出现在查询中
         for pattern in compiled_patterns:
             if pattern.search(sql_query):
-                print(f"Detected potentially dangerous pattern: {pattern.pattern}")
+                logger.debug(
+                    f"Detected potentially dangerous pattern: {pattern.pattern}"
+                )
                 return False
 
         # 如果没有检测到任何危险模式，则认为查询是安全的
@@ -111,7 +113,7 @@ class DefaultSQLRetriever(BaseRetriever):
 
         # constrain LIMIT in sql_query
         if not self._sanity_check(query_bundle.query_str):
-            raise ValueError("ONLY QUERY ALLOWED")
+            raise ValueError("No INSERT, UPDATE, DELETE, DROP, ALTER, CREATE in query.")
         # if "limit" not in query_bundle.query_str.lower():
         #     query_bundle.query_str = query_bundle.query_str + " limit 100"
         # else:

@@ -24,12 +24,12 @@ import json
 import sqlite3
 import argparse
 
-from pai_rag.integrations.data_analysis.text2sql.evaluations.process_sql import (
+from pai_rag.integrations.data_analysis.text2sql.evaluations.eval_spider.process_sql import (
     get_schema,
     Schema,
     get_sql,
 )
-from pai_rag.integrations.data_analysis.text2sql.evaluations.exec_eval import (
+from pai_rag.integrations.data_analysis.text2sql.evaluations.eval_spider.exec_eval import (
     eval_exec_match,
 )
 

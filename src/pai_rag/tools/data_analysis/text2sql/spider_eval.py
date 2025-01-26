@@ -6,45 +6,36 @@ import sys
 import pickle
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.dashscope import DashScope, DashScopeGenerationModels
-from llama_index.embeddings.dashscope import DashScopeEmbedding
 
-from pai_rag.integrations.data_analysis.text2sql.sql_evaluator import (
+from pai_rag.integrations.llms.pai.pai_llm import PaiLlm
+from pai_rag.integrations.llms.pai.llm_config import (
+    DashScopeLlmConfig,
+)
+from pai_rag.integrations.data_analysis.text2sql.evaluations.spider_evaluator import (
     SpiderEvaluator,
 )
 
 # 移除默认的日志处理器
 logger.remove()
 # 添加一个新的日志处理器，指定最低日志级别为 INFO，并输出到指定文件
-log_file_path = "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/spider_eval.log"  # 指定日志文件路径
+log_file_path = "/tmp/log/spider/spider_eval.log"
 logger.add(
     log_file_path, level="DEBUG", rotation="50 MB", retention="10 days", enqueue=True
 )
-# 添加一个可选的日志处理器，输出到标准错误（如果你仍然希望在控制台看到日志）
+# 添加一个可选的日志处理器，输出到控制台
 logger.add(sys.stderr, level="INFO")
-
 
 # 加载 .env 文件中的环境变量
 load_dotenv()
 
-# 获取环境变量中的 API 密钥
-dashscope_api_key = os.getenv("DASHSCOPE_API_KEY")
 
 if os.path.exists("./model_repository/bge-m3"):
     embed_model_bge = HuggingFaceEmbedding(model_name="./model_repository/bge-m3")
 else:
     embed_model_bge = None
 
-llm = DashScope(
-    model_name=DashScopeGenerationModels.QWEN_MAX,
-    api_key=dashscope_api_key,
-    temperature=0.1,
-    max_tokens=4096,
-)
-embed_model_dashscope = DashScopeEmbedding(
-    api_key=dashscope_api_key,
-    embed_batch_size=10,
-)
+llm_config = DashScopeLlmConfig()
+llm = PaiLlm(llm_config)
 
 
 if __name__ == "__main__":

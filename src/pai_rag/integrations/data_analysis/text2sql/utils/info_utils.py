@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict
 import jieba
 from datasketch import MinHash
 from loguru import logger
@@ -14,7 +14,7 @@ def count_total_columns(db_description_dict: Dict) -> int:
     return total_columns
 
 
-def get_schema_desc4llm(db_description_dict: Dict) -> str:
+def get_schema_desc(db_description_dict: Dict) -> str:
     """get schema description for llm"""
     if len(db_description_dict) == 0:
         raise ValueError("db_description_dict is Empty")
@@ -27,24 +27,18 @@ def get_schema_desc4llm(db_description_dict: Dict) -> str:
         schema_description_str = ""
     # 获取所有表的描述
     all_table_descriptions = []
-    tables = [item["table_name"] for item in db_description_dict["table_info"]]
-    for table_name in tables:
-        all_table_descriptions.append(
-            _get_table_desc(table_name, db_description_dict["table_info"])
-        )
+    for item_table in db_description_dict["table_info"]:
+        all_table_descriptions.append(_get_table_desc(item_table))
     # 拼接所有表的描述
     schema_description_str += "\n".join(all_table_descriptions)
 
     return schema_description_str
 
 
-def _get_table_desc(table_name: str, table_info_list: List) -> str:
+# def _get_table_desc(table_name: str, table_info_list: List) -> str:
+def _get_table_desc(target_table_dict: Dict) -> str:
     """get single table description"""
-
-    table_desc = f"Table {table_name} has columns: "
-    target_table_dict = [
-        table for table in table_info_list if table["table_name"] == table_name
-    ][0]
+    table_desc = f"""Table {target_table_dict["table_name"]} has columns: """
     for column in target_table_dict["column_info"]:
         table_desc += f"""{column["column_name"]} ({column["column_type"]})"""
         if column["primary_key"]:
@@ -156,12 +150,16 @@ def is_chinese_char(char):
 
 def is_chinese_string(value: str) -> bool:
     """检查字符串是否主要由中文字符组成"""
+    if not value:
+        return False
     chinese_count = sum(is_chinese_char(char) for char in value)
     return chinese_count / len(value) > 0.5
 
 
 def is_english_string(value: str) -> bool:
     """检查字符串是否主要由英文字符组成"""
+    if not value:
+        return False
     english_count = sum(c.isascii() for c in value)
     return english_count / len(value) > 0.5
 
@@ -191,9 +189,13 @@ def create_minhash(signature_size: int, value: str, n_gram: int) -> MinHash:
         words_gram.extend(words)
         for w in words_gram:
             m.update(w.encode("utf8"))
-    else:
+    elif is_english_string(value):
         for d in [value[i : i + n_gram] for i in range(len(value) - n_gram + 1)]:
             m.update(d.encode("utf8"))
+    else:
+        raise ValueError(
+            "The input string is blank, or it contains characters that are neither Chinese nor English."
+        )
     return m
 
 

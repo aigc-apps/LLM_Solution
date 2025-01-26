@@ -65,21 +65,36 @@ DEFAULT_DB_SCHEMA_SELECT_PROMPT = PromptTemplate(
 
 
 DEFAULT_TEXT_TO_SQL_PROMPT = PromptTemplate(
-    "给定一个用户问题，请按照以下要求创建一个语法正确的{dialect}查询语句来执行。\n"
-    "要求: \n"
-    "1. 请结合提示充分理解用户问题和具体细节。\n"
-    "1. 只根据用户问题和提示查询特定表中的相关列。\n"
-    "2. 请注意只使用提供数据库信息以及历史查询中看到的列名，不要查询不存在的列。\n"
-    "3. 请注意哪个列位于哪个表中。必要时，请使用表名限定列名。\n\n"
-    "4. 如生成SQL语句中有表名或列名与SQL保留字相同，如order，将该表名或列名加上双引号或反引号\n\n"
-    "用户问题: {query_str} \n"
-    "提示: {hint}\n"
-    "数据表结构信息和数据样例: {db_schema} \n"
-    "历史查询: {db_history} \n"
+    "Given a user question, please create a syntactically correct {dialect} query to execute according to the following requirements.\n"
+    "Requirements:\n"
+    "1. Fully understand the user's question and specific details based on the hint provided.\n"
+    "2. Query only the relevant columns in specific tables based on the user's question and hint.\n"
+    "3. Use only column names from the provided database information and those seen in historical queries; do not query non-existent columns.\n"
+    "4. Pay attention to which columns are in which tables. When necessary, qualify column names with their table names.\n"
+    "5. If any table or column names in the generated SQL statement match SQL reserved words, such as 'order', enclose these names in double quotes or backticks according to the {dialect}.\n\n"
+    "User Question: {query_str}\n"
+    "Hint: {hint}\n"
+    "Database Schema Information and Sample Data: {db_schema}\n"
+    "Historical Queries: {db_history}\n"
     "You are required to use the following format, each taking one line:\n\n"
     "Question: Question here\n"
-    "SQLQuery: SQL Query (end with ;) to run \n\n"
+    "SQLQuery: SQL Query (end with ;) to run\n\n"
 )
+#     "给定一个用户问题，请按照以下要求创建一个语法正确的{dialect}查询语句来执行。\n"
+#     "要求: \n"
+#     "1. 请结合提示充分理解用户问题和具体细节。\n"
+#     "1. 只根据用户问题和提示查询特定表中的相关列。\n"
+#     "2. 请注意只使用提供数据库信息以及历史查询中看到的列名，不要查询不存在的列。\n"
+#     "3. 请注意哪个列位于哪个表中。必要时，请使用表名限定列名。\n\n"
+#     "4. 如生成SQL语句中有表名或列名与SQL保留字相同，如order，将该表名或列名加上双引号或反引号\n\n"
+#     "用户问题: {query_str} \n"
+#     "提示: {hint}\n"
+#     "数据表结构信息和数据样例: {db_schema} \n"
+#     "历史查询: {db_history} \n"
+#     "You are required to use the following format, each taking one line:\n\n"
+#     "Question: Question here\n"
+#     "SQLQuery: SQL Query (end with ;) to run \n\n"
+# )
 
 
 DEFAULT_SQL_REVISION_PROMPT = PromptTemplate(

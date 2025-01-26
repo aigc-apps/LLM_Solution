@@ -8,7 +8,7 @@ from itertools import product
 from collections import defaultdict
 import tqdm
 import random
-from pai_rag.integrations.data_analysis.text2sql.evaluations.parse import (
+from pai_rag.integrations.data_analysis.text2sql.evaluations.eval_spider.parse import (
     get_all_preds_for_execution,
     remove_distinct,
 )

@@ -20,7 +20,7 @@ from pai_rag.integrations.data_analysis.text2sql.utils.sql_utils import (
     DefaultSQLParser,
 )
 from pai_rag.integrations.data_analysis.text2sql.utils.info_utils import (
-    get_schema_desc4llm,
+    get_schema_desc,
 )
 from pai_rag.integrations.data_analysis.text2sql.utils.prompts import (
     DEFAULT_TEXT_TO_SQL_PROMPT,
@@ -117,7 +117,7 @@ class SQLNodeGenerator(SQLGenerator):
         hint: str = None,
     ) -> Tuple[List[NodeWithScore], Dict]:
         # step1: 获得description_str & history_str 作为llm prompt参数
-        schema_description_str = get_schema_desc4llm(selected_db_description_dict)
+        schema_description_str = get_schema_desc(selected_db_description_dict)
         selected_db_history_str = str(selected_db_history_list)
         logger.debug(f"schema_description_str for llm: {schema_description_str}")
         logger.debug(f"selected_db_history_str for llm: {selected_db_history_str}")
@@ -171,7 +171,7 @@ class SQLNodeGenerator(SQLGenerator):
         hint: str = None,
     ) -> Tuple[List[NodeWithScore], Dict]:
         # step1: 获得description_str & history_str 作为llm prompt参数
-        schema_description_str = get_schema_desc4llm(selected_db_description_dict)
+        schema_description_str = get_schema_desc(selected_db_description_dict)
         selected_db_history_str = str(selected_db_history_list)
         logger.debug(f"Schema_description_str for llm: {schema_description_str}.")
         logger.debug(f"Selected_db_history_str for llm: {selected_db_history_str}.")

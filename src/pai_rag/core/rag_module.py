@@ -6,18 +6,11 @@ from pai_rag.core.rag_config import RagConfig
 from pai_rag.core.rag_data_loader import RagDataLoader
 from pai_rag.integrations.agent.pai.pai_agent import PaiAgent
 from pai_rag.integrations.chat_store.pai.pai_chat_store import PaiChatStore
-
-# from pai_rag.integrations.data_analysis.data_analysis_tool import (
-#     DataAnalysisConnector,
-#     DataAnalysisLoader,
-#     DataAnalysisQuery,
-# )
-from pai_rag.integrations.data_analysis.data_analysis_tool1 import (
+from pai_rag.integrations.data_analysis.data_analysis_tool import (
     DataAnalysisConnector,
     DataAnalysisLoader,
     DataAnalysisQuery,
 )
-
 from pai_rag.integrations.embeddings.pai.pai_embedding import PaiEmbedding
 
 # cnclip import should come before others. otherwise will segment fault.

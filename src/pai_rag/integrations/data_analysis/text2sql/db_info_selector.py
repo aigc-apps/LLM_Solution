@@ -12,7 +12,7 @@ from pai_rag.integrations.data_analysis.text2sql.utils.prompts import (
     DEFAULT_DB_SCHEMA_SELECT_PROMPT,
 )
 from pai_rag.integrations.data_analysis.text2sql.utils.info_utils import (
-    get_schema_desc4llm,
+    get_schema_desc,
     count_total_columns,
     extract_subset_from_description,
 )
@@ -47,7 +47,7 @@ class SchemaSelector(DBInfoSelector):
 
     def select(self, query: QueryType, db_info: Dict, hint: str = None):
         column_nums = count_total_columns(db_info)
-        schema_description_str = get_schema_desc4llm(db_info)
+        schema_description_str = get_schema_desc(db_info)
 
         selected_output_obj = self._llm.structured_predict(
             output_cls=SchemaSelection,
@@ -76,7 +76,7 @@ class SchemaSelector(DBInfoSelector):
 
     async def aselect(self, query: QueryType, db_info: Dict, hint: str = None):
         column_nums = count_total_columns(db_info)
-        schema_description_str = get_schema_desc4llm(db_info)
+        schema_description_str = get_schema_desc(db_info)
 
         selected_output_obj = await self._llm.astructured_predict(
             output_cls=SchemaSelection,
