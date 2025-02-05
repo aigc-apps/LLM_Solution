@@ -98,6 +98,8 @@ tablestore = "^6.1.0"
 anyio = "^4.6.2.post1"
 mistletoe = "^1.4.0"
 html2text = "^2024.2.26"
+dashvector = "^1.0.18"
+dashtext = "^0.0.7"
 
 [tool.poetry.scripts]
 pai_rag = "pai_rag.main:run"
