@@ -60,7 +60,7 @@ class BaseEvaluator:
 
     async def compute_retrieval_metrics(self, qcap_sample):
         metrics_results = {}
-        reference_node_ids = qcap_sample.get_reference_node_ids()
+        reference_node_ids = qcap_sample.qca.get_reference_node_ids()
         predicted_node_ids = qcap_sample.get_predicted_node_ids()
         for metric in self.retrieval_evaluators:
             metric_score = metric.compute(reference_node_ids, predicted_node_ids)
@@ -78,8 +78,8 @@ class BaseEvaluator:
         query = qcap_sample.qca.query.query_text
         reference_answer = qcap_sample.qca.answer.answer_text
         response_answer = qcap_sample.prediction.answer.answer_text
-        contexts = qcap_sample.get_reference_node_texts()
-        reference_image_url_list = qcap_sample.get_reference_image_url_list()
+        contexts = qcap_sample.qca.get_reference_node_texts()
+        reference_image_url_list = qcap_sample.qca.get_reference_image_url_list()
         metrics_results = {}
         for metric in self.response_evaluators:
             if self.enable_multi_modal:
@@ -116,13 +116,13 @@ class BaseEvaluator:
         return response_eval_example
 
     async def compute_e2e_metrics(self, qcap_sample):
-        reference_node_ids = qcap_sample.get_reference_node_ids()
+        reference_node_ids = qcap_sample.qca.get_reference_node_ids()
         predicted_node_ids = qcap_sample.get_predicted_node_ids()
         query = qcap_sample.qca.query.query_text
         reference_answer = qcap_sample.qca.answer.answer_text
         response_answer = qcap_sample.prediction.answer.answer_text
-        contexts = qcap_sample.get_reference_node_texts()
-        reference_image_url_list = qcap_sample.get_reference_image_url_list()
+        contexts = qcap_sample.qca.get_reference_node_texts()
+        reference_image_url_list = qcap_sample.qca.get_reference_image_url_list()
 
         metrics_results = {}
         for metric in self.retrieval_evaluators:

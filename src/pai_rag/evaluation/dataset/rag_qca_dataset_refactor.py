@@ -101,24 +101,24 @@ class QcaSample(BaseModel):
     contexts: Optional[List[Context]] = None
     answer: Optional[Answer] = None
 
-    # 额外的验证，确保当 type 为 TextNode 时必须包含 text 字段，
-    # 当 type 为 ImageNode 时必须包含 image_url 字段。
-    @field_validator("contexts", mode="before")
-    def validate_context_fields(cls, contexts):
-        if contexts is None:
-            return contexts
-        for context in contexts:
-            if context["type"] == "TextNode":
-                if "text" not in context:
-                    raise ValueError('type 为 "TextNode" 时必须包含 "text" 字段')
-                if "metadata" not in context:
-                    raise ValueError('type 为 "TextNode" 时必须包含 "metadata" 字段')
-            elif context["type"] == "ImageNode":
-                if "image_url" not in context:
-                    raise ValueError('type 为 "ImageNode" 时必须包含 "image_url" 字段')
-            else:
-                raise ValueError('type 必须是 "TextNode" 或 "ImageNode"')
-        return contexts
+    def get_reference_node_ids(self):
+        return [context.node_id for context in self.contexts]
+
+    def get_reference_node_texts(self):
+        text_list = []
+        for context in self.contexts:
+            if type(context) is TextNodeContext:
+                text_list.append(context.text)
+        return text_list
+
+    def get_reference_image_url_list(self):
+        image_url_list = []
+        for context in self.contexts:
+            if type(context) is TextNodeContext:
+                image_url_list.extend(context.metadata["image_url_list"])
+            elif type(context) is ImageNodeContext:
+                image_url_list.append(context.metadata["image_url"])
+        return image_url_list
 
 
 class QcapSample(BaseModel):
@@ -131,27 +131,8 @@ class QcapSample(BaseModel):
     prediction: Prediction
     mode: str
 
-    def get_reference_node_ids(self):
-        return [context.node_id for context in self.qca.contexts]
-
     def get_predicted_node_ids(self):
         return [context.node_id for context in self.prediction.contexts]
-
-    def get_reference_node_texts(self):
-        text_list = []
-        for context in self.qca.contexts:
-            if type(context) is TextNodeContext:
-                text_list.append(context.text)
-        return text_list
-
-    def get_reference_image_url_list(self):
-        image_url_list = []
-        for context in self.qca.contexts:
-            if type(context) is TextNodeContext:
-                image_url_list.extend(context.metadata["image_url_list"])
-            elif type(context) is ImageNodeContext:
-                image_url_list.append(context.metadata["image_url"])
-        return image_url_list
 
 
 class QcaDataset(BaseModel):

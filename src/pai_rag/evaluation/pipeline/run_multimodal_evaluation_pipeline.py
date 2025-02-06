@@ -35,7 +35,7 @@ def run_multimodal_evaluation_pipeline(
             multimodal_qca_generator.agenerate_predicted_multimodal_dataset_only_via_vlm()
         )
         asyncio.run(evaluator.aevaluation_for_response())
-        return None
+        return
 
     assert (oss_path is not None) or (
         data_path is not None
@@ -56,4 +56,3 @@ def run_multimodal_evaluation_pipeline(
     _ = asyncio.run(multimodal_qca_generator.agenerate_all_dataset())
     asyncio.run(evaluator.aevaluation_for_retrieval())
     asyncio.run(evaluator.aevaluation_for_response())
-    return None

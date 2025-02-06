@@ -49,7 +49,3 @@ def run_rag_evaluation_pipeline(
     asyncio.run(evaluator.aevaluation_for_retrieval())
     asyncio.run(evaluator.aevaluation_for_response())
     asyncio.run(evaluator.aevaluation_for_all())
-
-    # return {"retrieval": retrieval_result, "response": response_result}
-
-    return None

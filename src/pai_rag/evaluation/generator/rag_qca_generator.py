@@ -416,12 +416,8 @@ class RagQcaGenerator:
     async def agenerate_predicted_multimodal_qca_sample_only_via_vlm(
         self, qca_sample, **response_kwargs: Any
     ):
-        image_url_list = []
-        reference_contexts = []
-        for context in qca_sample.contexts:
-            reference_contexts.append(context.text)
-            if context.metadata.get("image_url_list", None):
-                image_url_list.extend(context.metadata.get("image_url_list", None))
+        image_url_list = qca_sample.get_reference_image_url_list()
+        reference_contexts = qca_sample.get_reference_node_texts()
 
         image_documents = load_image_urls(image_url_list)
         image_context_str = "\n\n".join(image_url_list)
