@@ -42,7 +42,6 @@ class ViewModel(BaseModel):
     llm_api_key: str = None
     llm_model_name: str = "default"
     llm_temperature: float = 0.1
-    show_thoughts: bool = False
 
     # mllm
     use_mllm: bool = False

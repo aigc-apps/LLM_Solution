@@ -29,46 +29,74 @@ def respond(input_elements: List[Any]):
     except RagApiError as api_error:
         raise gr.Error(f"HTTP {api_error.code} Error: {api_error.msg}")
 
-    query_type = update_dict["query_type"]
-    msg = update_dict["question"]
     chatbot = update_dict["chatbot"]
+    if not update_dict["include_history"]:
+        chatbot, _ = clear_history(chatbot)
+
+    query_type = update_dict["query_type"]
+    question = update_dict["question"]
+    q_msg = {"content": question, "role": "user"}
+    chatbot.append(q_msg)
     is_streaming = update_dict["is_streaming"]
     index_name = update_dict["chat_index"]
     citation = update_dict["citation"]
 
-    if not update_dict["include_history"]:
-        chatbot, _ = clear_history(chatbot)
     if chatbot is not None:
-        chatbot.append((msg, ""))
+        chatbot.append(
+            {"content": "", "role": "assistant", "metadata": {"status": "pending"}}
+        )
         yield chatbot
 
     try:
         if query_type == "LLM":
             response_gen = rag_client.query_llm(
-                msg,
+                question,
                 with_history=update_dict["include_history"],
                 stream=is_streaming,
             )
         elif query_type == "Retrieval":
-            response_gen = rag_client.query_vector(msg, index_name=index_name)
+            response_gen = rag_client.query_vector(question, index_name=index_name)
 
         elif query_type == "RAG (Search Web)":
             response_gen = rag_client.query_search(
-                msg,
+                question,
                 with_history=update_dict["include_history"],
                 stream=is_streaming,
                 citation=citation,
             )
         else:
             response_gen = rag_client.query(
-                msg,
+                question,
                 with_history=update_dict["include_history"],
                 stream=is_streaming,
                 citation=citation,
                 index_name=index_name,
             )
+
+        is_thinking = False
         for resp in response_gen:
-            chatbot[-1] = (msg, resp.result)
+            if resp.delta == "<think>":
+                chatbot[-1]["metadata"]["title"] = "thinking..."
+                chatbot[-1]["metadata"]["log"] = ""
+                is_thinking = True
+
+            elif resp.delta == "</think>":
+                chatbot[-1]["metadata"]["title"] = "thought"
+                chatbot[-1]["metadata"]["status"] = "done"
+                is_thinking = False
+                chatbot.append(
+                    {
+                        "content": "",
+                        "role": "assistant",
+                        "metadata": {"status": "pending"},
+                    }
+                )
+
+            else:
+                if is_thinking:
+                    chatbot[-1]["metadata"]["log"] += resp.delta
+                else:
+                    chatbot[-1]["content"] += resp.delta
             yield chatbot
 
     except RagApiError as api_error:
@@ -110,12 +138,6 @@ def create_chat_tab() -> Dict[str, Any]:
                 label="Display Image",
                 info="Inference with multi-modal LLM.",
                 elem_id="need_image",
-            )
-            show_thoughts = gr.Checkbox(
-                label="Display Thoughts",
-                info="Show intermediate outputs",
-                elem_id="show_thoughts",
-                value=True,
             )
 
             with gr.Column(visible=True) as vs_col:
@@ -393,7 +415,7 @@ def create_chat_tab() -> Dict[str, Any]:
             )
 
         with gr.Column(scale=8):
-            chatbot = gr.Chatbot(height=500, elem_id="chatbot")
+            chatbot = gr.Chatbot(height=500, elem_id="chatbot", type="messages")
             with gr.Row():
                 include_history = gr.Checkbox(
                     label="Chat history",
@@ -411,7 +433,6 @@ def create_chat_tab() -> Dict[str, Any]:
 
         chat_args = (
             {
-                show_thoughts,
                 text_qa_template,
                 multimodal_qa_template,
                 citation_text_qa_template,

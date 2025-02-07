@@ -17,6 +17,13 @@ from pai_rag.integrations.llms.pai.open_ai_alike_multi_modal import (
 from loguru import logger
 
 
+def _make_openai_compatible_base_url(base_url: str):
+    if base_url.endswith("/v1"):
+        return base_url
+
+    return urljoin(base_url.rstrip("/") + "/", "v1")
+
+
 def create_llm(llm_config: PaiBaseLlmConfig):
     if isinstance(llm_config, OpenAILlmConfig):
         logger.info(
@@ -65,7 +72,7 @@ def create_llm(llm_config: PaiBaseLlmConfig):
         )
         llm = OpenAILike(
             model=llm_config.model,
-            api_base=urljoin(llm_config.endpoint, "v1"),
+            api_base=_make_openai_compatible_base_url(llm_config.endpoint),
             temperature=llm_config.temperature,
             system_prompt=llm_config.system_prompt,
             api_key=llm_config.token,
@@ -74,7 +81,7 @@ def create_llm(llm_config: PaiBaseLlmConfig):
             reuse_client=False,
         )
     elif isinstance(llm_config, OpenAICompatibleLlmConfig):
-        api_base = urljoin(llm_config.base_url, "v1")
+        api_base = _make_openai_compatible_base_url(llm_config.base_url)
         logger.info(
             f"""
             [Parameters][LLM:OpenAICompatible]
@@ -154,7 +161,7 @@ def create_multi_modal_llm(llm_config: PaiBaseLlmConfig):
             max_new_tokens=llm_config.max_tokens,
         )
     elif isinstance(llm_config, OpenAICompatibleLlmConfig):
-        api_base = urljoin(llm_config.base_url, "v1")
+        api_base = _make_openai_compatible_base_url(llm_config.base_url)
         logger.info(
             f"""
             [Parameters][LLM:OpenAICompatible]
