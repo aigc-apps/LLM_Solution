@@ -172,17 +172,21 @@ Token选择DeepSeek模型的调用**Token**。
 
 ### 常见问题
 
-Q. 配置完DeepSeek调用API，查询访问超时并报错。
-A. 请检查DeepSeek服务调用地址是否可以访问。如果当前RAG服务已经开通公网，则直接填入公网调用地址。没有开通公网，请确认两个服务在同一个VPC内。开通公网可参考[EAS配置公网连接](https://help.aliyun.com/zh/pai/user-guide/configure-network-connectivity#1d893e761dnkz)。
+##### 1. 配置完DeepSeek调用API，查询访问超时并报错。
 
-Q. 配置完DeepSeek调用API，没有超时，直接报错。
-A. 请检查模型名称是否正确，VLLM部署的模型名称需要保证完全一致（区分大小写），其他部署模式模型名称为`default`。
+Answer: 请检查DeepSeek服务调用地址是否可以访问。如果当前RAG服务已经开通公网，则直接填入公网调用地址。没有开通公网，请确认两个服务在同一个VPC内。开通公网可参考[EAS配置公网连接](https://help.aliyun.com/zh/pai/user-guide/configure-network-connectivity#1d893e761dnkz)。
 
-Q. 向量数据库该怎么选择？
-A. 默认提供了FAISS选项，数据存在本地，**服务重启数据会丢失**，需要重新上传。如果挂载了OSS存储，会把数据传到OSS中，服务重启还会保存。推荐使用FAISS来做测试，正式使用建议使用Elasticsearch，Milvus等云上托管向量库。
+##### 2. 配置完DeepSeek调用API，没有超时，直接报错。
 
-Q. 服务重启，配置怎么没有了？需要重新配置。
-A. 服务配置信息默认存在本地，服务重启会丢失。如果挂载了OSS存储，会把数据传到OSS中，服务重启还会保存。挂载方式见[挂载OSS存储](#挂载oss存储)
+Answer: 请检查模型名称是否正确，VLLM部署的模型名称需要保证完全一致（区分大小写），其他部署模式模型名称为`default`。
+
+##### 3. 向量数据库该怎么选择？
+
+Answer: 默认提供了FAISS选项，数据存在本地，**服务重启数据会丢失**，需要重新上传。如果挂载了OSS存储，会把数据传到OSS中，服务重启还会保存。推荐使用FAISS来做测试，正式使用建议使用Elasticsearch，Milvus等云上托管向量库。
+
+##### 4. 服务重启，配置怎么没有了？需要重新配置。
+
+Answer: 服务配置信息默认存在本地，服务重启会丢失。如果挂载了OSS存储，会把数据传到OSS中，服务重启还会保存。挂载方式见[挂载OSS存储](#挂载oss存储)
 
 ### 附录
 
