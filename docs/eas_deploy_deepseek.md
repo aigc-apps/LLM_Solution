@@ -112,6 +112,9 @@ EAS服务支持部署如下的模型列表和最低配置。
       "script": "pai_rag serve"
     }
   ],
+  "labels": {
+    "PAI_RAG_VERSION": "0.1_custom"
+  },
   "metadata": {
     "cpu": 16,
     "enable_webservice": true,
