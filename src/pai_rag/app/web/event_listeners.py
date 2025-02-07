@@ -9,8 +9,6 @@ from pai_rag.app.web.ui_constants import (
     DEFAULT_EMBED_SIZE,
     DEFAULT_HF_EMBED_MODEL,
     EMBEDDING_DIM_DICT,
-    LLM_MODEL_KEY_DICT,
-    MLLM_MODEL_KEY_DICT,
     EMBEDDING_TYPE_DICT,
 )
 from pai_rag.core.rag_index_manager import RagIndexEntry
@@ -103,33 +101,6 @@ def choose_use_mllm(value):
         return gr.update(visible=False)
 
 
-def change_llm(value):
-    eas_visible = value.lower() == "paieas"
-    api_visible = value.lower() != "paieas"
-    model_options = LLM_MODEL_KEY_DICT.get(value, [])
-    cur_model = model_options[0] if model_options else ""
-    return [
-        gr.update(visible=eas_visible),
-        gr.update(visible=eas_visible),
-        gr.update(visible=eas_visible),
-        gr.update(choices=model_options, value=cur_model, visible=api_visible),
-        gr.update(visible=api_visible),
-    ]
-
-
-def change_mllm(value):
-    eas_visible = value.lower() == "paieas"
-    api_visible = value.lower() != "paieas"
-    model_options = MLLM_MODEL_KEY_DICT.get(value, [])
-    cur_model = model_options[0] if model_options else ""
-    return [
-        gr.update(visible=eas_visible),
-        gr.update(visible=api_visible),
-        gr.update(choices=model_options, value=cur_model),
-        gr.update(visible=api_visible),
-    ]
-
-
 def get_default_index_entry(index_map):
     index_name = f"INDEX_{len(index_map.indexes)}"
     return RagIndexEntry(
@@ -200,6 +171,7 @@ def save_config(input_elements: List[Any]):
             if element.elem_id == "oss_sk":
                 value_sk = value
             update_dict[element.elem_id] = value
+        print(update_dict)
         rag_client.patch_config(update_dict)
         return [
             gr.update(

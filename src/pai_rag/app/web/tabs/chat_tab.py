@@ -111,6 +111,12 @@ def create_chat_tab() -> Dict[str, Any]:
                 info="Inference with multi-modal LLM.",
                 elem_id="need_image",
             )
+            show_thoughts = gr.Checkbox(
+                label="Display Thoughts",
+                info="Show intermediate outputs",
+                elem_id="show_thoughts",
+                value=True,
+            )
 
             with gr.Column(visible=True) as vs_col:
                 vec_model_argument = gr.Accordion(
@@ -258,7 +264,7 @@ def create_chat_tab() -> Dict[str, Any]:
             with gr.Column(visible=True) as llm_col:
                 model_argument = gr.Accordion("Inference Parameters of LLM", open=False)
                 with model_argument:
-                    llm_temp = gr.Slider(
+                    llm_temperature = gr.Slider(
                         minimum=0,
                         maximum=1,
                         step=0.001,
@@ -266,7 +272,7 @@ def create_chat_tab() -> Dict[str, Any]:
                         elem_id="llm_temperature",
                         label="Temperature (choose between 0 and 1)",
                     )
-                llm_args = {llm_temp}
+                llm_args = {llm_temperature}
 
             with gr.Column(visible=False) as search_col:
                 search_model_argument = gr.Accordion(
@@ -405,6 +411,7 @@ def create_chat_tab() -> Dict[str, Any]:
 
         chat_args = (
             {
+                show_thoughts,
                 text_qa_template,
                 multimodal_qa_template,
                 citation_text_qa_template,

@@ -149,41 +149,28 @@ def create_setting_tab() -> Dict[str, Any]:
             """
 
         with gr.Column(variant="panel"):
-            with gr.Row():
+            with gr.Column(variant="panel"):
                 _ = gr.Markdown(value="\N{WHITE MEDIUM STAR} **Large Language Model**")
-                llm = gr.Radio(
-                    ["paieas", "dashscope"],
-                    label="LLM Model Source",
-                    elem_id="llm",
-                    interactive=True,
-                )
-                llm_eas_url = gr.Textbox(
-                    label="EAS Url",
-                    elem_id="llm_eas_url",
-                    interactive=True,
-                )
-                llm_eas_token = gr.Textbox(
-                    label="EAS Token",
-                    elem_id="llm_eas_token",
-                    type="password",
-                    interactive=True,
-                )
-                llm_eas_model_name = gr.Textbox(
-                    label="EAS Model name",
-                    placeholder="Not Required",
-                    elem_id="llm_eas_model_name",
-                    interactive=True,
-                )
-                llm_api_model_name = gr.Dropdown(
-                    label="LLM Model Name",
-                    elem_id="llm_api_model_name",
-                )
-                llm_api_key = gr.Textbox(
-                    label="LLM API Key",
-                    elem_id="llm_api_key",
-                    type="password",
-                    interactive=True,
-                )
+                with gr.Row():
+                    llm_base_url = gr.Textbox(
+                        label="LLM Base URL",
+                        elem_id="llm_base_url",
+                        interactive=True,
+                        placeholder="Open AI compatible url, e.g. https://api.openai.com/v1",
+                    )
+                    llm_api_key = gr.Textbox(
+                        label="API Key",
+                        elem_id="llm_api_key",
+                        type="password",
+                        interactive=True,
+                    )
+                    llm_model_name = gr.Textbox(
+                        label="Model Name",
+                        elem_id="llm_model_name",
+                        placeholder="Model Name, e.g. qwen-max, gpt-4",
+                        interactive=True,
+                    )
+
             with gr.Column(variant="panel"):
                 _ = gr.Markdown(
                     value="\N{WHITE MEDIUM STAR} **(Optional) Multi-Modal Large Language Model**"
@@ -194,46 +181,24 @@ def create_setting_tab() -> Dict[str, Any]:
                     container=False,
                 )
                 with gr.Row(visible=False, elem_id="use_mllm_col") as use_mllm_col:
-                    mllm = gr.Radio(
-                        ["paieas", "dashscope"],
-                        label="LLM Model Source",
-                        elem_id="mllm",
+                    mllm_base_url = gr.Textbox(
+                        label="Multimodal-LLM Base URL",
+                        elem_id="mllm_base_url",
+                        interactive=True,
+                        placeholder="Open AI compatible url, e.g. https://api.openai.com/v1",
+                    )
+                    mllm_api_key = gr.Textbox(
+                        label="API Key",
+                        elem_id="mllm_api_key",
+                        type="password",
                         interactive=True,
                     )
-                    with gr.Row(
-                        visible=(mllm == "paieas"), elem_id="m_eas_col"
-                    ) as m_eas_col:
-                        mllm_eas_url = gr.Textbox(
-                            label="EAS Url",
-                            elem_id="mllm_eas_url",
-                            interactive=True,
-                        )
-                        mllm_eas_token = gr.Textbox(
-                            label="EAS Token",
-                            elem_id="mllm_eas_token",
-                            type="password",
-                            interactive=True,
-                        )
-                        mllm_eas_model_name = gr.Textbox(
-                            label="EAS Model Name",
-                            placeholder="Not Required",
-                            elem_id="mllm_eas_model_name",
-                            interactive=True,
-                        )
-                    with gr.Row(
-                        visible=(mllm == "dashscope"), elem_id="api_mllm_col"
-                    ) as api_mllm_col:
-                        mllm_api_model_name = gr.Dropdown(
-                            label="LLM Model Name",
-                            elem_id="mllm_api_model_name",
-                        )
-                        mllm_api_key = gr.Textbox(
-                            label="MultiModal-LLM API Key",
-                            elem_id="mllm_api_key",
-                            type="password",
-                            interactive=True,
-                        )
-
+                    mllm_model_name = gr.Textbox(
+                        label="Multimodal-LLM Model Name",
+                        elem_id="mllm_model_name",
+                        interactive=True,
+                        placeholder="Model Name, e.g. qwen-vl-max",
+                    )
             with gr.Column(scale=5, variant="panel"):
                 _ = gr.Markdown(
                     value="\N{WHITE MEDIUM STAR} **(Optional, for saving image & load data) OSS Bucket**"
@@ -270,18 +235,12 @@ def create_setting_tab() -> Dict[str, Any]:
                 )
 
             llm_components = [
-                llm,
-                llm_eas_url,
-                llm_eas_token,
-                llm_eas_model_name,
-                llm_api_model_name,
+                llm_base_url,
+                llm_model_name,
                 llm_api_key,
                 use_mllm,
-                mllm,
-                mllm_eas_url,
-                mllm_eas_token,
-                mllm_eas_model_name,
-                mllm_api_model_name,
+                mllm_base_url,
+                mllm_model_name,
                 mllm_api_key,
                 use_oss,
                 oss_ak,
@@ -298,24 +257,6 @@ def create_setting_tab() -> Dict[str, Any]:
                 outputs=[use_mllm_col],
             )
 
-            llm.input(
-                fn=ev_listeners.change_llm,
-                inputs=llm,
-                outputs=[
-                    llm_eas_url,
-                    llm_eas_token,
-                    llm_eas_model_name,
-                    llm_api_model_name,
-                    llm_api_key,
-                ],
-            )
-
-            mllm.input(
-                fn=ev_listeners.change_mllm,
-                inputs=mllm,
-                outputs=[m_eas_col, api_mllm_col, mllm_api_model_name, mllm_api_key],
-            )
-
             save_btn = gr.Button("Save Llm Setting", variant="primary")
             save_state = gr.Textbox(
                 label="Connection Info: ", container=False, visible=False
@@ -330,8 +271,6 @@ def create_setting_tab() -> Dict[str, Any]:
     elems.update(vector_db_components)
     elems.update(
         {
-            m_eas_col.elem_id: m_eas_col,
-            api_mllm_col.elem_id: api_mllm_col,
             use_oss_col.elem_id: use_oss_col,
             use_mllm_col.elem_id: use_mllm_col,
         }

@@ -251,7 +251,12 @@ class RagWebClient:
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
+                if chunk_response.delta == "<think>":
+                    full_content += "\n---Start thinking---\n"
+                elif chunk_response.delta == "</think>":
+                    full_content += "\n---Finish thinking---\n"
+                else:
+                    full_content += chunk_response.delta
                 chunk_response.delta = full_content
                 yield self._format_rag_response(
                     text, chunk_response, with_history=with_history, stream=stream
@@ -284,7 +289,12 @@ class RagWebClient:
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
+                if chunk_response.delta == "<think>":
+                    full_content += "\n---Start thinking---\n"
+                elif chunk_response.delta == "</think>":
+                    full_content += "\n---Finish thinking---\n"
+                else:
+                    full_content += chunk_response.delta
                 chunk_response.delta = full_content
                 yield self._format_rag_response(text, chunk_response, stream=stream)
 
@@ -312,7 +322,12 @@ class RagWebClient:
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
+                if chunk_response.delta == "<think>":
+                    full_content += "\n---Start thinking---\n"
+                elif chunk_response.delta == "</think>":
+                    full_content += "\n---Finish thinking---\n"
+                else:
+                    full_content += chunk_response.delta
                 chunk_response.delta = full_content
                 yield self._format_rag_response(text, chunk_response, stream=stream)
 
@@ -347,7 +362,12 @@ class RagWebClient:
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
+                if chunk_response.delta == "<think>":
+                    full_content += "\n---Start thinking---\n"
+                elif chunk_response.delta == "</think>":
+                    full_content += "\n---Finish thinking---\n"
+                else:
+                    full_content += chunk_response.delta
                 chunk_response.delta = full_content
                 yield self._format_rag_response(
                     text, chunk_response, with_history=with_history, stream=stream
