@@ -146,11 +146,12 @@ EAS服务支持部署如下的模型列表和最低配置。
 
 5. 配置RAG使用DeepSeek服务
 
-在Web应用中，LLM选择**paieas**，
-EAS Url填入部署完成的DeepSeek模型的**VPC调用地址**（url最后需加上/v1后缀），
-Token选择DeepSeek模型的调用**Token**。
+在Web应用中，如图所示配置
 
-如果是vllm部署，模型名称需填入上述模型名字，其他部署模式直接填**default**即可。
+- LLM选择**paieas**
+- EAS Url填入部署完成的DeepSeek模型的**VPC调用地址**，⚠️需要注意：**url最后需加上"/v1"后缀**
+- Token选择DeepSeek模型的调用**Token**。
+- 如果是vllm部署，模型名称需填入上述模型名字，其他部署模式直接填**default**即可。
 
 <img src="./figures/deepseek/llm_config.png" width="800px" />
 
