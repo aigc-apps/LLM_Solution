@@ -1,6 +1,7 @@
 from typing import Dict, Any, List
 import gradio as gr
 from pai_rag.app.web.rag_client import RagApiError, rag_client
+from loguru import logger
 
 
 def clear_history(chatbot):
@@ -104,6 +105,7 @@ def respond(input_elements: List[Any]):
     except Exception as e:
         raise gr.Error(f"Error: {e}")
     finally:
+        logger.info(f"Chatbot finished: {chatbot}")
         yield chatbot
 
 
@@ -498,4 +500,5 @@ def create_chat_tab() -> Dict[str, Any]:
             search_api_key.elem_id: search_api_key,
             search_count.elem_id: search_count,
             model_reranker_col.elem_id: model_reranker_col,
+            llm_temperature.elem_id: llm_temperature,
         }

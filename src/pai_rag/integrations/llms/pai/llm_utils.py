@@ -93,7 +93,7 @@ def create_llm(llm_config: PaiBaseLlmConfig):
         )
         llm = OpenAILike(
             model=llm_config.model,
-            api_base=llm_config.base_url,
+            api_base=api_base,
             temperature=llm_config.temperature,
             system_prompt=llm_config.system_prompt,
             is_chat_model=True,

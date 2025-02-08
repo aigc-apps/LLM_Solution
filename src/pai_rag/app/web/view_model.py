@@ -158,6 +158,8 @@ class ViewModel(BaseModel):
                 "DASHSCOPE_API_KEY"
             )
 
+        view_model.llm_temperature = config.llm.temperature
+
         view_model.use_mllm = config.synthesizer.use_multimodal_llm
 
         if isinstance(config.multimodal_llm, PaiEasLlmConfig):
