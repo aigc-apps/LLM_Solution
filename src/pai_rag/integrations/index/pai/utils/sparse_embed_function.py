@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import os
-from typing import List, Optional, List, Dict
+from typing import List, Optional, Dict
 from pai_rag.utils.constants import DEFAULT_MODEL_DIR
 
 from loguru import logger

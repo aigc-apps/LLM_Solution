@@ -5,6 +5,7 @@ An index that is built within DashVector.
 """
 
 import math
+import importlib
 from typing import Any, List, Optional
 
 import numpy as np
@@ -30,15 +31,15 @@ from pai_rag.integrations.index.pai.utils.sparse_embed_function import (
     get_default_sparse_embedding_function,
 )
 
-DEFAULT_BATCH_SIZE = 100
-DEFAULT_NODE_ID_KEY = "id"
-
 try:
     from dashtext import combine_dense_and_sparse
 except Exception:
     combine_dense_and_sparse = None
 
 from dashvector import Client, Collection, Doc
+
+DEFAULT_BATCH_SIZE = 100
+DEFAULT_NODE_ID_KEY = "id"
 
 
 def _to_dashvector_filter(
@@ -100,17 +101,8 @@ class DashVectorVectorStore(BasePydanticVectorStore):
             sparse_embedding_function=sparse_embedding_function,
         )
 
-        try:
-            import dashvector
-        except ImportError:
-            raise ImportError(
-                "`dashvector` package not found, please run `pip install dashvector`"
-            )
-
         if enable_sparse:
-            try:
-                import dashtext
-            except ImportError:
+            if importlib.util.find_spec("dashtext") is None:
                 raise ImportError(
                     "`dashtext` package not found, please run `pip install dashtext`"
                 )
@@ -365,7 +357,7 @@ class DashVectorVectorStore(BasePydanticVectorStore):
         if not self.enable_sparse:
             return None
 
-        # support asymetric sparse embedding like BM25
+        # support asymmetric sparse embedding like BM25
         _encode_func = (
             self.sparse_embedding_function.encode_documents
             if is_document
