@@ -1,10 +1,6 @@
 from pydantic import BaseModel
 from typing import Any, Dict
 from collections import defaultdict
-from pai_rag.app.web.ui_constants import (
-    LLM_MODEL_KEY_DICT,
-    MLLM_MODEL_KEY_DICT,
-)
 import pandas as pd
 import os
 import re
@@ -19,7 +15,11 @@ from pai_rag.integrations.data_analysis.data_analysis_config import (
     PandasAnalysisConfig,
     SqliteAnalysisConfig,
 )
-from pai_rag.integrations.llms.pai.llm_config import DashScopeLlmConfig, PaiEasLlmConfig
+from pai_rag.integrations.llms.pai.llm_config import (
+    DashScopeLlmConfig,
+    PaiEasLlmConfig,
+    SupportedLlmType,
+)
 from pai_rag.integrations.postprocessor.pai.pai_postprocessor import (
     SimilarityPostProcessorConfig,
 )
@@ -38,22 +38,17 @@ def _transform_to_dict(config):
 
 class ViewModel(BaseModel):
     # llm
-    llm: str = "PaiEas"
-    llm_eas_url: str = None
-    llm_eas_token: str = None
-    llm_eas_model_name: str = "default"
+    llm_base_url: str = None
     llm_api_key: str = None
-    llm_api_model_name: str = None
+    llm_model_name: str = "default"
     llm_temperature: float = 0.1
 
     # mllm
     use_mllm: bool = False
-    mllm: str = None
-    mllm_eas_url: str = None
-    mllm_eas_token: str = None
-    mllm_eas_model_name: str = "default"
+    mllm_base_url: str = None
     mllm_api_key: str = None
-    mllm_api_model_name: str = None
+    mllm_model_name: str = "default"
+    mllm_temperature: float = 0.1
 
     # oss
     use_oss: bool = False
@@ -146,29 +141,37 @@ class ViewModel(BaseModel):
         view_model = ViewModel()
 
         # llm
-        view_model.llm = config.llm.source.value
         if isinstance(config.llm, PaiEasLlmConfig):
-            view_model.llm_eas_model_name = config.llm.model
-            view_model.llm_eas_url = config.llm.endpoint
-            view_model.llm_eas_token = config.llm.token
+            view_model.llm_model_name = config.llm.model
+            view_model.llm_base_url = config.llm.endpoint
+            view_model.llm_api_key = config.llm.token
         elif isinstance(config.llm, DashScopeLlmConfig):
             view_model.llm_api_key = config.llm.api_key or os.getenv(
                 "DASHSCOPE_API_KEY"
             )
-            view_model.llm_api_model_name = config.llm.model
+            view_model.llm_base_url = config.llm.base_url
+            view_model.llm_model_name = config.llm.model
+        else:
+            view_model.llm_model_name = config.llm.model
+            view_model.llm_base_url = config.llm.base_url
+            view_model.llm_api_key = config.llm.api_key or os.getenv(
+                "DASHSCOPE_API_KEY"
+            )
+
+        view_model.llm_temperature = config.llm.temperature
 
         view_model.use_mllm = config.synthesizer.use_multimodal_llm
 
-        view_model.mllm = config.multimodal_llm.source.value
         if isinstance(config.multimodal_llm, PaiEasLlmConfig):
-            view_model.mllm_eas_url = config.multimodal_llm.endpoint
-            view_model.mllm_eas_model_name = config.multimodal_llm.model
-            view_model.mllm_eas_token = config.multimodal_llm.token
+            view_model.mllm_base_url = config.multimodal_llm.endpoint
+            view_model.mllm_model_name = config.multimodal_llm.model
+            view_model.mllm_api_key = config.multimodal_llm.token
         else:
-            view_model.mllm_api_model_name = config.multimodal_llm.model
+            view_model.mllm_model_name = config.multimodal_llm.model
             view_model.mllm_api_key = config.multimodal_llm.api_key or os.getenv(
                 "DASHSCOPE_API_KEY"
             )
+            view_model.mllm_base_url = config.multimodal_llm.base_url
 
         view_model.use_oss = (
             config.oss_store.bucket is not None and config.oss_store.bucket != ""
@@ -271,24 +274,16 @@ class ViewModel(BaseModel):
     def to_app_config(self):
         config = recursive_dict()
 
-        config["llm"]["source"] = self.llm
-        config["llm"]["endpoint"] = self.llm_eas_url
-        config["llm"]["token"] = self.llm_eas_token
+        config["llm"]["source"] = SupportedLlmType.openai_compatible
+        config["llm"]["base_url"] = self.llm_base_url
         config["llm"]["api_key"] = self.llm_api_key
         config["llm"]["temperature"] = self.llm_temperature
-        if self.llm.lower() == "paieas":
-            config["llm"]["model"] = self.llm_eas_model_name
-        else:
-            config["llm"]["model"] = self.llm_api_model_name
+        config["llm"]["model"] = self.llm_model_name
 
-        config["multimodal_llm"]["source"] = self.mllm
-        config["multimodal_llm"]["endpoint"] = self.mllm_eas_url
-        config["multimodal_llm"]["token"] = self.mllm_eas_token
+        config["multimodal_llm"]["source"] = SupportedLlmType.openai_compatible
+        config["multimodal_llm"]["base_url"] = self.mllm_base_url
         config["multimodal_llm"]["api_key"] = self.mllm_api_key
-        if self.mllm.lower() == "paieas":
-            config["multimodal_llm"]["model"] = self.mllm_eas_model_name
-        else:
-            config["multimodal_llm"]["model"] = self.mllm_api_model_name
+        config["multimodal_llm"]["model"] = self.mllm_model_name
 
         if os.getenv("OSS_ACCESS_KEY_ID") is None and self.oss_ak:
             os.environ["OSS_ACCESS_KEY_ID"] = self.oss_ak
@@ -478,50 +473,20 @@ class ViewModel(BaseModel):
 
     def to_component_settings(self) -> Dict[str, Dict[str, Any]]:
         settings = {}
-        settings["llm"] = {"value": self.llm}
-        settings["llm_eas_url"] = {
-            "value": self.llm_eas_url,
-            "visible": self.llm.lower() == "paieas",
-        }
-        settings["llm_eas_token"] = {
-            "value": self.llm_eas_token,
-            "visible": self.llm.lower() == "paieas",
-        }
+        settings["llm_base_url"] = {"value": self.llm_base_url}
         settings["llm_api_key"] = {
-            "value": self.llm_api_key or os.getenv("DASHSCOPE_API_KEY"),
-            "visible": self.llm.lower() != "paieas",
+            "value": self.llm_api_key or os.getenv("DASHSCOPE_API_KEY")
         }
-        if self.llm.lower() == "paieas" and not self.llm_eas_model_name:
-            self.llm_eas_model_name = "default"
 
-        settings["llm_eas_model_name"] = {
-            "value": self.llm_eas_model_name,
-            "visible": self.llm.lower() == "paieas",
-        }
-        settings["llm_api_model_name"] = {
-            "value": self.llm_api_model_name,
-            "choices": LLM_MODEL_KEY_DICT.get(self.llm, []),
-            "visible": self.llm.lower() != "paieas",
-        }
+        settings["llm_model_name"] = {"value": self.llm_model_name}
+        settings["llm_temperature"] = {"value": self.llm_temperature}
 
         settings["use_mllm"] = {"value": self.use_mllm}
         settings["use_mllm_col"] = {"visible": self.use_mllm}
 
-        settings["mllm"] = {"value": self.mllm}
-        settings["mllm_eas_url"] = {"value": self.mllm_eas_url}
-        settings["mllm_eas_token"] = {"value": self.mllm_eas_token}
-        settings["mllm_eas_model_name"] = {"value": self.mllm_eas_model_name}
-        settings["mllm_api_model_name"] = {
-            "value": self.mllm_api_model_name,
-            "choices": MLLM_MODEL_KEY_DICT.get(self.mllm, []),
-            "visible": self.mllm.lower() != "paieas",
-        }
-        settings["mllm_api_key"] = {
-            "value": self.mllm_api_key or os.getenv("DASHSCOPE_API_KEY"),
-            "visible": self.mllm.lower() != "paieas",
-        }
-        settings["m_eas_col"] = {"visible": self.mllm == "paieas"}
-        settings["api_mllm_col"] = {"visible": self.mllm == "dashscope"}
+        settings["mllm_base_url"] = {"value": self.mllm_base_url}
+        settings["mllm_api_key"] = {"value": self.mllm_api_key}
+        settings["mllm_model_name"] = {"value": self.mllm_model_name}
 
         settings["use_oss"] = {"value": self.use_oss}
         settings["use_oss_col"] = {"visible": self.use_oss}

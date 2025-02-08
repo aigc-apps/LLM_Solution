@@ -67,7 +67,13 @@ The response should be concise to keep json complete。
 
 CONDENSE_QUESTION_CHAT_ENGINE_PROMPT = PromptTemplate(
     """\
-Please play the role of an intelligent search rewriting and completion robot. According to the user's chat history and the corresponding new question, please first rewrite the subject inheritance of the new question, and then complete the context information. Note: Do not change the meaning of the new question, the answer should be as concise as possible, do not directly answer the question, and do not output more content.
+Please play the role of an intelligent search rewriting and completion robot.
+According to the user's chat history,
+please rewrite the new question into a condensed question by resolving references from context.
+Note: Do not change the meaning of the new question, the answer should be as concise as possible, do not directly answer the question, and do not output more content.
+
+Please think carefully and give your answer using the same language as the <New question>
+
 Example:
 <Chat history>
 User: What did you do this morning?
@@ -76,8 +82,8 @@ Assistant: Go play basketball
 <New question>
 User: Is it fun?
 
-Answer:
-Answer: Is playing basketball fun?
+<Condensed question>
+Is playing basketball fun?
 
 Now it's your turn:
 <Chat history>
@@ -86,7 +92,7 @@ Now it's your turn:
 <New question>
 {question}
 
-Please think carefully and give your answer using the same language as the <New question>:
+<Condensed question>
 """
 )
 
