@@ -180,7 +180,6 @@ vector_store.type = [FAISS, Hologres, ElasticSearch, AnalyticDB, Milvus, Tablest
 
 其中，endpoint 和 api_key 需要手动开通并创建 DashVector Cluster 后获取，参考 [文档](https://help.aliyun.com/document_detail/2631966.html)。对于 collection_name和 partition_name，如果留空则使用默认配置（collection: "pai_rag", partition: "default"）。如果指定的collection和partition不存在，则会自动创建，可在DashVector控制台中进行管理。
 
-
 该设置也可在网页中配置。
 
 ## rag.node_parser

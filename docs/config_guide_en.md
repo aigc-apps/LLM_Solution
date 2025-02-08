@@ -182,7 +182,6 @@ If vector_store.type = "DashVector", you need to provide the following informati
 
 In which, the endpoint and api_key need to be manually activated and obtained after creating a DashVector Cluster, refer to the [documentation](https://help.aliyun.com/document_detail/2631966.html). For collection_name and partition_name, if left blank, default configurations will be used (collection: "pai_rag", partition: "default"). If the specified collection and partition do not exist, they will be automatically created and can be managed in the DashVector console.
 
-
 This setting is also available in webui.
 
 ## rag.node_parser

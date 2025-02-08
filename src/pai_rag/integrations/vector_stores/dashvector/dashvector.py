@@ -5,11 +5,11 @@ An index that is built within DashVector.
 """
 
 import math
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, List, Optional
 
 import numpy as np
-from llama_index.core.bridge.pydantic import Field, PrivateAttr
-from llama_index.core.schema import BaseNode, TextNode
+from llama_index.core.bridge.pydantic import PrivateAttr
+from llama_index.core.schema import BaseNode
 from llama_index.core.utils import iter_batch
 from llama_index.core.vector_stores.types import (
     BasePydanticVectorStore,
@@ -20,8 +20,6 @@ from llama_index.core.vector_stores.types import (
 )
 from llama_index.core.vector_stores.utils import (
     DEFAULT_DOC_ID_KEY,
-    DEFAULT_EMBEDDING_KEY,
-    DEFAULT_TEXT_KEY,
     metadata_dict_to_node,
     node_to_metadata_dict,
 )

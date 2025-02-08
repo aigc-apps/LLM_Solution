@@ -217,7 +217,7 @@ def create_dashvector(
     partition_name = dashvector_config.partition_name
     if partition_name == "":
         partition_name = None
-    
+
     enable_sparse = not is_image_store
 
     dashvector_store = DashVectorVectorStore(
