@@ -162,6 +162,7 @@ def change_vectordb_conn(vectordb_type):
     opensearch_visible = False
     postgresql_visible = False
     tablestore_visible = False
+    dashvector_visible = False
     if vectordb_type.lower() == "analyticdb":
         adb_visible = True
     elif vectordb_type.lower() == "hologres":
@@ -178,7 +179,8 @@ def change_vectordb_conn(vectordb_type):
         postgresql_visible = True
     elif vectordb_type.lower() == "tablestore":
         tablestore_visible = True
-
+    elif vectordb_type.lower() == "dashvector":
+        dashvector_visible = True
     return [
         gr.update(visible=adb_visible),
         gr.update(visible=hologres_visible),
@@ -188,6 +190,7 @@ def change_vectordb_conn(vectordb_type):
         gr.update(visible=opensearch_visible),
         gr.update(visible=postgresql_visible),
         gr.update(visible=tablestore_visible),
+        gr.update(visible=dashvector_visible),
     ]
 
 

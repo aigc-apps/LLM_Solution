@@ -95,6 +95,8 @@ mistletoe = "^1.4.0"
 html2text = "^2024.2.26"
 sqlparse = "^0.5.3"
 func-timeout = "^4.3.5"
+dashvector = "^1.0.18"
+dashtext = "^0.0.7"
 
 [tool.poetry.scripts]
 pai_rag = "pai_rag.main:run"
