@@ -474,7 +474,7 @@ class SQLNodeGenerator(SQLGenerator):
             ] = sql_query_str
             retrieved_nodes[0].metadata["query_tables"] = query_tables
             logger.debug(
-                f"> Whole SQL query result: {retrieved_nodes[0].metadata['query_output']}\n"
+                f"> Whole SQL query result: {retrieved_nodes[0].metadata['query_output'][0:1000]}\n"
             )
         # 没有找到table，新旧sql_query一样，不再通过_sql_retriever执行，直接retrieved_nodes
         else:

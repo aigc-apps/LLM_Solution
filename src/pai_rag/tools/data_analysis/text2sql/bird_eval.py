@@ -8,21 +8,20 @@ import sys
 
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-from pai_rag.integrations.llms.pai.llm_config import (
-    DashScopeLlmConfig,
-)
+from pai_rag.integrations.llms.pai.llm_config import DashScopeLlmConfig
 from pai_rag.integrations.llms.pai.pai_llm import PaiLlm
 from pai_rag.integrations.data_analysis.text2sql.evaluations.bird_evaluator import (
     BirdEvaluator,
 )
 
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # 移除默认的日志处理器
 logger.remove()
 # 添加一个新的日志处理器，指定最低日志级别为 INFO，并输出到指定文件
 log_file_path = "/tmp/log/bird/bird_eval.log"
 logger.add(
-    log_file_path, level="DEBUG", rotation="50 MB", retention="10 days", enqueue=True
+    log_file_path, level="DEBUG", rotation="100 MB", retention="10 days", enqueue=True
 )
 # 添加一个可选的日志处理器，输出到控制台
 logger.add(sys.stderr, level="INFO")
@@ -38,25 +37,20 @@ if os.path.exists("./model_repository/bge-m3"):
 else:
     embed_model_bge = None
 
-llm_config = DashScopeLlmConfig()
+llm_config = DashScopeLlmConfig(max_tokens=2000, model="qwen-max")
 llm = PaiLlm(llm_config)
 
 
 if __name__ == "__main__":
-    database_folder_path = (
-        "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/temp_databases/"
-    )
-    # database_folder_path = (
-    #     "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev_databases/"
-    # )
-    eval_file_path = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev.json"
-    history_file_path = "/Users/chuyu/Documents/datasets/BIRD/train/train.json"
+    database_folder_path = "/tmp/datasets/BIRD/dev_20240627/dev_databases/"
+    eval_file_path = "/tmp/datasets/BIRD/dev_20240627/dev.json"
+    history_file_path = "/tmp/datasets/BIRD/train/train.json"
     analysis_config = {
         "enable_enhanced_description": False,
         "enable_db_history": True,
         "enable_db_embedding": True,
         "max_col_num": 100,
-        "max_val_num": 2000,
+        "max_val_num": 1000,
         "enable_query_preprocessor": True,
         "enable_db_preretriever": True,
         "enable_db_selector": True,
@@ -76,20 +70,18 @@ if __name__ == "__main__":
 
     # batch_predict
     predicted_sql_list, queried_result_list, db_id_list = asyncio.run(
-        bird_eval.abatch_query(nums=500)
+        bird_eval.abatch_query(num_start=0, num_end=10)
     )
 
     # 写入二进制文件
     with open(
-        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/predicted_sql_list.pkl",
+        "/tmp/text2sql_evaluation/bird/predicted_sql_list.pkl",
         "wb",
     ) as file:
         pickle.dump(predicted_sql_list, file)
 
     # save result
-    predicted_file = (
-        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/predict_dev.json"
-    )
+    predicted_file = "/tmp/text2sql_evaluation/bird/predict_dev.json"
     directory = os.path.dirname(predicted_file)
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -103,9 +95,7 @@ if __name__ == "__main__":
     print(f"predicted_sql_list have been written to {predicted_file}")
 
     # batch_evaluate
-    gold_file = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/"
-    # table_file = "/Users/chuyu/Documents/datasets/BIRD/dev_20240627/dev_tables.json"
-    # predicted_file = "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/bird/predict_dev.json"
+    gold_file = "/tmp/datasets/BIRD/dev_20240627/"
     bird_eval.batch_evaluate(
         predicted_sql_path=predicted_file,
         ground_truth_path=gold_file,

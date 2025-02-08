@@ -53,14 +53,35 @@ Only output the Python list, no explanations needed.
 )
 
 
+# DEFAULT_DB_SCHEMA_SELECT_PROMPT = PromptTemplate(
+#     "以下是用户数据库信息描述: \n"
+#     "数据表结构信息和数据样例: {db_schema} \n"
+#     "请学习理解该数据的结构和内容, 根据用户问题和提示, 筛选出有用的表和列信息。\n"
+#     "如有必要, 请将用户问题拆解, 一步步思考, 返回可能有用的数据表名和相关列名。\n\n"
+#     "用户问题: {nl_query}\n"
+#     "提示: {hint}\n"
+#     "回答: \n"
+# )
+
 DEFAULT_DB_SCHEMA_SELECT_PROMPT = PromptTemplate(
-    "以下是用户数据库信息描述: \n"
-    "数据表结构信息和数据样例: {db_schema} \n"
-    "请学习理解该数据的结构和内容, 根据用户问题和提示, 筛选出有用的表和列信息。\n"
-    "如有必要, 请将用户问题拆解, 一步步思考, 返回可能有用的数据表名和相关列名。\n\n"
-    "用户问题: {nl_query}\n"
-    "提示: {hint}\n"
-    "回答: \n"
+    """
+You are an expert and very smart data analyst.\n
+Your task is to examine the provided database schema, understand the posed question, and use the hint to pinpoint the specific columns within tables that are essential for crafting a SQL query to answer the question.\n
+Database Schema Overview: {db_schema}\n\n
+This schema offers an in-depth description of the database’s architecture, detailing tables, columns, primary keys, foreign keys, and any pertinent information regarding relationships or constraints.
+Special attention should be given to the examples listed beside each column, as they directly hint at which columns are relevant to our query.
+For key phrases mentioned in the question, we have provided the most similar values within the columns denoted by "– examples" in front of the corresponding column names.
+This is a critical hint to identify the columns that will be used in the SQL query.\n\n
+Question: {nl_query}\n
+Hint: {hint}\n
+The hint aims to direct your focus towards the specific elements of the database schema that are crucial for answering the question effectively.\n\n
+Task:\n
+Based on the database schema, question, and hint provided, your task is to identify all and only the columns that are essential for crafting a SQL query to answer the question.\n
+For each of the selected columns, firstly think why exactly it is necessary for answering the question. Your reasoning should be concise and clear, demonstrating a logical connection between the columns and the question asked.\n
+Tip: \n
+If you are choosing a column for filtering a value within that column, make sure that column has the value as an example.
+No need to output the reasoning for each column, only output the selected tables and columns.\n\n
+"""
 )
 
 
@@ -69,13 +90,15 @@ DEFAULT_TEXT_TO_SQL_PROMPT = PromptTemplate(
     "Requirements:\n"
     "1. Fully understand the user's question and specific details based on the hint provided.\n"
     "2. Query only the relevant columns in specific tables based on the user's question and hint.\n"
-    "3. Use only column names from the provided database information and those seen in historical queries; do not query non-existent columns.\n"
-    "4. Pay attention to which columns are in which tables. When necessary, qualify column names with their table names.\n"
-    "5. If any table or column names in the generated SQL statement match SQL reserved words, such as 'order', enclose these names in double quotes or backticks according to the {dialect}.\n\n"
+    "3. Historical queries can be used as a reference to help generate the sql query.\n"
+    "4. Use only column names from the provided database schema information. Do not query non-existent columns.\n"
+    "5. Pay attention to which columns are in which tables. When necessary, qualify column names with their table names.\n"
+    "6. If any table or column names in the generated SQL statement match SQL reserved words, such as ORDER, enclose these names in double quotes or backticks according to the {dialect}.\n\n"
     "User Question: {query_str}\n"
     "Hint: {hint}\n"
     "Database Schema Information and Sample Data: {db_schema}\n"
     "Historical Queries: {db_history}\n"
+    "Take a deep breath and think step by step to find the correct SQL query but no need to output the chain of thought reasoning."
     "You are required to use the following format, each taking one line:\n\n"
     "Question: Question here\n"
     "SQLQuery: SQL Query (end with ;) to run\n\n"
@@ -107,6 +130,7 @@ DEFAULT_SQL_REVISION_PROMPT = PromptTemplate(
     "5. Predicted query should return all of the information asked in the question without any missing or extra information.\n"
     "6. No matter of how many things the question asks, you should only return one SQL query as the answer having all the information asked in the question, separated by a comma.\n"
     "7. When ORDER BY is used, just include the column name in the ORDER BY in the SELECT clause when explicitly asked in the question. Otherwise, do not include the column name in the SELECT clause.\n\n"
+    "8. If execution result contains 'no such column', pay attention to which columns are in which tables from the provided schema information. Do not query non-existent columns.."
     "Question: {query_str}\n"
     "Hint: {hint}\n"
     "Database schema description: {db_schema}\n"

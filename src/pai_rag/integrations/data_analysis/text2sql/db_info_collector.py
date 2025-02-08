@@ -529,7 +529,7 @@ class ValueCollector(DBInfoCollector):
         # 筛选是string类型但不是primary_key的column
         for column in table["column_info"]:
             if (total_column_count > self._max_col_num) or (
-                total_value_count > self._max_val_num
+                total_value_count > self._max_val_num * self._max_col_num
             ):
                 logger.warning(
                     f"""{self._db_name}, {table["table_name"]}: Maximum limit reached, column_count is {total_column_count}, value_count is {total_value_count}."""

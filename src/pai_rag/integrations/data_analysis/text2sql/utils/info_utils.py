@@ -176,7 +176,11 @@ def create_minhash(signature_size: int, value: str, n_gram: int) -> MinHash:
     Returns:
         MinHash: The MinHash object for the input string.
     """
+
     m = MinHash(num_perm=signature_size)
+    if not value:
+        # Return a default MinHash object if the input string is empty
+        return m
     if is_chinese_string(value):
         words = list(jieba.cut(value, cut_all=True))
         # 生成 n-gram
@@ -194,7 +198,7 @@ def create_minhash(signature_size: int, value: str, n_gram: int) -> MinHash:
             m.update(d.encode("utf8"))
     else:
         raise ValueError(
-            "The input string is blank, or it contains characters that are neither Chinese nor English."
+            "The input string contains characters that are neither Chinese nor English."
         )
     return m
 

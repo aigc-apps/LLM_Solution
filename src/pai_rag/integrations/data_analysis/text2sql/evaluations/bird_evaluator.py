@@ -4,6 +4,8 @@ from tqdm import tqdm
 import json
 import asyncio
 from loguru import logger
+import traceback
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from llama_index.core.llms.llm import LLM
 from llama_index.core.base.embeddings.base import BaseEmbedding
@@ -187,7 +189,10 @@ class BirdEvaluator(SQLEvaluator):
     #         )
     #         await db_loader.aload_db_info()
 
-    async def abatch_query(self, nums: int):
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def abatch_query(self, num_start: int, num_end: int):
         with open(self._eval_file_path, "r") as f:
             eval_list = json.load(f)
 
@@ -201,11 +206,15 @@ class BirdEvaluator(SQLEvaluator):
                     logger.info(f"Successfully processed query {index}")
                     return result
                 except Exception as e:
-                    logger.error(f"Error processing query {index}: {e}")
+                    # logger.error(f"Error processing query {index}: {e}")
+                    error_message = f"Error processing query {index}: {e}"
+                    stack_trace = traceback.format_exc()
+                    logger.error(f"{error_message}\nStack Trace:\n{stack_trace}")
                     return (index, None, None, None)  # 返回默认值或特殊标记
 
         tasks = [
-            limited_query(i, eval_item) for i, eval_item in enumerate(eval_list[0:nums])
+            limited_query(i, eval_item)
+            for i, eval_item in enumerate(eval_list[num_start:num_end])
         ]
         # 并发运行所有任务并收集带索引的结果
         results = await asyncio.gather(*tasks)

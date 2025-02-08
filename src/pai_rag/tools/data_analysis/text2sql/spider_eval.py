@@ -39,16 +39,15 @@ llm = PaiLlm(llm_config)
 
 
 if __name__ == "__main__":
-    # database_folder_path = "/Users/chuyu/Documents/datasets/spider_data/test_database"
-    database_folder_path = "/Users/chuyu/Documents/datasets/temp_test"
-    eval_file_path = "/Users/chuyu/Documents/datasets/spider_data/test.json"
-    history_file_path = "/Users/chuyu/Documents/datasets/spider_data/train_spider.json"
+    database_folder_path = "/tmp/datasets/spider_data/test_database"
+    eval_file_path = "/tmp/datasets/spider_data/test.json"
+    history_file_path = "/tmp/datasets/spider_data/train_spider.json"
     analysis_config = {
         "enable_enhanced_description": False,
         "enable_db_history": True,
         "enable_db_embedding": True,
         "max_col_num": 100,
-        "max_val_num": 10000,
+        "max_val_num": 1000,
         "enable_query_preprocessor": True,
         "enable_db_preretriever": True,
         "enable_db_selector": False,
@@ -73,15 +72,13 @@ if __name__ == "__main__":
 
     # 写入二进制文件
     with open(
-        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/predicted_sql_list.pkl",
+        "/tmp/text2sql_evaluation/spider/predicted_sql_list.pkl",
         "wb",
     ) as file:
         pickle.dump(predicted_sql_list, file)
 
     # save result
-    predicted_file = (
-        "/Users/chuyu/Documents/rag_doc/text2sql_evaluation/spider/predict_qwenmax.txt"
-    )
+    predicted_file = "/tmp/text2sql_evaluation/spider/predict_qwenmax.txt"
     with open(predicted_file, "w", encoding="utf-8") as file:
         for item in predicted_sql_list:
             if item:
@@ -90,8 +87,8 @@ if __name__ == "__main__":
     print(f"predicted_sql_list have been written to {predicted_file}")
 
     # batch_evaluate
-    gold_file = "/Users/chuyu/Documents/datasets/spider_data/test_gold.sql"
-    table_file = "/Users/chuyu/Documents/datasets/spider_data/test_tables.json"
+    gold_file = "/tmp/datasets/spider_data/test_gold.sql"
+    table_file = "/tmp/datasets/spider_data/test_tables.json"
 
     spider_eval.batch_evaluate(
         gold_file=gold_file,
