@@ -98,9 +98,11 @@ def respond(input_elements: List[Any]):
         chatbot.append((question, ""))
 
     try:
+        content = ""
         response_gen = rag_client.query_data_analysis(question, stream=True)
         for resp in response_gen:
-            chatbot[-1] = (question, resp.result)
+            content += resp.delta
+            chatbot[-1] = (question, content)
             yield chatbot
     except RagApiError as api_error:
         raise gr.Error(f"HTTP {api_error.code} Error: {api_error.msg}")

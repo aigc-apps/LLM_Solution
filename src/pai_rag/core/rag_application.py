@@ -30,6 +30,7 @@ import os
 from loguru import logger
 from enum import Enum
 from uuid import uuid4
+import re
 
 DEFAULT_RAG_INDEX_FILE = "localdata/default_rag_indexes.json"
 
@@ -73,6 +74,7 @@ async def event_generator_async(
             )
 
     if chat_store:
+        content = re.sub(r"<think>.*?</think>\n*", "", content, flags=re.DOTALL)
         chat_store.add_message(
             session_id, ChatMessage(role=MessageRole.ASSISTANT, content=content)
         )
@@ -94,6 +96,7 @@ class RagApplication:
         self.name = "RagApplication"
         self.config = config
         index_manager.add_default_index(self.config)
+        _ = resolve_query_engine(self.config)
 
     def refresh(self, config: RagConfig):
         self.config = config
@@ -248,11 +251,14 @@ class RagApplication:
         }
 
         if not query.stream:
+            content = re.sub(
+                r"<think>.*?</think>\n*", "", response.response, flags=re.DOTALL
+            )
             chat_store.add_message(
                 session_id,
-                ChatMessage(role=MessageRole.ASSISTANT, content=response.response),
+                ChatMessage(role=MessageRole.ASSISTANT, content=content),
             )
-            return RagResponse(answer=response.response, **result_info)
+            return RagResponse(answer=content, **result_info)
         else:
             return event_generator_async(
                 response=response,

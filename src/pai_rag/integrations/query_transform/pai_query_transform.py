@@ -19,6 +19,7 @@ from llama_index.core.callbacks.base import CallbackManager
 from llama_index.core.prompts import PromptTemplate
 from pai_rag.utils.messages_utils import parse_chat_messages
 from loguru import logger
+import re
 
 DEFAULT_FUSION_NUM_QUERIES = 4
 
@@ -194,6 +195,11 @@ class PaiCondenseQueryTransform(PaiBaseQueryTransform):
             chat_history=chat_history_str,
         )
 
+        # 修复thought输出
+        query_bundle_str = re.sub(
+            r"<think>.*?</think>\n*", "", query_bundle_str, flags=re.DOTALL
+        )
+
         return QueryBundle(
             query_str=query_bundle_str,
             custom_embedding_strs=[query_bundle_str],
@@ -238,6 +244,10 @@ class PaiCondenseQueryTransform(PaiBaseQueryTransform):
             self._condense_question_prompt,
             question=query_str,
             chat_history=chat_history_str,
+        )
+        # 修复thought输出
+        query_bundle_str = re.sub(
+            r"<think>.*?</think>\n*", "", query_bundle_str, flags=re.DOTALL
         )
 
         return QueryBundle(

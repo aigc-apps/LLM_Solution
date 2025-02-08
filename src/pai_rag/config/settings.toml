@@ -27,7 +27,7 @@ type = "SimpleDirectoryReader"
 # model = "bge-m3"
 # embed_batch_size = 10
 [rag.embedding]
-source = "DashScope"
+source = "huggingface"
 embed_batch_size = 10
 enable_sparse = false
 

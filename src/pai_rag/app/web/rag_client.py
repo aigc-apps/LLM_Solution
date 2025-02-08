@@ -118,7 +118,7 @@ class RagWebClient:
         return urljoin(self.endpoint, "api/v1/health")
 
     def _format_rag_response(
-        self, question, response, with_history: bool = False, stream: bool = False
+        self, response, with_history: bool = False, stream: bool = False
     ):
         if stream:
             text = response["delta"]
@@ -199,15 +199,11 @@ class RagWebClient:
                 content_list.append(content)
             referenced_docs = "".join(content_list)
 
-        formatted_answer = ""
-        if with_history and "new_query" in response:
-            new_query = response["new_query"]
-            formatted_answer += f"**Query Transformation**: {new_query} \n\n"
-        formatted_answer += f"**Answer**: {text} \n\n"
+        formatted_answer = text
         if referenced_docs:
-            formatted_answer += f"**Reference**:\n {referenced_docs}"
+            formatted_answer += f"\n\n**Reference**:\n {referenced_docs}"
 
-        response["result"] = formatted_answer
+        response["delta"] = formatted_answer
 
         return response
 
@@ -243,18 +239,15 @@ class RagWebClient:
         if not stream:
             response = dotdict(json.loads(r.text))
             yield self._format_rag_response(
-                text, response, with_history=with_history, stream=stream
+                response, with_history=with_history, stream=stream
             )
         else:
-            full_content = ""
             for chunk in r.iter_lines(chunk_size=8192, decode_unicode=True):
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
-                chunk_response.delta = full_content
                 yield self._format_rag_response(
-                    text, chunk_response, with_history=with_history, stream=stream
+                    chunk_response, with_history=with_history, stream=stream
                 )
 
     def query_search(
@@ -277,16 +270,13 @@ class RagWebClient:
             raise RagApiError(code=r.status_code, msg=r.text)
         if not stream:
             response = dotdict(json.loads(r.text))
-            yield self._format_rag_response(text, response, stream=stream)
+            yield self._format_rag_response(response, stream=stream)
         else:
-            full_content = ""
             for chunk in r.iter_lines(chunk_size=8192, decode_unicode=True):
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
-                chunk_response.delta = full_content
-                yield self._format_rag_response(text, chunk_response, stream=stream)
+                yield self._format_rag_response(chunk_response, stream=stream)
 
     def query_data_analysis(
         self,
@@ -305,16 +295,13 @@ class RagWebClient:
             raise RagApiError(code=r.status_code, msg=r.text)
         if not stream:
             response = dotdict(json.loads(r.text))
-            yield self._format_rag_response(text, response, stream=stream)
+            yield self._format_rag_response(response, stream=stream)
         else:
-            full_content = ""
             for chunk in r.iter_lines(chunk_size=8192, decode_unicode=True):
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
-                chunk_response.delta = full_content
-                yield self._format_rag_response(text, chunk_response, stream=stream)
+                yield self._format_rag_response(chunk_response, stream=stream)
 
     def query_llm(
         self,
@@ -339,18 +326,15 @@ class RagWebClient:
         if not stream:
             response = dotdict(json.loads(r.text))
             yield self._format_rag_response(
-                text, response, with_history=with_history, stream=stream
+                response, with_history=with_history, stream=stream
             )
         else:
-            full_content = ""
             for chunk in r.iter_lines(chunk_size=8192, decode_unicode=True):
                 if not chunk.startswith("data:"):
                     continue
                 chunk_response = dotdict(json.loads(chunk[5:]))
-                full_content += chunk_response.delta
-                chunk_response.delta = full_content
                 yield self._format_rag_response(
-                    text, chunk_response, with_history=with_history, stream=stream
+                    chunk_response, with_history=with_history, stream=stream
                 )
 
     def query_vector(self, text: str, index_name: str = None):

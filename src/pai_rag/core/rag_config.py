@@ -26,6 +26,7 @@ from pai_rag.integrations.llms.pai.llm_config import (
     OpenAILlmConfig,
     PaiBaseLlmConfig,
     PaiEasLlmConfig,
+    OpenAICompatibleLlmConfig,
 )
 from pai_rag.integrations.nodeparsers.pai.pai_node_parser import NodeParserConfig
 from pai_rag.integrations.postprocessor.pai.pai_postprocessor import (
@@ -47,6 +48,13 @@ def validate_case_insensitive(value: Dict) -> Dict:
             # fix old config
             if value[key] == "simple-weighted-reranker":
                 value[key] = "no-reranker"
+
+    if value.get("source") == "paieas":
+        value["source"] = "openai_compatible"
+        value["base_url"] = value["endpoint"]
+        value["api_key"] = value["token"]
+    elif value.get("source") == "dashscope" and "embed_batch_size" not in value:
+        value["source"] = "openai_compatible"
     return value
 
 
@@ -79,7 +87,12 @@ class RagConfig(BaseModel):
         BeforeValidator(validate_case_insensitive),
     ]
     multimodal_llm: Annotated[
-        Union[DashScopeMultiModalLlmConfig, PaiEasLlmConfig, OpenAILlmConfig],
+        Union[
+            DashScopeMultiModalLlmConfig,
+            PaiEasLlmConfig,
+            OpenAILlmConfig,
+            OpenAICompatibleLlmConfig,
+        ],
         Field(discriminator="source"),
         BeforeValidator(validate_case_insensitive),
     ] | None = None
