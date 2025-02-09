@@ -3,9 +3,7 @@
 """
 import html2text
 from bs4 import BeautifulSoup
-import requests
 from typing import Dict, List, Optional, Union, Any
-from io import BytesIO
 from pai_rag.utils.markdown_utils import (
     transform_local_to_oss,
     convert_table_to_markdown,
@@ -13,16 +11,21 @@ from pai_rag.utils.markdown_utils import (
 )
 from pathlib import Path
 import re
-import time
 import os
 from PIL import Image
 from llama_index.core.readers.base import BaseReader
 from llama_index.core.schema import Document
 from loguru import logger
+from itertools import chain
 
 
-IMAGE_URL_PATTERN = (
-    r"!\[(?P<alt_text>.*?)\]\((https?://[^\s]+?[\s\w.-]*\.(jpg|jpeg|png|gif|bmp))\)"
+MARKDOWN_IMAGE_PATTERN = re.compile(
+    r"!\[.*?\]\(((?!https?://|www\.)[^\s)]+\.(?:png|jpe?g|gif|bmp|svg|webp|tiff))\)",
+    re.IGNORECASE,
+)
+HTML_IMAGE_PATTERN = re.compile(
+    r'<img[^>]*src=["\']((?!https?://|www\.)[^"\']+\.(?:png|jpe?g|gif|bmp|svg|webp|tiff))["\'][^>]*>',
+    re.IGNORECASE,
 )
 
 
@@ -144,32 +147,39 @@ class PaiHtmlReader(BaseReader):
         table, total_cols = self._convert_table_to_pai_table(table)
         return convert_table_to_markdown(table, total_cols)
 
-    def _transform_local_to_oss(self, html_name: str, image_url: str):
-        response = requests.get(image_url)
-        response.raise_for_status()  # 检查请求是否成功
+    def _transform_local_to_oss(self, html_name: str, local_url: str):
+        try:
+            image = Image.open(local_url)
+            return transform_local_to_oss(self._oss_cache, image, html_name)
+        except Exception as e:
+            logger.error(f"read html local image failed: {e}")
+            return None
 
-        # 将二进制数据转换为图像对象
-        image = Image.open(BytesIO(response.content))
-        return transform_local_to_oss(self._oss_cache, image, html_name)
+    def _replace_image_paths(self, html_dir: str, html_name: str, content: str):
+        markdown_image_matches = MARKDOWN_IMAGE_PATTERN.finditer(content)
+        html_image_matches = HTML_IMAGE_PATTERN.finditer(content)
+        all_image_matches = chain(markdown_image_matches, html_image_matches)
+        for match in all_image_matches:
+            full_match = match.group(0)  # 整个匹配
+            local_url = match.group(1)  # 捕获的URL
 
-    def _replace_image_paths(self, html_name: str, content: str):
-        image_pattern = IMAGE_URL_PATTERN
-        matches = re.findall(image_pattern, content)
-        for alt_text, image_url, image_type in matches:
+            local_path = os.path.normpath(os.path.join(html_dir, local_url))
+
             if self._oss_cache:
-                time_tag = int(time.time())
-                oss_url = self._transform_local_to_oss(html_name, image_url)
-                updated_alt_text = f"pai_rag_image_{time_tag}_{alt_text}"
-                content = content.replace(
-                    f"![{alt_text}]({image_url})", f"![{updated_alt_text}]({oss_url})"
-                )
+                oss_url = self._transform_local_to_oss(html_name, local_path)
+                if oss_url:
+                    content = content.replace(local_url, oss_url)
+                else:
+                    content = content.replace(full_match, "")
             else:
-                content = content.replace(f"![{alt_text}]({image_url})", "")
+                content = content.replace(full_match, "")
+
         return content
 
     def convert_html_to_markdown(self, html_path):
         html_name = os.path.basename(html_path).split(".")[0]
         html_name = html_name.replace(" ", "_")
+        html_dir = os.path.dirname(html_path)
         try:
             with open(html_path, "r", encoding="utf-8") as f:
                 html_content = f.read()
@@ -189,8 +199,9 @@ class PaiHtmlReader(BaseReader):
                 table_markdown = self._convert_table_to_markdown(table) + "\n\n"
                 placeholder = f"<!-- TABLE_PLACEHOLDER_{id(table)} -->"
                 markdown_content = markdown_content.replace(placeholder, table_markdown)
-
-            markdown_content = self._replace_image_paths(html_name, markdown_content)
+            markdown_content = self._replace_image_paths(
+                html_dir, html_name, markdown_content
+            )
 
             return markdown_content
 
