@@ -20,6 +20,10 @@ from loguru import logger
 from pai_rag.integrations.nodeparsers.pai.pai_node_parser import (
     COMMON_FILE_PATH_FODER_NAME,
 )
+from pai_rag.integrations.data_analysis.text2sql.utils.constants import (
+    DEFAULT_DB_HISTORY_PATH,
+    DEFAULT_DB_HISTORY_NAME,
+)
 
 router_v1 = APIRouter()
 
@@ -252,27 +256,28 @@ async def upload_datasheet(
 @router_v1.post("/upload_db_history")
 async def upload_history_json(
     file: UploadFile,
+    db_name: str = Form(None),
 ):
     task_id = uuid.uuid4().hex
     if not file:
         return None
 
-    persist_path = "./localdata/data_analysis/nl2sql/history"
+    persist_path = DEFAULT_DB_HISTORY_PATH
 
     os.makedirs(name=persist_path, exist_ok=True)
 
-    # 清空目录中的文件
-    for filename in os.listdir(persist_path):
-        file_path = os.path.join(persist_path, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-        except Exception as e:
-            logger.info(f"Failed to delete {file_path}. Reason: {e}")
+    # # 清空目录中的文件
+    # for filename in os.listdir(persist_path):
+    #     file_path = os.path.join(persist_path, filename)
+    #     try:
+    #         if os.path.isfile(file_path) or os.path.islink(file_path):
+    #             os.unlink(file_path)
+    #     except Exception as e:
+    #         logger.info(f"Failed to delete {file_path}. Reason: {e}")
 
     # 指定持久化存储位置
     file_name = os.path.basename(file.filename)  # 获取文件名
-    destination_path = os.path.join(persist_path, file_name)
+    destination_path = os.path.join(persist_path, f"{db_name}_{file_name}")
     # 写入文件
     try:
         # shutil.copy(file.filename, destination_path)
@@ -285,7 +290,9 @@ async def upload_history_json(
 
     # 重命名
     try:
-        unified_destination_path = os.path.join(persist_path, "db_query_history.json")
+        unified_destination_path = os.path.join(
+            persist_path, f"{db_name}_{DEFAULT_DB_HISTORY_NAME}"
+        )
         os.rename(destination_path, unified_destination_path)
         logger.info("History file renamed successfully")
     except Exception as e:
