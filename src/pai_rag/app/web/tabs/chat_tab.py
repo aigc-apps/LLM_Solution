@@ -14,6 +14,17 @@ def reset_textbox():
     return gr.update(value="")
 
 
+def change_search_model_argument(search_type):
+    return [
+        gr.update(visible=True if search_type == "bing" else False),
+        gr.update(visible=True),
+        gr.update(visible=True if search_type == "bing" else False),
+        gr.update(visible=False if search_type == "bing" else True),
+        gr.update(visible=False if search_type == "bing" else True),
+        gr.update(visible=False if search_type == "bing" else True),
+    ]
+
+
 def respond(input_elements: List[Any]):
     update_dict = {}
 
@@ -303,6 +314,11 @@ def create_chat_tab() -> Dict[str, Any]:
                     "Parameters of Web Search", open=False
                 )
                 with search_model_argument:
+                    search_type = gr.Radio(
+                        ["bing", "夸克"],
+                        label="Search Engine",
+                        elem_id="search_type",
+                    )
                     search_api_key = gr.Text(
                         label="Bing API Key",
                         value="",
@@ -322,7 +338,43 @@ def create_chat_tab() -> Dict[str, Any]:
                         value="zh-CN",
                         elem_id="search_lang",
                     )
-                search_args = {search_api_key, search_count, search_lang}
+                    quark_host = gr.Text(
+                        label="Quark Host",
+                        value="",
+                        elem_id="quark_host",
+                    )
+                    quark_user = gr.Text(
+                        label="Quark User",
+                        value="",
+                        elem_id="quark_user",
+                    )
+                    quark_secret = gr.Text(
+                        label="Quark Secret",
+                        value="",
+                        type="password",
+                        elem_id="quark_secret",
+                    )
+                search_args = {
+                    search_type,
+                    search_api_key,
+                    search_count,
+                    search_lang,
+                    quark_host,
+                    quark_user,
+                    quark_secret,
+                }
+                search_type.input(
+                    fn=change_search_model_argument,
+                    inputs=[search_type],
+                    outputs=[
+                        search_api_key,
+                        search_count,
+                        search_lang,
+                        quark_host,
+                        quark_user,
+                        quark_secret,
+                    ],
+                )
 
             with gr.Column(visible=True) as lc_col:
                 with gr.Tab("Prompt"):
@@ -423,7 +475,7 @@ def create_chat_tab() -> Dict[str, Any]:
                     label="Chat history",
                     info="Query with chat history.",
                     elem_id="include_history",
-                    value=True,
+                    value=False,
                     scale=1,
                 )
                 question = gr.Textbox(
@@ -499,6 +551,10 @@ def create_chat_tab() -> Dict[str, Any]:
             search_lang.elem_id: search_lang,
             search_api_key.elem_id: search_api_key,
             search_count.elem_id: search_count,
+            search_type.elem_id: search_type,
+            quark_host.elem_id: quark_host,
+            quark_secret.elem_id: quark_secret,
+            quark_user.elem_id: quark_user,
             model_reranker_col.elem_id: model_reranker_col,
             llm_temperature.elem_id: llm_temperature,
         }

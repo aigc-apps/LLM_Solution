@@ -37,12 +37,6 @@ class RetrieverConfig(BaseModel):
     ]
 
 
-class SearchWebConfig(BaseModel):
-    search_api_key: str | None = None
-    search_count: int = 30
-    search_lang: str = "zh-CN"
-
-
 class SynthesizerConfig(BaseModel):
     use_multimodal_llm: bool = False
     text_qa_template: str = DEFAULT_TEXT_QA_TMPL_EN
