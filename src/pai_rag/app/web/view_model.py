@@ -78,7 +78,7 @@ class ViewModel(BaseModel):
 
     # websearch
     search_api_key: str = None
-    search_count: int = 10
+    search_count: int = 30
     search_lang: str = "zh-CN"
 
     # data_analysis
