@@ -2,6 +2,7 @@ from typing import Dict, Any, List
 import gradio as gr
 import pandas as pd
 import datetime
+from loguru import logger
 from pai_rag.app.web.rag_client import rag_client, RagApiError
 from pai_rag.app.web.ui_constants import (
     NL2SQL_GENERAL_PROMPTS,
@@ -93,22 +94,49 @@ def respond(input_elements: List[Any]):
 
     question = update_dict["question"]
     chatbot = update_dict["chatbot"]
+    q_msg = {"content": question, "role": "user"}
+    chatbot.append(q_msg)
 
     if chatbot is not None:
-        chatbot.append((question, ""))
+        chatbot.append(
+            {"content": "", "role": "assistant", "metadata": {"status": "pending"}}
+        )
+        yield chatbot
 
     try:
-        content = ""
         response_gen = rag_client.query_data_analysis(question, stream=True)
+        is_thinking = False
         for resp in response_gen:
-            content += resp.delta
-            chatbot[-1] = (question, content)
+            if resp.delta == "<think>":
+                chatbot[-1]["metadata"]["title"] = "thinking..."
+                chatbot[-1]["metadata"]["log"] = ""
+                is_thinking = True
+
+            elif resp.delta == "</think>":
+                chatbot[-1]["metadata"]["title"] = "thought"
+                chatbot[-1]["metadata"]["status"] = "done"
+                is_thinking = False
+                chatbot.append(
+                    {
+                        "content": "",
+                        "role": "assistant",
+                        "metadata": {"status": "pending"},
+                    }
+                )
+
+            else:
+                if is_thinking:
+                    chatbot[-1]["metadata"]["log"] += resp.delta
+                else:
+                    chatbot[-1]["content"] += resp.delta
             yield chatbot
+
     except RagApiError as api_error:
         raise gr.Error(f"HTTP {api_error.code} Error: {api_error.msg}")
     except Exception as e:
         raise gr.Error(f"Error: {e}")
     finally:
+        logger.info(f"Chatbot finished: {chatbot}")
         yield chatbot
 
 
@@ -257,13 +285,13 @@ def create_data_analysis_tab() -> Dict[str, Any]:
                                     visible=False,  # 初始状态为不可见
                                 )
                                 max_value_num = gr.Slider(
-                                    minimum=5000,
+                                    minimum=1000,
                                     maximum=20000,
                                     step=1000,
                                     label="Max Value Number",
-                                    info="Maximum number of unique values to be embedded. Larger number may take longer time.",
+                                    info="Maximum number of unique values per column to be embedded. Larger number may take longer time.",
                                     elem_id="max_value_num",
-                                    value=10000,
+                                    value=1000,
                                     visible=False,  # 初始状态为不可见
                                 )
 
@@ -408,7 +436,7 @@ def create_data_analysis_tab() -> Dict[str, Any]:
             )
 
         with gr.Column(scale=6):
-            chatbot = gr.Chatbot(height=600, elem_id="chatbot")
+            chatbot = gr.Chatbot(height=600, elem_id="chatbot", type="messages")
             question = gr.Textbox(label="Enter your question.", elem_id="question")
             with gr.Row():
                 submitBtn = gr.Button("Submit", variant="primary")
