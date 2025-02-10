@@ -39,7 +39,7 @@ class RetrieverConfig(BaseModel):
 
 class SearchWebConfig(BaseModel):
     search_api_key: str | None = None
-    search_count: int = 10
+    search_count: int = 30
     search_lang: str = "zh-CN"
 
 

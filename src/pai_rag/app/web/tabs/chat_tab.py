@@ -134,7 +134,7 @@ def create_chat_tab() -> Dict[str, Any]:
                 label="Citation",
                 info="Need Citation",
                 elem_id="citation",
-                value=True,
+                value=False,
             )
             need_image = gr.Checkbox(
                 label="Display Image",
@@ -312,7 +312,7 @@ def create_chat_tab() -> Dict[str, Any]:
                     search_count = gr.Slider(
                         label="Search Count",
                         minimum=5,
-                        maximum=30,
+                        maximum=50,
                         step=1,
                         elem_id="search_count",
                     )
